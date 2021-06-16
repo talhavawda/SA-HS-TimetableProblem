@@ -22,6 +22,7 @@ class Input():
 		self.numGr7Classes = numGr7Classes
 		self.numGr8Classes = numGr8Classes
 		self.numGr9Classes = numGr9Classes
+		self.totalnumClasses = self.numGr7Classes + self.numGr8Classes + self.numGr9Classes
 
 
 
@@ -72,7 +73,7 @@ class Input():
 			className = "Grade 9 - Class " + str(i + 1)
 			classNames.append(className)
 
-		for Class in range(self.numGr7Classes + self.numGr8Classes + self.numGr9Classes):
+		for Class in range(self.totalnumClasses):
 			print(classNames[Class], end="\t|\t")  # Row Heading
 			for Teacher in self.teachingTable[Class]:
 				print(Teacher+1, end="\t") # TeacherID's are represented as digits from 0 to numTeachers-1 but will display as 1 to numTeachers
@@ -103,7 +104,7 @@ class TimetableAlgorithm:
 	LESSONS = [lesson for lesson in range(0, 55)]
 	TIMESLOTS = [timeslot for timeslot in range(0, 55)] # The permutation of all the timeslots in increasing order
 	TIMESLOTS_SET = set(TIMESLOTS) # Representing the Timeslots as a set | Will be used to compare to a generated timeslot to determine if it is a valid permutation
-	
+
 
 
 
@@ -129,9 +130,9 @@ class TimetableAlgorithm:
 			Constructor
 
 			:param input:	An object of type Input containing the teachingTable, numTeachers, numGr7Classes, numGr8Classes,
-			and numGr9Classes of this problem instance
+			 numGr9Classes, totalNumClasses variables of this problem instance
 
-			:param teachingTable:	A 2D list/array indicating the teacher to Class-Subject allocations
+			The teachingTable is a 2D list/array indicating the teacher to Class-Subject allocations
 			The rows are the classes and the columns are the subjects, and the value at [i, j] is the TeacherID of
 			the teacher who teachers Subject j to Class i
 
@@ -162,8 +163,10 @@ class TimetableAlgorithm:
 			and sublist i is a permutation of the integers 0-54 (as all 55 lessons must be allocated to timeslots, and to unique timeslots)
 			For sublist i, the value at index j is the timeslot that Class i has Lesson j
 
+			Thus we can view a solution as a list of permutations of the set {0, 1, ..., 54}
 
-			:return:The optimal feasible solution after the termination critera has been met
+
+			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
 		"""
 
 
@@ -191,7 +194,17 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 			Solve the Timetable Problem using this Genetic algorithm
 
-			:return:The optimal feasible solution after the termination critera has been met
+			See the docstring of solveTimetable() in the superclass for a description of a solution (chromosome)
+
+			A gene is an integer value that represents a timeslot
+			Thus the Gene  Pool is all values in the range [0 ,54]
+
+			We can think of a  super-gene in a chromosome as a permutation list of the set {0, 1, ..., 54}
+			It is useful to think of a super-gene, as a constraint of our problem is that each row (sub-list) in the solution table
+			is a list representing a permutation of the numbers 0-54
+			The number of super-genes (sublists) in a chromosome for a problem instance is input.totalNumClasses
+
+			:return:	The optimal feasible solution after the termination criteria has been met, and its associated fitness value (as a tuple, in that order)
 		"""
 
 
@@ -220,6 +233,6 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			Solve the Timetable Problem using this Cat Swarm Optimization algorithm
 			This function can call helper functions defined in the subclass that it can use to solve
 
-			:return:The optimal feasible solution after the termination critera has been met
+			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
 		"""
 
