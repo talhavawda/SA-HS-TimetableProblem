@@ -169,6 +169,9 @@ class TimetableAlgorithm:
 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
 		"""
 
+"""
+	GENETIC ALGORITHM
+"""
 
 class GeneticAlgorithm(TimetableAlgorithm):
 
@@ -207,8 +210,30 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated fitness value (as a tuple, in that order)
 		"""
 
+		initialPopulation = self.initialisePopulation()
 
 
+
+	"""Helper Functions for solveTimetable()"""
+
+	def initialisePopulation(self):
+		"""
+			Initialises the population (generates the initial population) for the Genetic Algorithm
+
+			:param populationSize: The number of individuals in the population
+			:return:	The initial population for this Problem to be used by the Genetic Algorithm
+		"""
+
+
+		"""
+			random.sample() returns a new shuffled list. The original list remains unchanged.
+		"""
+
+
+
+"""
+	CAT SWARM OPTIMIZATION ALGORITHM
+"""
 
 class CatSwarmAlgorithm(TimetableAlgorithm):
 	def __init__(self, input: Input, populationSize: int):
