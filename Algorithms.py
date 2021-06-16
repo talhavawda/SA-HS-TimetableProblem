@@ -1,6 +1,6 @@
 class Input():
 	"""
-		A class to represent the variables of an Sample Input textfile
+		A class to represent the problem instance (i.e. the variables obtained from the Sample Input textfile)
 	"""
 
 	def __init__(self, teachingTable, numTeachers: int, numGr7Classes: int, numGr8Classes: int, numGr9Classes: int):
@@ -9,7 +9,7 @@ class Input():
 
 			:param teachingTable:	A 2D list/array indicating the teacher to Class-Subject allocations
 			The rows are the classes and the columns are the subjects, and the value at [i, j] is the TeacherID of
-			the teacher who teachers Subject j to Class i
+			the teacher who teaches Subject j to Class i
 
 			:param numTeachers		The number of teachers teaching the Grade 7 to 9's
 			:param numGr7Classes	The number of classes in Grade 7
@@ -33,7 +33,7 @@ class TimetableAlgorithm:
 		An instance of the subclass will be used to solve the Timetabling Problem on a given input
 	"""
 
-	"""Class CONSTANTS"""
+	"""CLASS CONSTANTS"""
 	SUBJECTS = [
 				"Home Language", "First Additional Language", "Mathematics", "Natural Science", "Social Science",
 				"Technology", "Economic and Management Science", "Life Orientation", "Arts and Culture"
@@ -42,6 +42,7 @@ class TimetableAlgorithm:
 	# Using List Comprehension to define the Lesson and Timeslot numbers
 	LESSONS = [lesson for lesson in range(1, 56)]
 	TIMESLOTS = [timeslot for timeslot in range(1, 56)]
+
 
 
 	def __init__(self, input: Input, populationSize: int):
