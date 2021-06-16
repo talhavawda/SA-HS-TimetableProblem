@@ -135,6 +135,13 @@ class TimetableAlgorithm:
 
 		"""
 
+		self.teachingTable = input.teachingTable
+		self.numTeachers = input.numTeachers
+		self.numGr7Classes = input.numGr7Classes
+		self.numGr8Classes = input.numGr8Classes
+		self.numGr9Classes = input.numGr9Classes
+		self.populationSize = populationSize
+
 
 	def solveTimetable(self):
 		"""
@@ -154,14 +161,13 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			Parameters are the same as that of its superclass TimetableAlgorithm
 			Popuzlation Size is assigned a default value of 100
 
+			Note that this class has the same class variables specified in the __init__() constructor
+			of the superclass TimetableAlgorithm
+
 		"""
 
-		self.teachingTable = input.teachingTable
-		self.numTeachers = input.numTeachers
-		self.numGr7Classes = input.numGr7Classes
-		self.numGr8Classes = input.numGr8Classes
-		self.numGr9Classes = input.numGr9Classes
-		self.populationSize = populationSize
+		# Call super constructor
+		super().__init__(input, populationSize)
 
 
 	def solveTimetable(self):
@@ -183,14 +189,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			Parameters are the same as that of its superclass TimetableAlgorithm
 
-		"""
+			Note that this class has the same class variables specified in the __init__() constructor
+			of the superclass TimetableAlgorithm
 
-		self.teachingTable = input.teachingTable
-		self.numTeachers = input.numTeachers
-		self.numGr7Classes = input.numGr7Classes
-		self.numGr8Classes = input.numGr8Classes
-		self.numGr9Classes = input.numGr9Classes
-		self.populationSize = populationSize
+		"""
+		# Call super constructor
+		super().__init__(input, populationSize)
 
 
 
