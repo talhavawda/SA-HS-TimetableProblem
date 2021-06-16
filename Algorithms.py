@@ -1,4 +1,4 @@
-class Input():
+class Input:
 	"""
 		A class to represent the problem instance (i.e. the variables obtained from the Sample Input textfile)
 	"""
