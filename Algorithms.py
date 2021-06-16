@@ -64,8 +64,9 @@ class TimetableAlgorithm:
 	def solveTimetable(self):
 		"""
 			Solve the Timetable Problem using this algorithm
-			The function can call helper functions that it can use to solve
-		:return:The optimal feasible solution after the termination critera has been met
+			The function can call helper functions defined in the subclass that it can use to solve
+
+			:return:The optimal feasible solution after the termination critera has been met
 		"""
 
 
@@ -92,7 +93,8 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			Implementing this abstract function defined in the superclass
 
 			Solve the Timetable Problem using this Genetic algorithm
-		:return:The optimal feasible solution after the termination critera has been met
+
+			:return:The optimal feasible solution after the termination critera has been met
 		"""
 
 
@@ -121,6 +123,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			Implementing this abstract function defined in the superclass
 
 			Solve the Timetable Problem using this Cat Swarm Optimization algorithm
-		:return:The optimal feasible solution after the termination critera has been met
+			This function can call helper functions defined in the subclass that it can use to solve
+
+			:return:The optimal feasible solution after the termination critera has been met
 		"""
 
