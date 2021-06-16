@@ -1,5 +1,10 @@
 from Algorithms import *
 
+
+
+def readInputFile(filename: str):
+
+
 def main():
 	"""
 		The main function of the program
@@ -17,17 +22,28 @@ def main():
 	print("==============================================================================================================\n\n")
 
 
-	teachingTable1 =
-	teachingTable2 =
-	teachingTable3 =
+	input1 = readInputFile("Input/SampeInput1.txt")
+	input2 = readInputFile("Input/SampeInput2.txt")
+	input3 = readInputFile("Input/SampeInput3.txt")
 
 
+	input1 = []
+	input2 = []
+	input3 = []
 
 
+	for sampleInput in [input1, input2, input3]:
+		teachingTable = sampleInput[0]
+		numTeachers = sampleInput[1]
+		numGr7Classes = sampleInput[2]
+		numGr8Classes = sampleInput[3]
+		numGr9Classes = sampleInput[4]
 
-	for inputTeachingTable in [teachingTable1, teachingTable2, teachingTable3]:
-		geneticAlgorithm = GeneticAlgorithm(inputTeachingTable)
-		catSwarmAlgorithm = CatSwarmAlgorithm(inputTeachingTable)
+		populationSizeGA =
+		populationSizeCSA =
+
+		geneticAlgorithm = GeneticAlgorithm(teachingTable, numTeachers, numGr7Classes, numGr8Classes, numGr9Classes, populationSizeGA)
+		catSwarmAlgorithm = CatSwarmAlgorithm(teachingTable, numTeachers, numGr7Classes, numGr8Classes, numGr9Classes, populationSizeCSA)
 
 		for algorithm in [geneticAlgorithm, catSwarmAlgorithm]:
 

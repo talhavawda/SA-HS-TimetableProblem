@@ -1,3 +1,30 @@
+class Input():
+	"""
+		A class to represent the variables of an Sample Input textfile
+	"""
+
+	def __init__(self, teachingTable, numTeachers: int, numGr7Classes: int, numGr8Classes: int, numGr9Classes: int):
+		"""
+			Constructor
+
+			:param teachingTable:	A 2D list/array indicating the teacher to Class-Subject allocations
+			The rows are the classes and the columns are the subjects, and the value at [i, j] is the TeacherID of
+			the teacher who teachers Subject j to Class i
+
+			:param numTeachers		The number of teachers teaching the Grade 7 to 9's
+			:param numGr7Classes	The number of classes in Grade 7
+			:param numGr8Classes	The number of classes in Grade 8
+			:param numGr9Classes	The number of classes in Grade 9
+
+		"""
+		self.teachingTable = teachingTable
+		self.numTeachers = numTeachers
+		self.numGr7Classes = numGr7Classes
+		self.numGr8Classes = numGr8Classes
+		self.numGr9Classes = numGr9Classes
+
+
+
 class TimetableAlgorithm:
 	"""
 		The abstract class to represent an algorithm used to solve our Timetable Problem
@@ -17,18 +44,17 @@ class TimetableAlgorithm:
 	TIMESLOTS = [timeslot for timeslot in range(1, 56)]
 
 
-	def __init__(self, teachingTable, numTeachers: int, numGr7Classes: int, numGr8Classes: int, numGr9Classes: int, populationSize: int):
+	def __init__(self, input: Input, populationSize: int):
 		"""
 			Constructor
+
+			:param input:	An object of type Input containing the teachingTable, numTeachers, numGr7Classes, numGr8Classes,
+			and numGr9Classes of this problem instance
 
 			:param teachingTable:	A 2D list/array indicating the teacher to Class-Subject allocations
 			The rows are the classes and the columns are the subjects, and the value at [i, j] is the TeacherID of
 			the teacher who teachers Subject j to Class i
 
-			:param numTeachers		The number of teachers teaching the Grade 7 to 9's
-			:param numGr7Classes	The number of classes in Grade 7
-			:param numGr8Classes	The number of classes in Grade 8
-			:param numGr9Classes	The number of classes in Grade 9
 			:param populationSize	the size of the population to use for the Algorithm
 
 		"""
@@ -44,26 +70,20 @@ class TimetableAlgorithm:
 
 class GeneticAlgorithm(TimetableAlgorithm):
 
-	def __init__(self, teachingTable, numTeachers: int, numGr7Classes: int, numGr8Classes: int, numGr9Classes: int, populationSize: int = 100):
+	def __init__(self, input: Input, populationSize: int = 100):
 		"""
 			Constructor for the Genetic Algorithm
 
 			Parameters are the same as that of its superclass TimetableAlgorithm
 			Popuzlation Size is assigned a default value of 100
 
-		:param teachingTable:
-		:param numTeachers:
-		:param numGr7Classes:
-		:param numGr8Classes:
-		:param numGr9Classes:
-		:param populationSize:
 		"""
 
-		self.teachingTable = teachingTable
-		self.numTeachers = numTeachers
-		self.numGr7Classes = numGr7Classes
-		self.numGr8Classes = numGr8Classes
-		self.numGr9Classes = numGr9Classes
+		self.teachingTable = input.teachingTable
+		self.numTeachers = input.numTeachers
+		self.numGr7Classes = input.numGr7Classes
+		self.numGr8Classes = input.numGr8Classes
+		self.numGr9Classes = input.numGr9Classes
 		self.populationSize = populationSize
 
 	def solveTimetable(self):
@@ -78,25 +98,19 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 
 class CatSwarmAlgorithm(TimetableAlgorithm):
-	def __init__(self, teachingTable, numTeachers: int, numGr7Classes: int, numGr8Classes: int, numGr9Classes: int, populationSize: int):
+	def __init__(self, input: Input, populationSize: int):
 		"""
 			Constructor for the Cat Swarm Optimization Algorithm
 
 			Parameters are the same as that of its superclass TimetableAlgorithm
 
-		:param teachingTable:
-		:param numTeachers:
-		:param numGr7Classes:
-		:param numGr8Classes:
-		:param numGr9Classes:
-		:param populationSize:
 		"""
 
-		self.teachingTable = teachingTable
-		self.numTeachers = numTeachers
-		self.numGr7Classes = numGr7Classes
-		self.numGr8Classes = numGr8Classes
-		self.numGr9Classes = numGr9Classes
+		self.teachingTable = input.teachingTable
+		self.numTeachers = input.numTeachers
+		self.numGr7Classes = input.numGr7Classes
+		self.numGr8Classes = input.numGr8Classes
+		self.numGr9Classes = input.numGr9Classes
 		self.populationSize = populationSize
 
 
