@@ -151,12 +151,12 @@ def main():
 			print("\nSolving INPUT ", inputNumber," using the ", algorithmName, ":", sep="")
 
 			solution = algorithm.solveTimetable()
-			
+
 
 			print("\n=================================================================")
 
 
-		print("=================================================================\n\n")
+		print("\n=================================================================\n\n")
 
 
 		inputNumber += 1

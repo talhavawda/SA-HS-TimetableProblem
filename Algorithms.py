@@ -96,8 +96,27 @@ class TimetableAlgorithm:
 				]
 
 	# Using List Comprehension to define the Lesson and Timeslot numbers
-	LESSONS = [lesson for lesson in range(1, 56)]
-	TIMESLOTS = [timeslot for timeslot in range(1, 56)]
+	# In the code, we are representing the number of Lessons and Timeslots from 0-54 as indexes begin at 0 (Mathematically, its from 1-55)
+	# So Day numbers will be represented from 0-4 and to get the day number of a timeslot, use floor(timeslot // 5)
+
+	LESSONS = [lesson for lesson in range(0, 55)]
+	TIMESLOTS = [timeslot for timeslot in range(0, 55)]
+
+
+	# Indicates the Subject index of a lesson - index is the lesson number, and value is the Subject index at that lesson
+	# Use the SUBJECTS constant to get the Subject name at that Subject index
+	LESSON_SUBJECTS = [
+						0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+						1, 1, 1, 1, 1, 1, 1, 1,
+						2, 2, 2, 2, 2, 2, 2, 2, 2,
+						3, 3, 3, 3, 3, 3,
+						4, 4, 4, 4, 4, 4,
+						5, 5, 5, 5,
+						6, 6, 6, 6,
+						7, 7, 7, 7,
+						8, 8, 8, 8
+						]
+
 
 
 
@@ -143,6 +162,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		self.numGr8Classes = input.numGr8Classes
 		self.numGr9Classes = input.numGr9Classes
 		self.populationSize = populationSize
+
 
 	def solveTimetable(self):
 		"""
