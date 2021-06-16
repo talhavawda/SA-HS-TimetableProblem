@@ -1,4 +1,4 @@
-
+from Algorithms import *
 
 def main():
 	"""
@@ -32,6 +32,7 @@ def main():
 		for algorithm in [geneticAlgorithm, catSwarmAlgorithm]:
 
 			algorithm.solveTimetable()
+
 
 main()
 
