@@ -91,54 +91,6 @@ def readInputFile(fileName: str):
 
 	return inputInstance
 
-def printInputInstance(input: Input):
-
-
-	print("Number of classes in Grade 7: \t\t", input.numGr7Classes)
-	print("Number of classes in Grade 8: \t\t", input.numGr8Classes)
-	print("Number of classes in Grade 9: \t\t", input.numGr9Classes)
-	print("\nNumber of teachers teaching in Grades 7-9:\t", input.numTeachers)
-
-	print("\nTeacher Class-Subject Allocation Table:\n")
-
-	teachingTable = input.teachingTable
-
-	print("\nTeacher Class-Subject Allocation Table:\n")
-
-
-	#Print Column Headings (Subjects)
-
-	print("Subjects ->", end="\t\t\t\t")
-	headerStr = "======================"
-
-	#Subjects are represented as digits from 0 to 8 but will display as 1 to 9
-	for subject in range(1, 10):
-		print(subject, end="\t")
-		headerStr += "===="
-
-	print("\nClasses:")
-	print(headerStr)
-
-	classNames = []
-
-	for i in range(input.numGr7Classes):
-		className = "Grade 7 - Class " + str(i+1)
-		classNames.append(className)
-
-	for i in range(input.numGr8Classes):
-		className = "Grade 8 - Class " + str(i+1)
-		classNames.append(className)
-
-	for i in range(input.numGr9Classes):
-		className = "Grade 9 - Class " + str(i+1)
-		classNames.append(className)
-
-
-	for Class in range(input.numGr7Classes+input.numGr8Classes+input.numGr9Classes):
-		print(classNames[Class], end="\t|\t") # Row Heading
-		for Teacher in teachingTable[Class]:
-			print(Teacher, end="\t")
-		print()
 
 
 def main():
@@ -155,6 +107,8 @@ def main():
 
 	print("\n\nSolving the Timetabling Problem for Grades 7 to 9 based on the  South African DOE's Curriculum Guidelines")
 	print("using a Genetic Algorithm and Cat Swarm Optimization Algorithm and comparing the results")
+	print("==============================================================================================================")
+	print("==============================================================================================================")
 	print("==============================================================================================================\n\n")
 
 
@@ -163,22 +117,38 @@ def main():
 		# Subjects are represented as digits from 0 to 8 but will display as 1 to 9
 		print("\tSubject ", i+1, ": ", SUBJECTS[i], sep="")
 
-	print()
+	print("==================================================================")
+	print("==================================================================\n\n")
+
+	input1 = readInputFile("Input/easy.txt")
+	input2 = readInputFile("Input/medium.txt")
+	input3 = readInputFile("Input/hard.txt")
 
 
-	input = readInputFile("Input/easy.txt")
-	printInputInstance(input)
+	inputNumber = 1
 
-	input1 = readInputFile("Input/SampleInput1.txt")
-	input2 = readInputFile("Input/SampleInput2.txt")
-	input3 = readInputFile("Input/SampleInput3.txt")
 	for input in [input1, input2, input3]:
-		populationSizeGA =
-		populationSizeCSA =
+
+		print("INPUT", inputNumber)
+		print("----------")
+		input.print()
+
+		print("\n=================================================================\n\n")
+
+		"""
+			I set the pop sizes to 100 for now  so that the program runs
+			TODO - determine appropriate population sizes
+		"""
+		populationSizeGA = 100
+		populationSizeCSA = 100
+
 		geneticAlgorithm = GeneticAlgorithm(input, populationSizeGA)
 		catSwarmAlgorithm = CatSwarmAlgorithm(input, populationSizeCSA)
+
 		for algorithm in [geneticAlgorithm, catSwarmAlgorithm]:
 			algorithm.solveTimetable()
+
+		inputNumber += 1
 
 
 main()

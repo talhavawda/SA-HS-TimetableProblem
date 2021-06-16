@@ -25,6 +25,60 @@ class Input():
 
 
 
+	def print(self):
+		"""
+			Displays (to the Console) the values of this input instance
+
+			- Displays the Number of classes in each Grade, the number of teachers, and the
+			  Teacher Class-Subject Allocation Table (i.e. the teacher that teaches Class i Subject j)
+
+			:return: None
+		"""
+
+		print("Number of classes in Grade 7: \t\t\t\t", self.numGr7Classes)
+		print("Number of classes in Grade 8: \t\t\t\t", self.numGr8Classes)
+		print("Number of classes in Grade 9: \t\t\t\t", self.numGr9Classes)
+		print("\nNumber of teachers teaching in Grades 7-9:\t", self.numTeachers)
+
+
+
+		print("\n\nTeacher Class-Subject Allocation Table:\n")
+
+		# Print Column Headings (Subjects)
+
+		print("Subjects ->", end="\t\t\t\t")
+		headerStr = "-----------------------"
+
+
+		# Subjects are represented as digits from 0 to 8 but will display as 1 to 9
+		for subject in range(1, 10):
+			print(subject, end="\t")
+			headerStr += "----"
+
+		print("\nClasses:")
+		print(headerStr)
+
+		classNames = []
+
+		for i in range(self.numGr7Classes):
+			className = "Grade 7 - Class " + str(i + 1)
+			classNames.append(className)
+
+		for i in range(self.numGr8Classes):
+			className = "Grade 8 - Class " + str(i + 1)
+			classNames.append(className)
+
+		for i in range(self.numGr9Classes):
+			className = "Grade 9 - Class " + str(i + 1)
+			classNames.append(className)
+
+		for Class in range(self.numGr7Classes + self.numGr8Classes + self.numGr9Classes):
+			print(classNames[Class], end="\t|\t")  # Row Heading
+			for Teacher in self.teachingTable[Class]:
+				print(Teacher+1, end="\t") # TeacherID's are represented as digits from 0 to numTeachers-1 but will display as 1 to numTeachers
+			print()
+
+
 class TimetableAlgorithm:
 	"""
 		The abstract class to represent an algorithm used to solve our Timetable Problem
