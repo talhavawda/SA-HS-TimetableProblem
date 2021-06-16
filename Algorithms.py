@@ -66,6 +66,14 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		self.numGr9Classes = numGr9Classes
 		self.populationSize = populationSize
 
+	def solveTimetable(self):
+		"""
+			Implementing this abstract function defined in the superclass
+
+			Solve the Timetable Problem using this Genetic algorithm
+		:return:The optimal feasible solution after the termination critera has been met
+		"""
+
 
 
 
@@ -91,4 +99,13 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		self.numGr9Classes = numGr9Classes
 		self.populationSize = populationSize
 
+
+
+	def solveTimetable(self):
+		"""
+			Implementing this abstract function defined in the superclass
+
+			Solve the Timetable Problem using this Cat Swarm Optimization algorithm
+		:return:The optimal feasible solution after the termination critera has been met
+		"""
 
