@@ -81,6 +81,7 @@ class Input():
 		print(headerStr + "\n")
 
 
+
 class TimetableAlgorithm:
 	"""
 		The abstract class to represent an algorithm used to solve our Timetable Problem
@@ -100,21 +101,24 @@ class TimetableAlgorithm:
 	# So Day numbers will be represented from 0-4 and to get the day number of a timeslot, use floor(timeslot // 5)
 
 	LESSONS = [lesson for lesson in range(0, 55)]
-	TIMESLOTS = [timeslot for timeslot in range(0, 55)]
+	TIMESLOTS = [timeslot for timeslot in range(0, 55)] # The permutation of all the timeslots in increasing order
+	TIMESLOTS_SET = set(TIMESLOTS) # Representing the Timeslots as a set | Will be used to compare to a generated timeslot to determine if it is a valid permutation
+	
+
 
 
 	# Indicates the Subject index of a lesson - index is the lesson number, and value is the Subject index at that lesson
 	# Use the SUBJECTS constant to get the Subject name at that Subject index
-	LESSON_SUBJECTS = [
-						0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-						1, 1, 1, 1, 1, 1, 1, 1,
-						2, 2, 2, 2, 2, 2, 2, 2, 2,
-						3, 3, 3, 3, 3, 3,
-						4, 4, 4, 4, 4, 4,
-						5, 5, 5, 5,
-						6, 6, 6, 6,
-						7, 7, 7, 7,
-						8, 8, 8, 8
+	LESSON_SUBJECTS = 	[
+							0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+							1, 1, 1, 1, 1, 1, 1, 1,
+							2, 2, 2, 2, 2, 2, 2, 2, 2,
+							3, 3, 3, 3, 3, 3,
+							4, 4, 4, 4, 4, 4,
+							5, 5, 5, 5,
+							6, 6, 6, 6,
+							7, 7, 7, 7,
+							8, 8, 8, 8
 						]
 
 
@@ -146,7 +150,18 @@ class TimetableAlgorithm:
 	def solveTimetable(self):
 		"""
 			Solve the Timetable Problem using this algorithm
-			The function can call helper functions defined in the subclass that it can use to solve
+			This function can call helper functions defined in the subclass that it can use to solve
+
+
+			A solution in the Solution Space for this Problem is a 2D-array/list of integer values indicating the
+			Timeslot that a specific Class has a specific Lesson
+			The rows are the classes and the columns are the lessons, and the value at [i, j] in this 2D array/list
+			is the Timeslot number that Class i has Lesson j in the week
+			It can also be viewed as a list of sublists with each sublist being a row in the table -
+			each sublist (of size 55) representing (the timeslot to lesson allocations of) a Class,
+			and sublist i is a permutation of the integers 0-54 (as all 55 lessons must be allocated to timeslots, and to unique timeslots)
+			For sublist i, the value at index j is the timeslot that Class i has Lesson j
+
 
 			:return:The optimal feasible solution after the termination critera has been met
 		"""

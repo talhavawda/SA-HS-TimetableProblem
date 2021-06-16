@@ -37,7 +37,7 @@ def readInputFile(fileName: str):
 		 and the value at [i, j] is the TeacherID of the teacher who teaches Subject j to Class i
 		
 		It can also be viewed as a list of lists with each sublist being a row in the table - each sublist representing a Class.
-		For sublist i, the value at index j is the teacher (numerical value - TeacherID) i who teaches Subject j to Class i
+		For sublist i, the value at index j is the teacher (numerical value - TeacherID) who teaches Subject j to Class i
 		
 
 	"""
