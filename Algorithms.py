@@ -78,6 +78,8 @@ class Input():
 				print(Teacher+1, end="\t") # TeacherID's are represented as digits from 0 to numTeachers-1 but will display as 1 to numTeachers
 			print()
 
+		print(headerStr + "\n")
+
 
 class TimetableAlgorithm:
 	"""

@@ -132,8 +132,8 @@ def main():
 		print("INPUT", inputNumber)
 		print("----------")
 		input.print()
+		print("=================================================================")
 
-		print("\n=================================================================\n\n")
 
 		"""
 			I set the pop sizes to 100 for now  so that the program runs
@@ -146,7 +146,18 @@ def main():
 		catSwarmAlgorithm = CatSwarmAlgorithm(input, populationSizeCSA)
 
 		for algorithm in [geneticAlgorithm, catSwarmAlgorithm]:
-			algorithm.solveTimetable()
+			algorithmName = type(algorithm).__name__
+
+			print("\nSolving INPUT ", inputNumber," using the ", algorithmName, ":", sep="")
+
+			solution = algorithm.solveTimetable()
+			
+
+			print("\n=================================================================")
+
+
+		print("=================================================================\n\n")
+
 
 		inputNumber += 1
 
