@@ -1,3 +1,6 @@
+from random import random
+
+
 class Input:
 	"""
 		A class to represent the problem instance (i.e. the variables obtained from the Sample Input textfile)
@@ -262,6 +265,10 @@ class GeneticAlgorithm(TimetableAlgorithm):
 """
 
 class CatSwarmAlgorithm(TimetableAlgorithm):
+	TRACING = 0
+	SEEKING = 1
+	mode_index = 0
+
 	def __init__(self, input: Input, populationSize: int):
 		"""
 			Constructor for the Cat Swarm Optimization Algorithm
@@ -286,4 +293,82 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
 		"""
+		# I'm going to write out the steps here to help myself a bit
+
+		# execute initialisation procedure to initialise cats
+		initialCats = self.intialiseCats()
+
+		#set global best fitness to worst possible
+		global_best_fitness = 1000000 # may need to change once we determine objective function, place holder value for now
+
+		# paper uses 5000 iterations
+		iteration_counter = 5000
+		global_best_cat = []
+		# mixing ratio, initialised to 4% in paper for hybrid CS
+		MR = 0.04
+
+
+		for i in range(0, iteration_counter):
+			for current_cat in initialCats:
+				# set current cat equal to the first cat
+				# calculate fitness of current_cat
+				current_cat_fitness = self.evaluateFitness(current_cat)
+
+				# is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a tyop)?
+				if current_cat_fitness <= global_best_fitness:
+					global_best_fitness =current_cat_fitness
+					global_best_cat = current_cat
+
+				# choose a random value between 0 and 1
+				random_value = random.random()
+				# is random number > MR
+				if random_value > MR:
+					# current_cat[self.mode_index] = self.SEEKING
+					self.seek(current_cat)
+				else:
+					# current_cat[self.mode_index] = self.TRACING
+					self.trace(current_cat)
+
+
+		# Execute local search refining procedure in order to improve the quality of resultant time timetable regarding teachers gaps
+		return  global_best_cat
+
+
+
+	def intialiseCats(self):
+		# initialise n cats (paper says 30, we may need to change)
+		# revisiting the logic later, using the outline from the GA for now
+		# paper representation seems similar to ours so adopting it shouldn't be too involved
+		population = []  # list of individual cats -> size will be self.populationSize after we add all the cats
+
+		for i in range(self.populationSize):  # Create cat i
+
+			newIndividual = []  # Cat i
+			# individual may have an additional entry at the end: one of 0 or 1 to indicate tracing or seeking mode
+			# also needs an entry for velocity, may not need to keep track of seeking/tracing if it's not used later
+			# might consider using parallel arrays
+
+			mode_index = 56
+
+			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
+
+			teacherTimeslotAllocations = []
+
+			for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
+				teacherAllocation = []
+				teacherTimeslotAllocations.append(teacherAllocation)
+
+		return population
+
+	def evaluateFitness(self, current_cat):
+		# change later
+		return 1
+
+	def seek(self, current_cat):
+		# add code for seeking
+		1==1
+
+	def trace(self, current_cat):
+		# add code for tracing
+		1==1
 
