@@ -1,4 +1,4 @@
-from random import random
+import random
 
 
 class Input:
@@ -148,6 +148,7 @@ class TimetableAlgorithm:
 		self.numGr7Classes = input.numGr7Classes
 		self.numGr8Classes = input.numGr8Classes
 		self.numGr9Classes = input.numGr9Classes
+		self.totalNumClasses = input.totalnumClasses
 		self.populationSize = populationSize
 
 
@@ -248,6 +249,36 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			for teacher in range(self.numTeachers): #Add an empty array for each Teacher
 				teacherAllocation = []
 				teacherTimeslotAllocations.append(teacherAllocation)
+
+			assigned = 0
+			while assigned != self.totalNumClasses:
+				# generate shuffled list for a class
+				allocation = list(range(55))
+				random.shuffle(allocation)
+				# is the class allocation a valid one wrt teacher times
+				isValid = True
+				for slot in range(len(allocation)):
+					# get subject index
+					subject = self.LESSON_SUBJECTS[slot]
+					teacher = self.teachingTable[assigned][subject]
+					# check if list is okay to add i.e no clashes for teachers
+					subjectTeachersAllocation = teacherTimeslotAllocations[teacher]
+					if allocation[slot] in subjectTeachersAllocation:  # teacher is busy
+						# not a valid allocation
+						isValid = False
+						# print('Suggested allocation is not permitted - clash of time')
+						break
+
+				if isValid:
+					assigned = assigned + 1
+					newIndividual.append(allocation)
+					print('individual', i, ' class', assigned, '\n', newIndividual)
+					for j in range(len(allocation)):
+						subject = self.LESSON_SUBJECTS[j]
+						teacher = self.teachingTable[assigned-1][subject]
+						teacherTimeslotAllocations[teacher].append(allocation[j])
+			population.append(newIndividual)
+
 
 
 
