@@ -176,6 +176,8 @@ class TimetableAlgorithm:
 	GENETIC ALGORITHM
 """
 
+
+
 class GeneticAlgorithm(TimetableAlgorithm):
 
 	def __init__(self, input: Input, populationSize: int = 100):
@@ -250,13 +252,28 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 
 
-
 		return population
 
 
 		"""
 			random.sample() returns a new shuffled list. The original list remains unchanged.
 		"""
+
+
+	def mutation(self):
+			pass
+
+
+	def crossover(self):
+			pass
+
+
+	def selection(self, population):
+		pass
+
+
+	def calculate_fitness(self, chromosome):
+		pass
 
 
 
