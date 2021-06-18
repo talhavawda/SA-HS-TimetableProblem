@@ -354,7 +354,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 
 	def calculate_fitness(self, chromosome):
-
+		# TODO: GA fitness
 		# return fitness of chromosome
 		return 0
 
