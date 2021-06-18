@@ -519,9 +519,34 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 	def seek(self, current_cat):
 		# add code for seeking
+
 		pass
 
 	def trace(self, current_cat):
 		# add code for tracing
+		pass
+
+	def Single_Swap(self, current_cat):
+		randClass = random.randint(0,self.totalNumClasses)
+		randCell1 = random.randint(0,56)
+		randCell2 = random.randint(0,56)
+
+		inCol1 = False
+		inCol2 = False
+		for i in range(self.totalNumClasses):
+			if current_cat[i][randCell1] == current_cat[randClass][randCell2]:
+				inCol1 = True
+				break
+
+		for i in range(self.totalNumClasses):
+			if current_cat[i][randCell2] == current_cat[randClass][randCell1]:
+				inCol2 = True
+				break
+
+		if (current_cat[randClass][randCell1] != current_cat[randClass][randCell2]) and (not inCol1) and (not inCol2):
+			tempCat = current_cat[randClass][randCell1]
+			current_cat[randClass][randCell1] = current_cat[randClass][randCell2]
+			current_cat[randClass][randCell2] = tempCat
+
 		pass
 
