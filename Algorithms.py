@@ -317,6 +317,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 	SEEKING = 1
 	mode_index = 0
 
+
+
 	def __init__(self, input: Input, populationSize: int):
 		"""
 			Constructor for the Cat Swarm Optimization Algorithm
@@ -391,10 +393,20 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		for i in range(self.populationSize):  # Create cat i
 
-			newIndividual = []  # Cat i
+			teacherClassAlloc = list(range(1,56))
+
+
+			newIndividual = [[0 for i in range(self.totalNumClasses)]for j in range(56)] #cat i
+			for j in range(len(newIndividual[0])):
+				random.shuffle(teacherClassAlloc)
+				for i in range(len(newIndividual)):
+					newIndividual[j][i] = teacherClassAlloc[i]
+
+			population.append(newIndividual)
 			# individual may have an additional entry at the end: one of 0 or 1 to indicate tracing or seeking mode
 			# also needs an entry for velocity, may not need to keep track of seeking/tracing if it's not used later
 			# might consider using parallel arrays
+
 
 			mode_index = 56
 
@@ -405,6 +417,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
 				teacherAllocation = []
 				teacherTimeslotAllocations.append(teacherAllocation)
+
 
 		return population
 
