@@ -356,6 +356,14 @@ class GeneticAlgorithm(TimetableAlgorithm):
 	def calculate_fitness(self, chromosome):
 		# TODO: GA fitness
 		# return fitness of chromosome
+		# +5 for every correct allocation.
+		# +2 for a double period
+		# -2 for more than 2 periods on a subject
+		# -2 for two single periods on the same day for a subject
+		# -2 for each time a teacher teaches for more than 4 periods consecutively
+		fitness = 0
+		# for each subject evaluate the allocation (class and teacher wise)
+
 		return 0
 
 
