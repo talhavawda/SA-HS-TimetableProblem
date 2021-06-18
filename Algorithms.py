@@ -216,7 +216,51 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated fitness value (as a tuple, in that order)
 		"""
 
+		# initialise Population
 		initialPopulation = self.initialisePopulation()
+
+		# Set benchmark fitness to the individual at 0
+		bestIndividual = initialPopulation[0]
+		bestFitness = self.calculate_fitness(bestIndividual)
+
+		# Continue updating for a 1000 iterations if the best representation has not been changed
+		iterationsSinceLastUpdate = 0
+		print("METHODS NOT IMPLEMENTED YET - MIGHT THROW AN ERROR SOMEWHERE")
+		while iterationsSinceLastUpdate < 1000:
+			foundBetterSoln = False
+			# calculate the fitness of the population and update the best fitness if necessary
+			for individual in initialPopulation:
+				individualFitness = self.calculate_fitness(individual)
+				if individualFitness > bestFitness:
+					bestIndividual = individual
+					bestFitness = individualFitness
+					foundBetterSoln = True
+			if foundBetterSoln:
+				iterationsSinceLastUpdate = 0
+			else:
+				iterationsSinceLastUpdate += 1
+
+			updatedPopulation = []
+
+			for i in range(len(initialPopulation)):
+				# Select parents
+				parent1, parent2 = self.selection(population=initialPopulation)
+				# produce a child from 2 parents
+				child = self.crossover(parent1, parent2)
+				# Probability for operators
+				probability = random.random()
+				# if probability is less than 0.1 then conduct mutation on child
+				if probability < 0.1:
+					# mutation on child
+					child = self.mutation(child)
+				# add child to new population
+				updatedPopulation.append(child)
+
+			initialPopulation = updatedPopulation
+
+
+
+
 
 
 
@@ -291,20 +335,28 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		"""
 
 
-	def mutation(self):
-			pass
+	def mutation(self, chromosome):
+			# TODO: Mutation
+			return chromosome
 
 
-	def crossover(self):
-			pass
+	def crossover(self, chromosome1, chromosome2):
+			# TODO: Crossover
+			return chromosome1
 
 
 	def selection(self, population):
-		pass
+		# TODO: Selection
+		parent1 = population[random.randint(0, len(population))]
+		parent2 = population[random.randint(0, len(population))]
+		return parent1, parent2
+
 
 
 	def calculate_fitness(self, chromosome):
-		pass
+
+		# return fitness of chromosome
+		return 0
 
 
 
@@ -350,7 +402,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					setter for location
 			"""
 
-		def setSolution(newSolution: int[[]]):
+		def setSolution(newSolution: [[]]):
 			"""
 					setter for solution
 			"""
