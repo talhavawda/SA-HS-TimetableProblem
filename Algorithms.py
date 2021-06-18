@@ -288,11 +288,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
 
-			teacherTimeslotAllocations = []
-
-			for teacher in range(self.numTeachers): #Add an empty array for each Teacher
-				teacherAllocation = []
-				teacherTimeslotAllocations.append(teacherAllocation)
+			teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
 
 			assigned = 0
 			while assigned != self.totalNumClasses:
@@ -333,7 +329,12 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		"""
 			random.sample() returns a new shuffled list. The original list remains unchanged.
 		"""
-
+	def getEmptyTeacherAllocation(self) -> [[]]:
+		teacherTimeslotAllocations = []
+		for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
+			teacherAllocation = []
+			teacherTimeslotAllocations.append(teacherAllocation)
+		return teacherTimeslotAllocations
 
 	def mutation(self, chromosome):
 			# TODO: Mutation
@@ -357,13 +358,56 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		# TODO: GA fitness
 		# return fitness of chromosome
 		# +5 for every correct allocation.
-		# +2 for a double period
-		# -2 for more than 2 periods on a subject
+		# +3 for a double period [done]
+		# -2 for more than 2 periods on a subject in a day
 		# -2 for two single periods on the same day for a subject
-		# -2 for each time a teacher teaches for more than 4 periods consecutively
+		# -2 for each time a teacher teaches for more than 4 periods consecutively [done]
 		fitness = 0
 		# for each subject evaluate the allocation (class and teacher wise)
+		# empty teacher allocation array
+		teacherAllocation = self.getEmptyTeacherAllocation()
+		# take the individuals distibution and assign to relevant teachers
+		for i in range(len(chromosome)):
+			for j in range(len(chromosome[i])):
+				sub = self.LESSON_SUBJECTS[j]
+				teacher = self.teachingTable[i][sub]
+				teacherAllocation[teacher].append(chromosome[i][j])
+		# check to see if any teacher works more than 4periods at once
+		for teacher in teacherAllocation:
+			workingPeriods = teacher
+			# sort in order [0, 54]
+			workingPeriods.sort()
+			consecutive = 0
+			for i in range(len(workingPeriods)-1):
+				if workingPeriods[i]+1 == workingPeriods[i+1]:
+					consecutive +=1
+				else:
+					consecutive = 0
+				if consecutive == 4:
+					fitness -=2
+					consecutive = 0
 
+		# reward double periods
+		# for each class in the chromosome
+		for i in range(len(chromosome)):
+			# for each slot in the class
+			for j in range(len(chromosome[i])-1):
+				# for each slot after j
+				for k in range(j+1, len(chromosome[i]) - 1):
+					# get subject being held at j
+					subject1 = self.LESSON_SUBJECTS[j]
+					# get subject being held at k
+					subject2 = self.LESSON_SUBJECTS[k]
+					# check if they are the same subject
+					if subject1 == subject2:
+						# check if they are consecutive
+						if chromosome[i][j]+1 == chromosome[i][k]:
+							fitness += 3
+					else:
+						break
+
+
+			pass
 		return 0
 
 
