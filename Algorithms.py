@@ -387,25 +387,29 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
 			self.velocity = 0.0
 
-		def setState(newState: int):
+		def setState(self, newState: int):
 			"""
 					setter for state
 			"""
+			self.state = newState
 
-		def setLocation(newlocation: int):
+		def setLocation(self, newlocation: int):
 			"""
 					setter for location
 			"""
+			self.location = newlocation
 
-		def setVelocity(newVelocity: int):
+		def setVelocity(self, newVelocity: int):
 			"""
 					setter for location
 			"""
+			self.velocity = newVelocity
 
-		def setSolution(newSolution: [[]]):
+		def setSolution(self, newSolution: [[]]):
 			"""
 					setter for solution
 			"""
+			self.solution = newSolution
 
 	def __init__(self, input: Input, populationSize: int):
 		"""
