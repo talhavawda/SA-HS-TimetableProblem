@@ -313,11 +313,47 @@ class GeneticAlgorithm(TimetableAlgorithm):
 """
 
 class CatSwarmAlgorithm(TimetableAlgorithm):
-	TRACING = 0
-	SEEKING = 1
-	mode_index = 0
 
+	# mode_index = 0
 
+	class CAT:
+		IDLE = 0
+		SEEKING = 1
+		TRACING = 2
+
+		def __init__(self):
+			self.state = 0
+			"""
+			0 for when the cat is idle 1 in seek mode and 2 for trace mode 
+			"""
+			self.location = 0
+			"""
+				current position in the solution space, changes when cat given permission to seek
+			"""
+			self.solution = [[]]
+			"""current solution the cat possesses
+			"""
+			self.velocity = 0.0
+
+		def setState(newState: int):
+			"""
+					setter for state
+			"""
+
+		def setLocation(newlocation: int):
+			"""
+					setter for location
+			"""
+
+		def setVelocity(newVelocity: int):
+			"""
+					setter for location
+			"""
+
+		def setSolution(newSolution: int[[]]):
+			"""
+					setter for solution
+			"""
 
 	def __init__(self, input: Input, populationSize: int):
 		"""
@@ -353,7 +389,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		# paper uses 5000 iterations
 		iteration_counter = 5000
-		global_best_cat = []
+		global_best_cat = self.CAT()
 		# mixing ratio, initialised to 4% in paper for hybrid CS
 		MR = 0.04
 
@@ -374,10 +410,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				# is random number > MR
 				if random_value > MR:
 					# current_cat[self.mode_index] = self.SEEKING
-					self.seek(current_cat)
+					current_cat.setState(self.CAT.SEEKING)
+					#self.seek(current_cat)
 				else:
 					# current_cat[self.mode_index] = self.TRACING
-					self.trace(current_cat)
+					current_cat.setState(self.CAT.TRACING)
+					#self.trace(current_cat)
 
 
 		# Execute local search refining procedure in order to improve the quality of resultant time timetable regarding teachers gaps
@@ -389,26 +427,28 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		# initialise n cats (paper says 30, we may need to change)
 		# revisiting the logic later, using the outline from the GA for now
 		# paper representation seems similar to ours so adopting it shouldn't be too involved
-		population = []  # list of individual cats -> size will be self.populationSize after we add all the cats
+		CATS = []  # list of individual cats -> size will be self.populationSize after we add all the cats
 
 		for i in range(self.populationSize):  # Create cat i
 
 			teacherClassAlloc = list(range(1,56))
 
 
-			newIndividual = [[0 for i in range(self.totalNumClasses)]for j in range(56)] #cat i
-			for j in range(len(newIndividual[0])):
+			new_allocation = [[0 for i in range(self.totalNumClasses)]for j in range(56)] #cat i
+			for j in range(len(new_allocation[0])):
 				random.shuffle(teacherClassAlloc)
-				for i in range(len(newIndividual)):
-					newIndividual[j][i] = teacherClassAlloc[i]
+				for i in range(len(new_allocation)):
+					new_allocation[j][i] = teacherClassAlloc[i]
+					
+			new_cat = self.CAT()
+			new_cat.setSolution(new_allocation)
+			CATS.append(new_allocation)
 
-			population.append(newIndividual)
-			# individual may have an additional entry at the end: one of 0 or 1 to indicate tracing or seeking mode
 			# also needs an entry for velocity, may not need to keep track of seeking/tracing if it's not used later
 			# might consider using parallel arrays
 
 
-			mode_index = 56
+			# mode_index = 56
 
 			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
 
@@ -419,17 +459,17 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				teacherTimeslotAllocations.append(teacherAllocation)
 
 
-		return population
+		return CATS
 
 	def evaluateFitness(self, current_cat):
 		# change later
-		return 1
+		pass
 
 	def seek(self, current_cat):
 		# add code for seeking
-		1==1
+		pass
 
 	def trace(self, current_cat):
 		# add code for tracing
-		1==1
+		pass
 
