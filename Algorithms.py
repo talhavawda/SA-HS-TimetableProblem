@@ -448,8 +448,8 @@ class GeneticAlgorithm(TimetableAlgorithm):
     def calculate_fitness(self, chromosome):
         # TODO: GA fitness
         # return fitness of chromosome
+        # +5 for every correct allocation. Do we need this?
         # +3 for a double period [done]
-        # +5 for double periods of HL, FAL, Math 0, 1, 2 [done]
         # -2 for more than 2 periods on a subject in a day [done]
         # -1 for two single periods on the same day for a subject [done]
         # -2 for each time a teacher teaches for more than 4 periods consecutively [done]
@@ -488,8 +488,6 @@ class GeneticAlgorithm(TimetableAlgorithm):
                         # check if they are consecutive
                         if chromosome[i][j] + 1 == chromosome[i][k]:
                             fitness += 3
-                        '''if subject1 == 0 or subject1 == 1 or subject1 == 2:
-                            fitness += 5'''
                     else:
                         break
         # penalize two seperate periods on the same day
@@ -499,19 +497,19 @@ class GeneticAlgorithm(TimetableAlgorithm):
                 pos = gene.index(g)
                 subject = self.LESSON_SUBJECTS[pos]
                 subjectsAllocatedForClass.append(subject)
-            for s in range(len(subjectsAllocatedForClass) - 2):
+            for s in range(len(subjectsAllocatedForClass)-2):
                 # 3 consec periods of the same subject
-                if subjectsAllocatedForClass[s] == subjectsAllocatedForClass[s + 1] and subjectsAllocatedForClass[s] == \
-                        subjectsAllocatedForClass[s + 2]:
+                if subjectsAllocatedForClass[s] == subjectsAllocatedForClass[s + 1] and subjectsAllocatedForClass[s] == subjectsAllocatedForClass[s + 2]:
                     fitness -= 2
                 else:
                     continue
+            counter = 0
             # check if there is 2 periods of the same subjects in the same day[not consecutive]
             for s in range(len(subjectsAllocatedForClass)):
                 subject = subjectsAllocatedForClass[s]
-                for t in range(s + 2, 11):
+                for t in range(s+2, 11):
                     if subject == subjectsAllocatedForClass[t]:
-                        fitness -= 1
+                        fitness -=1
         print('Individual fitness = ', fitness)
         return fitness
 
@@ -665,7 +663,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
             teacherClassAlloc = list(range(1, 56))
 
-            # rows = classes, cols= timeslots
+			# rows = classes, cols= timeslots
             new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
             for j in range(len(new_allocation[0])):
                 random.shuffle(teacherClassAlloc)
@@ -781,20 +779,22 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
     def Change_Random(self, cat_copy):
         # auxilliary procedure, section 3.4.3
-        rand_col = random.randint(0, len(self.TIMESLOTS) - 1)
+		rand_col = random.randint(0,len( self.TIMESLOTS) -1)
 
-        for row in range(len(cat_copy)):
-            for col in range(len(cat_copy[row])):
-                if cat_copy[row][col] == self.global_best_cat[row][col] and (not col == rand_col):
-                    cat_copy[row][col] = cat_copy[row][rand_col]
-                    break  # only do this once per class
+		for row in range(len(cat_copy)):
+			for col in range(len(cat_copy[row])):
+				if cat_copy[row][col] == self.global_best_cat[row][col] and (not col == rand_col):
+					cat_copy[row][col] = cat_copy[row][rand_col]
+					break # only do this once per class
 
-        # swap
-        for row in range(len(cat_copy)):
-            for col in range(len(cat_copy[row])):
-                cat_copy[row][col] = self.global_best_cat[row][col]
+		# swap
+		for row in range(len(cat_copy)):
+			for col in range(len(cat_copy[row])):
+				cat_copy[row][col] = self.global_best_cat[row][col]
 
-        return cat_copy
+		return  cat_copy
+
+
 
     def Valid(self, current_cat):
         # check whether current cat is valid
