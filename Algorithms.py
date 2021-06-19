@@ -404,9 +404,54 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		return teacherTimeslotAllocations
 
 
+	def getTeacherAllocation(self, chromosome):
+		teacherAllocation = self.getEmptyTeacherAllocation()
+		# take the individuals distibution and assign to relevant teachers
+		for i in range(len(chromosome)):
+			for j in range(len(chromosome[i])):
+				sub = self.LESSON_SUBJECTS[j]
+				teacher = self.teachingTable[i][sub]
+				teacherAllocation[teacher].append(chromosome[i][j])
+		return teacherAllocation
+
 	def mutation(self, chromosome):
 			# TODO: Mutation
-			return chromosome
+			mutatedChromosome = []
+			teacherAllocation = self.getTeacherAllocation(chromosome)
+			for i in range(len(chromosome)):
+				# get the class i
+				classI = chromosome[i]
+				isMutated = False
+				MAX_ITER = len(classI)
+				for j in range(MAX_ITER):
+					# get a random period
+					x1 = random.randint(0, 55)
+					# get a second random period
+					x2 = random.randint(0, 55)
+					# index of when this period is held
+					positionOnTimetable1 = classI.index(x1)
+					positionOnTimetable2 = classI.index(x2)
+					# get the 2 relevant subjects
+					subject1 = self.LESSON_SUBJECTS[positionOnTimetable1]
+					subject2 = self.LESSON_SUBJECTS[positionOnTimetable2]
+					# get the teacher allocations of those subjects
+					teacherAlloc1 = teacherAllocation[subject1]
+					teacherAlloc2 = teacherAllocation[subject2]
+					if x1 not in teacherAlloc2 and x2 not in teacherAlloc1:
+						isMutated = True
+						# update teacher allocations for future
+						teacherAlloc1.remove(x1)
+						teacherAlloc1.append(x2)
+						teacherAlloc2.remove(x2)
+						teacherAlloc1.append(x1)
+						# updating the class
+						classI[positionOnTimetable1] = x2
+						classI[positionOnTimetable2] = x1
+					if isMutated:
+						break
+				# The loop will run and the mutated class will be added to the new chromosome
+				mutatedChromosome.append(classI)
+			return mutatedChromosome
 
 
 	def crossover(self, chromosome1, chromosome2):
@@ -433,13 +478,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		fitness = 0
 		# for each subject evaluate the allocation (class and teacher wise)
 		# empty teacher allocation array
-		teacherAllocation = self.getEmptyTeacherAllocation()
-		# take the individuals distibution and assign to relevant teachers
-		for i in range(len(chromosome)):
-			for j in range(len(chromosome[i])):
-				sub = self.LESSON_SUBJECTS[j]
-				teacher = self.teachingTable[i][sub]
-				teacherAllocation[teacher].append(chromosome[i][j])
+		teacherAllocation = self.getTeacherAllocation()
 		# check to see if any teacher works more than 4periods at once
 		for teacher in teacherAllocation:
 			workingPeriods = teacher
