@@ -711,7 +711,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             n=0
             for j in range(len(current_cat[i])):
                 teacherVal = current_cat[i][j]
-                for k in range(j+1, j+6):
+                for k in range(j+1, j+12):
                     if teacherVal == current_cat[i][k]:
                         n+=1
 
