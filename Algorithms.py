@@ -450,7 +450,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
         # return fitness of chromosome
         # +5 for every correct allocation.
         # +3 for a double period [done]
-        # -2 for more than 2 periods on a subject in a day
+        # -2 for more than 2 periods on a subject in a day [done]
         # -2 for two single periods on the same day for a subject
         # -2 for each time a teacher teaches for more than 4 periods consecutively [done]
         fitness = 0
@@ -490,6 +490,19 @@ class GeneticAlgorithm(TimetableAlgorithm):
                             fitness += 3
                     else:
                         break
+        # penalize two seperate periods on the same day
+        for gene in chromosome:
+            subjectsAllocatedForClass = []
+            for g in range(len(gene)):
+                pos = gene.index(g)
+                subject = self.LESSON_SUBJECTS[pos]
+                subjectsAllocatedForClass.append(subject)
+            for s in range(len(subjectsAllocatedForClass)-2):
+                # 3 consec periods of the same subject
+                if subjectsAllocatedForClass[s] == subjectsAllocatedForClass[s + 1] and subjectsAllocatedForClass[s] == subjectsAllocatedForClass[s + 2]:
+                    fitness -= 2
+                else:
+                    continue
         print('Individual fitness = ', fitness)
         return fitness
 
