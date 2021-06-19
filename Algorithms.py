@@ -425,9 +425,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 				MAX_ITER = len(classI)
 				for j in range(MAX_ITER):
 					# get a random period
-					x1 = random.randint(0, 55)
+					x1 = random.randint(0, 54)
 					# get a second random period
-					x2 = random.randint(0, 55)
+					x2 = random.randint(0, 54)
 					# index of when this period is held
 					positionOnTimetable1 = classI.index(x1)
 					positionOnTimetable2 = classI.index(x2)
@@ -451,6 +451,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 						break
 				# The loop will run and the mutated class will be added to the new chromosome
 				mutatedChromosome.append(classI)
+				print(mutatedChromosome)
 			return mutatedChromosome
 
 
@@ -478,7 +479,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		fitness = 0
 		# for each subject evaluate the allocation (class and teacher wise)
 		# empty teacher allocation array
-		teacherAllocation = self.getTeacherAllocation()
+		teacherAllocation = self.getTeacherAllocation(chromosome)
 		# check to see if any teacher works more than 4periods at once
 		for teacher in teacherAllocation:
 			workingPeriods = teacher
