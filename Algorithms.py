@@ -419,7 +419,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 	# mode_index = 0
 
 	class CAT:
-		IDLE = 0
+		IDLE = 0 # I think seeking is an idle mode, will possibly take this out
 		SEEKING = 1
 		TRACING = 2
 
@@ -461,6 +461,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
 			self.solution = newSolution
 
+		def getState(self):
+			return self.state
+
+		def getSolution(self):
+			return  self.solution
+
 	def __init__(self, input: Input, populationSize: int):
 		"""
 			Constructor for the Cat Swarm Optimization Algorithm
@@ -473,8 +479,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		"""
 		# Call super constructor
 		super().__init__(input, populationSize)
-
-
+		self.global_best_cat = self.CAT()
 
 	def solveTimetable(self):
 		"""
@@ -495,7 +500,6 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		# paper uses 5000 iterations
 		iteration_counter = 5000
-		global_best_cat = self.CAT()
 		# mixing ratio, initialised to 4% in paper for hybrid CS
 		MR = 0.04
 
@@ -507,7 +511,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				current_cat_fitness = self.evaluateFitness(current_cat)
 
 				# is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a tyop)?
-				if current_cat_fitness <= global_best_fitness:
+				if current_cat_fitness >= global_best_fitness: # assuming out fitness function wants to minimise
 					global_best_fitness =current_cat_fitness
 					global_best_cat = current_cat
 
@@ -522,8 +526,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					# current_cat[self.mode_index] = self.TRACING
 					current_cat.setState(self.CAT.TRACING)
 					#self.trace(current_cat)
-
-
+				self.seek(cat for cat in initialCats if cat.getState() == self.CAT.SEEKING)
+				self.trace(cat for cat in initialCats if cat.getState() == self.CAT.TRACING)
 		# Execute local search refining procedure in order to improve the quality of resultant time timetable regarding teachers gaps
 		return  global_best_cat
 
@@ -531,8 +535,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 	def intialiseCats(self):
 		# initialise n cats (paper says 30, we may need to change)
-		# revisiting the logic later, using the outline from the GA for now
-		# paper representation seems similar to ours so adopting it shouldn't be too involved
+		# revisiting the logic later
 		CATS = []  # list of individual cats -> size will be self.populationSize after we add all the cats
 
 		for i in range(self.populationSize):  # Create cat i
@@ -550,12 +553,6 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			new_cat.setSolution(new_allocation)
 			CATS.append(new_allocation)
 
-			# also needs an entry for velocity, may not need to keep track of seeking/tracing if it's not used later
-			# might consider using parallel arrays
-
-
-			# mode_index = 56
-
 			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
 
 			teacherTimeslotAllocations = []
@@ -571,8 +568,51 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		# change later
 		pass
 
-	def seek(self, current_cat):
+	def seek(self, cats ):
 		# add code for seeking
+		# values from the paper after experimentation
+		SPC = True
+		SMP = 2
+		CDC = 0.1
+		SRD = 0.1
+		j = 0 # default initialisation
+		candidate_positions = [self.CAT]
+		for cat in cats:
+			best_fitness = self.evaluateFitness(cat)
+			if SPC == True:
+				j = SMP -1
+				candidate_positions.append( cat)
+			else :
+				j = SMP
+			cat_copies = []
+			for i in range(0,j):
+				cat_copies.append(cat.getSolution)
+			tc = CDC * 	len(self.TIMESLOTS) # nr of timeslots we will "replace"/change
+			sm = SRD * len(self.totalNumClasses) # total nr of swaps
+			for cat_copy in cat_copies:
+				self.Change_Random(cat_copy, tc) # insert tc random timeslots from global_best_cat to cat_copy
+				for i in range(0, sm):
+					cat_copy = self.Single_Swap(cat_copy)
+					if (self.Valid(cat_copy)): # if statement is not necessary if single swap only returns valid swaps
+						new_fitness_value = self.evaluateFitness(cat_copy)
+						if (new_fitness_value<= best_fitness):
+							best_fitness = new_fitness_value
+							candidate_positions.append( cat_copy)
+			flag = true
+			old_fitness = self.evaluateFitness(candidate_positions[0])
+			for i in  range(len(candidate_positions)-1):
+				fitness = self.evaluateFitness(candidate_positions[i])
+				if (fitness != old_fitness) # a cat having a better than initial fitness had been found
+					# TODO: calculate the selection probability for each candidate position;
+					#  based it's difference from global best cat
+					pass
+				else:
+					# TODO: set selecting probability of each cat = 1
+			# pick a random position from the candidate positions the one to move to
+			random_pos = self.CAT
+			cat.setSolution(random_pos.getSolution())
+
+
 
 		pass
 
@@ -602,5 +642,14 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			current_cat[randClass][randCell1] = current_cat[randClass][randCell2]
 			current_cat[randClass][randCell2] = tempCat
 
+		return current_cat
+
 		pass
 
+	def Change_Random(self, current_cat, tc):
+		# insert tc random timeslots from global_best_cat to cat_copy
+		pass
+
+	def Valid(self, current_cat):
+		# check whether current cat is valid
+		return  False
