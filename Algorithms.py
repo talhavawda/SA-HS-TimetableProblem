@@ -598,16 +598,17 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 						if (new_fitness_value<= best_fitness):
 							best_fitness = new_fitness_value
 							candidate_positions.append( cat_copy)
-			flag = true
+			flag = True
 			old_fitness = self.evaluateFitness(candidate_positions[0])
 			for i in  range(len(candidate_positions)-1):
 				fitness = self.evaluateFitness(candidate_positions[i])
-				if (fitness != old_fitness) # a cat having a better than initial fitness had been found
+				if (fitness != old_fitness): # a cat having a better than initial fitness had been found
 					# TODO: calculate the selection probability for each candidate position;
 					#  based it's difference from global best cat
 					pass
 				else:
 					# TODO: set selecting probability of each cat = 1
+					pass
 			# pick a random position from the candidate positions the one to move to
 			random_pos = self.CAT
 			cat.setSolution(random_pos.getSolution())
