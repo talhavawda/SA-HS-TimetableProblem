@@ -336,7 +336,8 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 
 					if timeslot in teacherAllocation:  # teacher is already allocated to this timeslot - i.e. there is a clash
-
+						#BELOW IS TO SWAP WHEN THERE'S A CLASH - SEEMS TO BE TAKING LONGER THAN JUST GENERATING A NEW ALLOCATION FOR THIS CLASS
+						"""
 						# Find another teacher that teaches this class to swap with
 						swapFound = False
 
@@ -359,6 +360,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 						if swapFound == False: # if we did not find another lesson to swap with (since there is a clash), then this cannot be a valid allocation
 							isValidAllocation = False
+						"""
+
+						isValidAllocation = False
 
 				"""
 					If this lesson-timeslot allocation for this class is valid, then add it in its place to the chromosome
