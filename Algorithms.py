@@ -696,17 +696,30 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         TEPW = 0.06   # might not use this because we don't include gaps(-1) or empty classes in our population
 
         # hard constraint of assigning a teacher to more than 1 class during the same timeslot
-        for i in range(self.totalNumClasses):
+        for j in range(len(current_cat[0])):
             n = 0
-            for j in range(len(current_cat[i])):
+            for i in range(self.totalNumClasses):
                 teacherVal = current_cat[i][j]
-                for k in range(j+1, self.totalNumClasses):
-                    if teacherVal == current_cat[i][k] :
+                for k in range(i+1, self.totalNumClasses):
+                    if teacherVal == current_cat[k][j] :
                         n += 1
 
-                fitnessValue += HCW*( BASE**n)
+            fitnessValue += HCW*( BASE**n)
 
-        # constraint of having double periods
+        # constraint of having the same teacher for more than 2 timeslots a day
+        for i in range(self.totalNumClasses):
+            n=0
+            for j in range(len(current_cat[i])):
+                teacherVal = current_cat[i][j]
+                for k in range(j+1, j+6):
+                    if teacherVal == current_cat[i][k]:
+                        n+=1
+
+            if n>2 :
+                fitnessValue += HCW*(BASE**n)
+
+        # soft constraint
+
 
 
 
