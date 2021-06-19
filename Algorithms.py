@@ -1,6 +1,7 @@
 import random
 import datetime
 import time
+import math
 
 
 class Input:
@@ -687,6 +688,30 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
     def evaluateFitness(self, current_cat):
         # change later
+        BASE = 1.3
+        fitnessValue = 0
+        HCW = 10
+        ICDW = 0.95
+        ITDW = 0.6
+        TEPW = 0.06   # might not use this because we don't include gaps(-1) or empty classes in our population
+
+        # hard constraint of assigning a teacher to more than 1 class during the same timeslot
+        for i in range(self.totalNumClasses):
+            n = 0
+            for j in range(len(current_cat[i])):
+                teacherVal = current_cat[i][j]
+                for k in range(j+1, self.totalNumClasses):
+                    if teacherVal == current_cat[i][k] :
+                        n += 1
+
+                fitnessValue += HCW*( BASE**n)
+
+        # constraint of having double periods
+
+
+
+
+        return fitnessValue
         pass
 
     def seek(self, cats):
