@@ -462,10 +462,28 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			self.solution = newSolution
 
 		def getState(self):
+			"""
+					getter for state
+			"""
 			return self.state
 
 		def getSolution(self):
+			"""
+					getter for solution
+			"""
 			return  self.solution
+
+		def getVelociy(self):
+			"""
+					getter for velocity
+			"""
+			return self.velocity
+
+		def getLocation(self):
+			"""
+					getter for solution
+			"""
+			return self.location
 
 	def __init__(self, input: Input, populationSize: int):
 		"""
@@ -590,7 +608,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			tc = CDC * 	len(self.TIMESLOTS) # nr of timeslots we will "replace"/change
 			sm = SRD * len(self.totalNumClasses) # total nr of swaps
 			for cat_copy in cat_copies:
-				self.Change_Random(cat_copy, tc) # insert tc random timeslots from global_best_cat to cat_copy
+				for _ in range(tc):
+					self.Change_Random(cat_copy) # insert tc random timeslots from global_best_cat to cat_copy
 				for i in range(0, sm):
 					cat_copy = self.Single_Swap(cat_copy)
 					if (self.Valid(cat_copy)): # if statement is not necessary if single swap only returns valid swaps
@@ -623,8 +642,9 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			distance = self.totalNumClasses * len(self.TIMESLOTS) - similarity
 			rand_number = random.random()
 			cs = rand_number* c1 * distance # number of cells to be swapped
-			self.Single_Swap(cat)
-		pass
+			for _ in range(cs):
+				self.Single_Swap(cat)
+
 
 	def Similarity(self, cat):
 		similarity = 0
@@ -660,8 +680,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		pass
 
-	def Change_Random(self, current_cat, tc):
-		# insert tc random timeslots from global_best_cat to cat_copy
+	def Change_Random(self, current_cat):
+		# auxilliary procedure
 		pass
 
 	def Valid(self, current_cat):
