@@ -233,11 +233,13 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		# Set benchmark fitness to the individual at 0
 		bestIndividual = initialPopulation[0]
 		bestFitness = self.calculate_fitness(bestIndividual)
-
+		indexOfBestSoln = 0
+		iterrations = 0
 		# Continue updating for a 1000 iterations if the best representation has not been changed
 		iterationsSinceLastUpdate = 0
 		print("METHODS NOT IMPLEMENTED YET - MIGHT THROW AN ERROR SOMEWHERE")
 		while iterationsSinceLastUpdate < 1000:
+			iterrations += 1
 			foundBetterSoln = False
 			# calculate the fitness of the population and update the best fitness if necessary
 			for individual in initialPopulation:
@@ -246,6 +248,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 					bestIndividual = individual
 					bestFitness = individualFitness
 					foundBetterSoln = True
+					indexOfBestSoln = iterrations
 			if foundBetterSoln:
 				iterationsSinceLastUpdate = 0
 			else:
@@ -268,6 +271,8 @@ class GeneticAlgorithm(TimetableAlgorithm):
 				updatedPopulation.append(child)
 
 			initialPopulation = updatedPopulation
+		print('Solution found in ', indexOfBestSoln, ' evolutions with a fitness of ', bestFitness)
+		print(bestIndividual)
 
 
 
@@ -415,7 +420,6 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		return teacherAllocation
 
 	def mutation(self, chromosome):
-			# TODO: Mutation
 			mutatedChromosome = []
 			teacherAllocation = self.getTeacherAllocation(chromosome)
 			for i in range(len(chromosome)):
@@ -433,9 +437,11 @@ class GeneticAlgorithm(TimetableAlgorithm):
 					# get the 2 relevant subjects
 					subject1 = self.LESSON_SUBJECTS[x1]
 					subject2 = self.LESSON_SUBJECTS[x2]
+					teacher1 = self.teachingTable[i][subject1]
+					teacher2 = self.teachingTable[i][subject2]
 					# get the teacher allocations of those subjects
-					teacherAlloc1 = teacherAllocation[subject1]
-					teacherAlloc2 = teacherAllocation[subject2]
+					teacherAlloc1 = teacherAllocation[teacher1]
+					teacherAlloc2 = teacherAllocation[teacher2]
 					if period1 not in teacherAlloc2 and period2 not in teacherAlloc1:
 						isMutated = True
 						# update teacher allocations for future
@@ -445,7 +451,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 						teacherAlloc1.append(period1)
 						# updating the class
 						classI[x1] = period2
-						classI[x1] = period1
+						classI[x2] = period1
 					if isMutated:
 						break
 				# The loop will run and the mutated class will be added to the new chromosome
