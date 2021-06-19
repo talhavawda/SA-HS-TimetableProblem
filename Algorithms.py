@@ -529,7 +529,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				current_cat_fitness = self.evaluateFitness(current_cat)
 
 				# is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a tyop)?
-				if current_cat_fitness >= global_best_fitness: # assuming out fitness function wants to minimise
+				# copied it as is from the paper, but I think we want to maximise - need to change it here and in seek
+				if current_cat_fitness <= global_best_fitness: # assuming out fitness function wants to minimise
 					global_best_fitness =current_cat_fitness
 					global_best_cat = current_cat
 
@@ -544,6 +545,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					# current_cat[self.mode_index] = self.TRACING
 					current_cat.setState(self.CAT.TRACING)
 					#self.trace(current_cat)
+				# put the "behaviour" here bc it's not clear where it should go, and in the origianl CSO algorithm, we move all the cats at once
 				self.seek(cat for cat in initialCats if cat.getState() == self.CAT.SEEKING)
 				self.trace(cat for cat in initialCats if cat.getState() == self.CAT.TRACING)
 		# Execute local search refining procedure in order to improve the quality of resultant time timetable regarding teachers gaps
@@ -629,7 +631,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					# TODO: set selecting probability of each cat = 1
 					pass
 			# pick a random position from the candidate positions the one to move to
-			random_pos = self.CAT
+			random_pos = self.CAT # need to choose somehow, paper does't specify (probably using the probabilities)
 			cat.setSolution(random_pos.getSolution())
 
 
@@ -637,7 +639,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 	def trace(self, cats):
 		# add code for tracing
 		for cat in cats:
-			c1 = 1 # i can't find where they set this value???
+			c1 = 1 # i can't find where they set this value??? or explain it???
 			similarity =  self.Similarity(cat)
 			distance = self.totalNumClasses * len(self.TIMESLOTS) - similarity
 			rand_number = random.random()
