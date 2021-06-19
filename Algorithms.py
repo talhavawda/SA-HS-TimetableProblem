@@ -386,25 +386,24 @@ class GeneticAlgorithm(TimetableAlgorithm):
 					x1 = random.randint(0, 54)
 					# get a second random period
 					x2 = random.randint(0, 54)
-					# index of when this period is held
-					positionOnTimetable1 = classI.index(x1)
-					positionOnTimetable2 = classI.index(x2)
+					period1 = classI[x1]
+					period2 = classI[x2]
 					# get the 2 relevant subjects
-					subject1 = self.LESSON_SUBJECTS[positionOnTimetable1]
-					subject2 = self.LESSON_SUBJECTS[positionOnTimetable2]
+					subject1 = self.LESSON_SUBJECTS[x1]
+					subject2 = self.LESSON_SUBJECTS[x2]
 					# get the teacher allocations of those subjects
 					teacherAlloc1 = teacherAllocation[subject1]
 					teacherAlloc2 = teacherAllocation[subject2]
-					if x1 not in teacherAlloc2 and x2 not in teacherAlloc1:
+					if period1 not in teacherAlloc2 and period2 not in teacherAlloc1:
 						isMutated = True
 						# update teacher allocations for future
-						teacherAlloc1.remove(x1)
-						teacherAlloc1.append(x2)
-						teacherAlloc2.remove(x2)
-						teacherAlloc1.append(x1)
+						teacherAlloc1.remove(period1)
+						teacherAlloc1.append(period2)
+						teacherAlloc2.remove(period2)
+						teacherAlloc1.append(period1)
 						# updating the class
-						classI[positionOnTimetable1] = x2
-						classI[positionOnTimetable2] = x1
+						classI[x1] = period2
+						classI[x1] = period1
 					if isMutated:
 						break
 				# The loop will run and the mutated class will be added to the new chromosome
