@@ -656,7 +656,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
             teacherClassAlloc = list(range(1, 56))
 
-            new_allocation = [[0 for i in range(self.totalNumClasses)] for j in range(56)]  # cat i
+			# rows = classes, cols= timeslots
+            new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
             for j in range(len(new_allocation[0])):
                 random.shuffle(teacherClassAlloc)
                 for i in range(len(new_allocation)):
@@ -769,9 +770,24 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
         return current_cat
 
-    def Change_Random(self, current_cat):
+    def Change_Random(self, cat_copy):
         # auxilliary procedure, section 3.4.3
-        pass
+		rand_col = random.randint(0,len( self.TIMESLOTS) -1)
+
+		for row in range(len(cat_copy)):
+			for col in range(len(cat_copy[row])):
+				if cat_copy[row][col] == self.global_best_cat[row][col] and (not col == rand_col):
+					cat_copy[row][col] = cat_copy[row][rand_col]
+					break # only do this once per class
+
+		# swap
+		for row in range(len(cat_copy)):
+			for col in range(len(cat_copy[row])):
+				cat_copy[row][col] = self.global_best_cat[row][col]
+
+		return  cat_copy
+
+
 
     def Valid(self, current_cat):
         # check whether current cat is valid
