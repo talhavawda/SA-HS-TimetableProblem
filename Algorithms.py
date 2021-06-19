@@ -448,10 +448,10 @@ class GeneticAlgorithm(TimetableAlgorithm):
     def calculate_fitness(self, chromosome):
         # TODO: GA fitness
         # return fitness of chromosome
-        # +5 for every correct allocation.
+        # +5 for every correct allocation. Do we need this?
         # +3 for a double period [done]
         # -2 for more than 2 periods on a subject in a day [done]
-        # -2 for two single periods on the same day for a subject
+        # -1 for two single periods on the same day for a subject [done]
         # -2 for each time a teacher teaches for more than 4 periods consecutively [done]
         fitness = 0
         # for each subject evaluate the allocation (class and teacher wise)
@@ -503,6 +503,13 @@ class GeneticAlgorithm(TimetableAlgorithm):
                     fitness -= 2
                 else:
                     continue
+            counter = 0
+            # check if there is 2 periods of the same subjects in the same day[not consecutive]
+            for s in range(len(subjectsAllocatedForClass)):
+                subject = subjectsAllocatedForClass[s]
+                for t in range(s+2, 11):
+                    if subject == subjectsAllocatedForClass[t]:
+                        fitness -=1
         print('Individual fitness = ', fitness)
         return fitness
 
