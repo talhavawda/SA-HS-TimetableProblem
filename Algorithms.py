@@ -5,23 +5,23 @@ import time
 
 class Input:
     """
-		A class to represent the problem instance (i.e. the variables obtained from the Sample Input textfile)
-	"""
+        A class to represent the problem instance (i.e. the variables obtained from the Sample Input textfile)
+    """
 
     def __init__(self, teachingTable, numTeachers: int, numGr7Classes: int, numGr8Classes: int, numGr9Classes: int):
         """
-			Constructor
+            Constructor
 
-			:param teachingTable:	A 2D list/array indicating the teacher to Class-Subject allocations
-			The rows are the classes and the columns are the subjects, and the value at [i, j] is the TeacherID of
-			the teacher who teaches Subject j to Class i
+            :param teachingTable:	A 2D list/array indicating the teacher to Class-Subject allocations
+            The rows are the classes and the columns are the subjects, and the value at [i, j] is the TeacherID of
+            the teacher who teaches Subject j to Class i
 
-			:param numTeachers		The number of teachers teaching the Grade 7 to 9's
-			:param numGr7Classes	The number of classes in Grade 7
-			:param numGr8Classes	The number of classes in Grade 8
-			:param numGr9Classes	The number of classes in Grade 9
+            :param numTeachers		The number of teachers teaching the Grade 7 to 9's
+            :param numGr7Classes	The number of classes in Grade 7
+            :param numGr8Classes	The number of classes in Grade 8
+            :param numGr9Classes	The number of classes in Grade 9
 
-		"""
+        """
         self.teachingTable = teachingTable
         self.numTeachers = numTeachers
         self.numGr7Classes = numGr7Classes
@@ -31,13 +31,13 @@ class Input:
 
     def print(self):
         """
-			Displays (to the Console) the values of this input instance
+            Displays (to the Console) the values of this input instance
 
-			- Displays the Number of classes in each Grade, the number of teachers, and the
-			  Teacher Class-Subject Allocation Table (i.e. the teacher that teaches Class i Subject j)
+            - Displays the Number of classes in each Grade, the number of teachers, and the
+              Teacher Class-Subject Allocation Table (i.e. the teacher that teaches Class i Subject j)
 
-			:return: None
-		"""
+            :return: None
+        """
 
         print("Number of classes in Grade 7: \t\t\t\t", self.numGr7Classes)
         print("Number of classes in Grade 8: \t\t\t\t", self.numGr8Classes)
@@ -85,11 +85,11 @@ class Input:
 
 class TimetableAlgorithm:
     """
-		The abstract class to represent an algorithm used to solve our Timetable Problem
+        The abstract class to represent an algorithm used to solve our Timetable Problem
 
-		A specific algorithm that we use sublcasses this class and implements its functions.
-		An instance of the subclass will be used to solve the Timetabling Problem on a given input
-	"""
+        A specific algorithm that we use sublcasses this class and implements its functions.
+        An instance of the subclass will be used to solve the Timetabling Problem on a given input
+    """
 
     """CLASS CONSTANTS"""
     SUBJECTS = [
@@ -122,18 +122,18 @@ class TimetableAlgorithm:
 
     def __init__(self, input: Input, populationSize: int):
         """
-			Constructor
+            Constructor
 
-			:param input:	An object of type Input containing the teachingTable, numTeachers, numGr7Classes, numGr8Classes,
-			 numGr9Classes, totalNumClasses variables of this problem instance
+            :param input:	An object of type Input containing the teachingTable, numTeachers, numGr7Classes, numGr8Classes,
+             numGr9Classes, totalNumClasses variables of this problem instance
 
-			The teachingTable is a 2D list/array indicating the teacher to Class-Subject allocations
-			The rows are the classes and the columns are the subjects, and the value at [i, j] is the TeacherID of
-			the teacher who teachers Subject j to Class i
+            The teachingTable is a 2D list/array indicating the teacher to Class-Subject allocations
+            The rows are the classes and the columns are the subjects, and the value at [i, j] is the TeacherID of
+            the teacher who teachers Subject j to Class i
 
-			:param populationSize	the size of the population to use for the Algorithm
+            :param populationSize	the size of the population to use for the Algorithm
 
-		"""
+        """
 
         self.teachingTable = input.teachingTable
         self.numTeachers = input.numTeachers
@@ -145,28 +145,28 @@ class TimetableAlgorithm:
 
     def solveTimetable(self):
         """
-			Solve the Timetable Problem using this algorithm
-			This function can call helper functions defined in the subclass that it can use to solve
+            Solve the Timetable Problem using this algorithm
+            This function can call helper functions defined in the subclass that it can use to solve
 
 
-			A solution in the Solution Space for this Problem is a 2D-array/list of integer values indicating the
-			Timeslot that a specific Class has a specific Lesson
-			The rows are the classes and the columns are the lessons, and the value at [i, j] in this 2D array/list
-			is the Timeslot number that Class i has Lesson j in the week
-			It can also be viewed as a list of sublists with each sublist being a row in the table -
-			each sublist (of size 55) representing (the timeslot to lesson allocations of) a Class,
-			and sublist i is a permutation of the integers 0-54 (as all 55 lessons must be allocated to timeslots, and to unique timeslots)
-			For sublist i, the value at index j is the timeslot that Class i has Lesson j
+            A solution in the Solution Space for this Problem is a 2D-array/list of integer values indicating the
+            Timeslot that a specific Class has a specific Lesson
+            The rows are the classes and the columns are the lessons, and the value at [i, j] in this 2D array/list
+            is the Timeslot number that Class i has Lesson j in the week
+            It can also be viewed as a list of sublists with each sublist being a row in the table -
+            each sublist (of size 55) representing (the timeslot to lesson allocations of) a Class,
+            and sublist i is a permutation of the integers 0-54 (as all 55 lessons must be allocated to timeslots, and to unique timeslots)
+            For sublist i, the value at index j is the timeslot that Class i has Lesson j
 
-			Thus we can view a solution as a list of permutations of the set {0, 1, ..., 54}
+            Thus we can view a solution as a list of permutations of the set {0, 1, ..., 54}
 
 
-			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
-		"""
+            :return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
+        """
 
 
 """
-	GENETIC ALGORITHM
+    GENETIC ALGORITHM
 """
 
 
@@ -174,37 +174,37 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
     def __init__(self, input: Input, populationSize: int = 10):
         """
-			Constructor for the Genetic Algorithm
+            Constructor for the Genetic Algorithm
 
-			Parameters are the same as that of its superclass TimetableAlgorithm
-			Popuzlation Size is assigned a default value of 100
+            Parameters are the same as that of its superclass TimetableAlgorithm
+            Popuzlation Size is assigned a default value of 100
 
-			Note that this class has the same class variables specified in the __init__() constructor
-			of the superclass TimetableAlgorithm
+            Note that this class has the same class variables specified in the __init__() constructor
+            of the superclass TimetableAlgorithm
 
-		"""
+        """
 
         # Call super constructor
         super().__init__(input, populationSize)
 
     def solveTimetable(self):
         """
-			Implementing this abstract function defined in the superclass
+            Implementing this abstract function defined in the superclass
 
-			Solve the Timetable Problem using this Genetic algorithm
+            Solve the Timetable Problem using this Genetic algorithm
 
-			See the docstring of solveTimetable() in the superclass for a description of a solution (chromosome)
+            See the docstring of solveTimetable() in the superclass for a description of a solution (chromosome)
 
-			A gene is an integer value that represents a timeslot
-			Thus the Gene  Pool is all values in the range [0 ,54]
+            A gene is an integer value that represents a timeslot
+            Thus the Gene  Pool is all values in the range [0 ,54]
 
-			We can think of a  super-gene in a chromosome as a permutation list of the set {0, 1, ..., 54}
-			It is useful to think of a super-gene, as a constraint of our problem is that each row (sub-list) in the solution table
-			is a list representing a permutation of the numbers 0-54
-			The number of super-genes (sublists) in a chromosome for a problem instance is input.totalNumClasses
+            We can think of a  super-gene in a chromosome as a permutation list of the set {0, 1, ..., 54}
+            It is useful to think of a super-gene, as a constraint of our problem is that each row (sub-list) in the solution table
+            is a list representing a permutation of the numbers 0-54
+            The number of super-genes (sublists) in a chromosome for a problem instance is input.totalNumClasses
 
-			:return:	The optimal feasible solution after the termination criteria has been met, and its associated fitness value (as a tuple, in that order)
-		"""
+            :return:	The optimal feasible solution after the termination criteria has been met, and its associated fitness value (as a tuple, in that order)
+        """
 
         # initialise Population
         # start = datetime.datetime.now()
@@ -266,27 +266,27 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
     def initialisePopulation(self):
         """
-			Initialises the population (generates the initial population) for the Genetic Algorithm
+            Initialises the population (generates the initial population) for the Genetic Algorithm
 
-			Size of population is self.populationSize
+            Size of population is self.populationSize
 
-			[DEPRECATED]The chromosomes are randomly generated by repeatedly generating shuffled lists of the TIMESLOTS list
+            [DEPRECATED]The chromosomes are randomly generated by repeatedly generating shuffled lists of the TIMESLOTS list
 
-			The chromosomes are built by doing each value in the chromosome table, ensuring teachers dont have clashes
-			(i.e. repeatedly selecting a random value of the available remaining timeslots for that class
-			(timeslot for a Class-Lesson) till that teacher doesnt have a clash)
+            The chromosomes are built by doing each value in the chromosome table, ensuring teachers dont have clashes
+            (i.e. repeatedly selecting a random value of the available remaining timeslots for that class
+            (timeslot for a Class-Lesson) till that teacher doesnt have a clash)
 
-			:return:	The initial population for this Problem to be used by the Genetic Algorithm
-		"""
+            :return:	The initial population for this Problem to be used by the Genetic Algorithm
+        """
 
         population = []  # list of individual chromosomes -> size will be self.populationSize after we add all the chromosomes
 
         for i in range(self.populationSize):  # Create chromosome individual i
 
             """
-				Chromosome i is a 2D-array / a list of sub-lists with the number of rows (sublists being seld.totalNumClasses)
-				and the number of columns (size of a sublist)  being 55 (representing the lessons)
-			"""
+                Chromosome i is a 2D-array / a list of sub-lists with the number of rows (sublists being seld.totalNumClasses)
+                and the number of columns (size of a sublist)  being 55 (representing the lessons)
+            """
             newIndividual = []  # Chromosome i
 
             # Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
@@ -305,10 +305,10 @@ class GeneticAlgorithm(TimetableAlgorithm):
                     self.TIMESLOTS))  # random.sample(list, size) returns a new shuffled list. The original list remains unchanged.
 
                 """
-					Determine if this class allocation a valid one with respect to teacher times
-					(i.e. there are (currently) no timeslot conflicts for any teacher when adding this allocation- 
-					Hard Constraint 3: A teacher can only teach one lesson in a specific timeslot)
-				"""
+                    Determine if this class allocation a valid one with respect to teacher times
+                    (i.e. there are (currently) no timeslot conflicts for any teacher when adding this allocation- 
+                    Hard Constraint 3: A teacher can only teach one lesson in a specific timeslot)
+                """
                 isValidAllocation = True
 
                 for lesson in range(len(self.LESSONS)):  # For each of the 55 lessons that we allocated a timeslot
@@ -325,40 +325,40 @@ class GeneticAlgorithm(TimetableAlgorithm):
                     if timeslot in teacherAllocation:  # teacher is already allocated to this timeslot - i.e. there is a clash
                         # BELOW IS TO SWAP WHEN THERE'S A CLASH - SEEMS TO BE TAKING LONGER THAN JUST GENERATING A NEW ALLOCATION FOR THIS CLASS
                         """
-						# Find another teacher that teaches this class to swap with
-						swapFound = False
+                        # Find another teacher that teaches this class to swap with
+                        swapFound = False
 
-						for otherLesson in range(len(self.LESSONS)):  # For each of the 55 lessons
-							if otherLesson != lesson:
-								otherTimeslot = classAllocation[lesson]  # the timeslot allocated to this other lesson
+                        for otherLesson in range(len(self.LESSONS)):  # For each of the 55 lessons
+                            if otherLesson != lesson:
+                                otherTimeslot = classAllocation[lesson]  # the timeslot allocated to this other lesson
 
-								if otherTimeslot not in teacherAllocation: # the current teacher is free in this other timeslot
-									otherSubject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this other lesson is
-									otherTeacher = self.teachingTable[currentClass][subject]  # teacher that teaches this other lesson
-									otherTeacherAllocation = teacherTimeslotAllocations[teacher]
+                                if otherTimeslot not in teacherAllocation: # the current teacher is free in this other timeslot
+                                    otherSubject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this other lesson is
+                                    otherTeacher = self.teachingTable[currentClass][subject]  # teacher that teaches this other lesson
+                                    otherTeacherAllocation = teacherTimeslotAllocations[teacher]
 
-									if timeslot not in otherTeacherAllocation: # the other teacher is free in this current timeslot
-										swapFound = True
-										# we can swap timeslots
-										classAllocation[lesson] = otherTimeslot
-										classAllocation[otherLesson] = timeslot
-										break # stop the search as we've found another lesson to swap with
+                                    if timeslot not in otherTeacherAllocation: # the other teacher is free in this current timeslot
+                                        swapFound = True
+                                        # we can swap timeslots
+                                        classAllocation[lesson] = otherTimeslot
+                                        classAllocation[otherLesson] = timeslot
+                                        break # stop the search as we've found another lesson to swap with
 
 
-						if swapFound == False: # if we did not find another lesson to swap with (since there is a clash), then this cannot be a valid allocation
-							isValidAllocation = False
-						"""
+                        if swapFound == False: # if we did not find another lesson to swap with (since there is a clash), then this cannot be a valid allocation
+                            isValidAllocation = False
+                        """
 
                         isValidAllocation = False
 
                 """
-					If this lesson-timeslot allocation for this class is valid, then add it in its place to the chromosome
-					and add to the teacher allocations
-					Then increment the class number to move on to the next class
-					
-					If this allocation is invalid (the condition below is False) then the loop will run again for the 
-					same class, generating a different initial allocation to work with
-				"""
+                    If this lesson-timeslot allocation for this class is valid, then add it in its place to the chromosome
+                    and add to the teacher allocations
+                    Then increment the class number to move on to the next class
+                    
+                    If this allocation is invalid (the condition below is False) then the loop will run again for the 
+                    same class, generating a different initial allocation to work with
+                """
                 if isValidAllocation:
 
                     newIndividual.append(classAllocation)
@@ -515,7 +515,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 
 """
-	CAT SWARM OPTIMIZATION ALGORITHM
+    CAT SWARM OPTIMIZATION ALGORITHM
 """
 
 
@@ -530,88 +530,88 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         def __init__(self):
             self.state = 0
             """
-			0 for when the cat is idle 1 in seek mode and 2 for trace mode 
-			"""
+            0 for when the cat is idle 1 in seek mode and 2 for trace mode 
+            """
             self.location = 0
             """
-				current position in the solution space, changes when cat given permission to seek
-			"""
+                current position in the solution space, changes when cat given permission to seek
+            """
             self.solution = [[]]
             """current solution the cat possesses
-			"""
+            """
             self.velocity = 0.0
 
         def setState(self, newState: int):
             """
-					setter for state
-			"""
+                    setter for state
+            """
             self.state = newState
 
         def setLocation(self, newlocation: int):
             """
-					setter for location
-			"""
+                    setter for location
+            """
             self.location = newlocation
 
         def setVelocity(self, newVelocity: int):
             """
-					setter for location
-			"""
+                    setter for location
+            """
             self.velocity = newVelocity
 
         def setSolution(self, newSolution: [[]]):
             """
-					setter for solution
-			"""
+                    setter for solution
+            """
             self.solution = newSolution
 
         def getState(self):
             """
-					getter for state
-			"""
+                    getter for state
+            """
             return self.state
 
         def getSolution(self):
             """
-					getter for solution
-			"""
+                    getter for solution
+            """
             return self.solution
 
         def getVelociy(self):
             """
-					getter for velocity
-			"""
+                    getter for velocity
+            """
             return self.velocity
 
         def getLocation(self):
             """
-					getter for solution
-			"""
+                    getter for solution
+            """
             return self.location
 
     def __init__(self, input: Input, populationSize: int):
         """
-			Constructor for the Cat Swarm Optimization Algorithm
+            Constructor for the Cat Swarm Optimization Algorithm
 
-			Parameters are the same as that of its superclass TimetableAlgorithm
+            Parameters are the same as that of its superclass TimetableAlgorithm
 
-			Note that this class has the same class variables specified in the __init__() constructor
-			of the superclass TimetableAlgorithm
+            Note that this class has the same class variables specified in the __init__() constructor
+            of the superclass TimetableAlgorithm
 
-		"""
+        """
         # Call super constructor
         super().__init__(input, populationSize)
         self.global_best_cat = self.CAT()
 
     def solveTimetable(self):
         """
-			Implementing this abstract function defined in the superclass
+            Implementing this abstract function defined in the superclass
 
-			Solve the Timetable Problem using this Cat Swarm Optimization algorithm
-			This function can call helper functions defined in the subclass that it can use to solve
+            Solve the Timetable Problem using this Cat Swarm Optimization algorithm
+            This function can call helper functions defined in the subclass that it can use to solve
 
-			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
-		"""
+            :return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
+        """
         # I'm going to write out the steps here to help myself a bit
 
         # execute initialisation procedure to initialise cats
@@ -663,7 +663,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
             teacherClassAlloc = list(range(1, 56))
 
-			# rows = classes, cols= timeslots
+            # rows = classes, cols= timeslots
             new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
             for j in range(len(new_allocation[0])):
                 random.shuffle(teacherClassAlloc)
@@ -779,20 +779,24 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
     def Change_Random(self, cat_copy):
         # auxilliary procedure, section 3.4.3
-		rand_col = random.randint(0,len( self.TIMESLOTS) -1)
+        # change a random column in the cat, kind of like crossover
+        rand_col = random.randint(0,len( self.TIMESLOTS) -1)
 
-		for row in range(len(cat_copy)):
-			for col in range(len(cat_copy[row])):
-				if cat_copy[row][col] == self.global_best_cat[row][col] and (not col == rand_col):
-					cat_copy[row][col] = cat_copy[row][rand_col]
-					break # only do this once per class
+        # before we change, we need to scan each row in cat_copy and check whether a cell has the same
+        # value as the entry in global_best_cat for the same row and the col to be swapped
 
-		# swap
-		for row in range(len(cat_copy)):
-			for col in range(len(cat_copy[row])):
-				cat_copy[row][col] = self.global_best_cat[row][col]
+        for row in range(len(cat_copy)):
+            for col in range(len(cat_copy[row])):
+                if cat_copy[row][col] == self.global_best_cat[row][col] and (not col == rand_col):
+                    cat_copy[row][col] = cat_copy[row][rand_col]
+                    break # only do this once per class
 
-		return  cat_copy
+        # swap
+        for row in range(len(cat_copy)):
+            for col in range(len(cat_copy[row])):
+                cat_copy[row][col] = self.global_best_cat[row][col]
+
+        return cat_copy
 
 
 
