@@ -139,7 +139,7 @@ def main():
 			I set the pop sizes to 100 for now  so that the program runs
 			TODO - determine appropriate population sizes
 		"""
-		populationSizeGA = 10
+		populationSizeGA = 2
 		populationSizeCSA = 100
 
 		geneticAlgorithm = GeneticAlgorithm(input, populationSizeGA)

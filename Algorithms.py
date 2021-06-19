@@ -181,7 +181,7 @@ class TimetableAlgorithm:
 
 class GeneticAlgorithm(TimetableAlgorithm):
 
-	def __init__(self, input: Input, populationSize: int = 100):
+	def __init__(self, input: Input, populationSize: int = 10):
 		"""
 			Constructor for the Genetic Algorithm
 
@@ -348,8 +348,8 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 	def selection(self, population):
 		# TODO: Selection
-		parent1 = population[random.randint(0, len(population))]
-		parent2 = population[random.randint(0, len(population))]
+		parent1 = population[0] # population[random.randint(0, len(population))]
+		parent2 = population[1] # population[random.randint(0, len(population))]
 		return parent1, parent2
 
 
@@ -380,11 +380,11 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			consecutive = 0
 			for i in range(len(workingPeriods)-1):
 				if workingPeriods[i]+1 == workingPeriods[i+1]:
-					consecutive +=1
+					consecutive += 1
 				else:
 					consecutive = 0
 				if consecutive == 4:
-					fitness -=2
+					fitness -= 2
 					consecutive = 0
 
 		# reward double periods
@@ -405,10 +405,8 @@ class GeneticAlgorithm(TimetableAlgorithm):
 							fitness += 3
 					else:
 						break
-
-
-			pass
-		return 0
+		print('Individual fitness = ', fitness)
+		return fitness
 
 
 
