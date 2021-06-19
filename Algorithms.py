@@ -1,5 +1,6 @@
 import random
-
+import datetime
+import time
 
 class Input:
 	"""
@@ -217,7 +218,17 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		"""
 
 		# initialise Population
+		# start = datetime.datetime.now()
+		start = time.time()
+
 		initialPopulation = self.initialisePopulation()
+
+		# end = datetime.datetime.now()
+		end = time.time()
+
+		timeTaken = end - start
+		print("Time taken to init:", timeTaken, "seconds")
+
 
 		# Set benchmark fitness to the individual at 0
 		bestIndividual = initialPopulation[0]
@@ -306,7 +317,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 				classAllocation = random.sample(self.TIMESLOTS, len(self.TIMESLOTS)) # random.sample(list, size) returns a new shuffled list. The original list remains unchanged.
 
 				"""
-					Is the class allocation a valid one with respect to teacher times
+					Determine if this class allocation a valid one with respect to teacher times
 					(i.e. there are (currently) no timeslot conflicts for any teacher when adding this allocation- 
 					Hard Constraint 3: A teacher can only teach one lesson in a specific timeslot)
 				"""
@@ -324,23 +335,54 @@ class GeneticAlgorithm(TimetableAlgorithm):
 					teacherAllocation = teacherTimeslotAllocations[teacher]
 
 
-					if timeslot in teacherAllocation:  # teacher is already allocated to this timeslot
-						# not a valid allocation
-						isValidAllocation = False
-						# print('Suggested allocation is not permitted - clash of time')
-						break
+					if timeslot in teacherAllocation:  # teacher is already allocated to this timeslot - i.e. there is a clash
+						#BELOW IS TO SWAP WHEN THERE'S A CLASH - SEEMS TO BE TAKING LONGER THAN JUST GENERATING A NEW ALLOCATION FOR THIS CLASS
+						"""
+						# Find another teacher that teaches this class to swap with
+						swapFound = False
 
+						for otherLesson in range(len(self.LESSONS)):  # For each of the 55 lessons
+							if otherLesson != lesson:
+								otherTimeslot = classAllocation[lesson]  # the timeslot allocated to this other lesson
+
+								if otherTimeslot not in teacherAllocation: # the current teacher is free in this other timeslot
+									otherSubject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this other lesson is
+									otherTeacher = self.teachingTable[currentClass][subject]  # teacher that teaches this other lesson
+									otherTeacherAllocation = teacherTimeslotAllocations[teacher]
+
+									if timeslot not in otherTeacherAllocation: # the other teacher is free in this current timeslot
+										swapFound = True
+										# we can swap timeslots
+										classAllocation[lesson] = otherTimeslot
+										classAllocation[otherLesson] = timeslot
+										break # stop the search as we've found another lesson to swap with
+
+
+						if swapFound == False: # if we did not find another lesson to swap with (since there is a clash), then this cannot be a valid allocation
+							isValidAllocation = False
+						"""
+
+						isValidAllocation = False
+
+				"""
+					If this lesson-timeslot allocation for this class is valid, then add it in its place to the chromosome
+					and add to the teacher allocations
+					Then increment the class number to move on to the next class
+					
+					If this allocation is invalid (the condition below is False) then the loop will run again for the 
+					same class, generating a different initial allocation to work with
+				"""
 				if isValidAllocation:
 
 					newIndividual.append(classAllocation)
 
-					for j in range(len(classAllocation)):
-						subject = self.LESSON_SUBJECTS[j]
-						teacher = self.teachingTable[currentClass][subject]
-						teacherTimeslotAllocations[teacher].append(classAllocation[j])
+					for lesson in self.LESSONS: # ALT: for lesson in range(len(self.LESSONS))
+						subject = self.LESSON_SUBJECTS[lesson] # get the index/number of the subject that this lesson is
+						teacher = self.teachingTable[currentClass][subject] # teacher that teaches this lesson
+						teacherTimeslotAllocations[teacher].append(classAllocation[lesson]) # add this timeslot to this teacher's allocated timeslots
 
 					currentClass = currentClass + 1
-					print('individual', i+1, ' class', currentClass, '\n', newIndividual) # i+1 as we want to display starting from 1
+					print('individual', i+1, ' class', currentClass, '\n', classAllocation) # i+1 as we want to display starting from 1
 
 
 			population.append(newIndividual)
