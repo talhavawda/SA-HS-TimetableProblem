@@ -615,11 +615,24 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 
 
+	def trace(self, cats):
+		# add code for tracing
+		for cat in cats:
+			c1 = 1 # i can't find where they set this value???
+			similarity =  self.Similarity(cat)
+			distance = self.totalNumClasses * len(self.TIMESLOTS) - similarity
+			rand_number = random.random()
+			cs = rand_number* c1 * distance # number of cells to be swapped
+			self.Single_Swap(cat)
 		pass
 
-	def trace(self, current_cat):
-		# add code for tracing
-		pass
+	def Similarity(self, cat):
+		similarity = 0
+		for i in range(cat):
+			for j in range (cat[i]):
+				if cat[i][j] == self.global_best_cat[i][j]:
+					similarity+=1
+		return similarity
 
 	def Single_Swap(self, current_cat):
 		randClass = random.randint(0,self.totalNumClasses)
