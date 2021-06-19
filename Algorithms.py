@@ -292,41 +292,55 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			newIndividual = [] # Chromosome i
 
 			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
-
 			teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
 
-			numAssignedClasses = 0
+			currentClass = 0
 
-			while numAssignedClasses < self.totalNumClasses:
+			while currentClass < self.totalNumClasses: # Create timeslot allocation for each class j in chromosome i
 
-				# generate shuffled list for a class
-				classAllocation = list(range(55))
-				random.shuffle(classAllocation)
-				# is the class allocation a valid one with respect to teacher times
-				isValid = True
-				for slot in range(len(classAllocation)):
-					# get subject index
-					subject = self.LESSON_SUBJECTS[slot]
-					teacher = self.teachingTable[numAssignedClasses][subject]
-					# check if list is okay to add i.e no clashes for teachers
-					subjectTeachersAllocation = teacherTimeslotAllocations[teacher]
-					if classAllocation[slot] in subjectTeachersAllocation:  # teacher is busy
+				# generate an lesson-timeslot allocation  for class j
+
+				#classAllocation = list(range(55))
+				#random.shuffle(classAllocation)
+
+				classAllocation = random.sample(self.TIMESLOTS, len(self.TIMESLOTS)) # random.sample(list, size) returns a new shuffled list. The original list remains unchanged.
+
+				"""
+					Is the class allocation a valid one with respect to teacher times
+					(i.e. there are (currently) no timeslot conflicts for any teacher when adding this allocation- 
+					Hard Constraint 3: A teacher can only teach one lesson in a specific timeslot)
+				"""
+				isValidAllocation = True
+
+				for lesson in range(len(self.LESSONS)): # For each of the 55 lessons that we allocated a timeslot
+
+					timeslot = classAllocation[lesson] # the timeslot allocated to this lesson
+
+					subject = self.LESSON_SUBJECTS[lesson] # get the index/number of the subject that this lesson is
+					teacher = self.teachingTable[currentClass][subject] # teacher that teaches this lesson
+
+					# check if this teacher is not already teaching in this timeslot
+
+					teacherAllocation = teacherTimeslotAllocations[teacher]
+
+
+					if timeslot in teacherAllocation:  # teacher is already allocated to this timeslot
 						# not a valid allocation
-						isValid = False
+						isValidAllocation = False
 						# print('Suggested allocation is not permitted - clash of time')
 						break
 
-				if isValid:
+				if isValidAllocation:
 
 					newIndividual.append(classAllocation)
 
 					for j in range(len(classAllocation)):
 						subject = self.LESSON_SUBJECTS[j]
-						teacher = self.teachingTable[numAssignedClasses][subject]
+						teacher = self.teachingTable[currentClass][subject]
 						teacherTimeslotAllocations[teacher].append(classAllocation[j])
 
-					numAssignedClasses = numAssignedClasses + 1
-					print('individual', i+1, ' class', numAssignedClasses, '\n', newIndividual) # i+1 as we want to display starting from 1
+					currentClass = currentClass + 1
+					print('individual', i+1, ' class', currentClass, '\n', newIndividual) # i+1 as we want to display starting from 1
 
 
 			population.append(newIndividual)
@@ -338,9 +352,6 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		return population
 
 
-		"""
-			random.sample() returns a new shuffled list. The original list remains unchanged.
-		"""
 
 
 	def getEmptyTeacherAllocation(self) -> [[]]:
