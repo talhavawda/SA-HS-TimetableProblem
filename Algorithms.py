@@ -722,17 +722,19 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         CDC = 0.1
         SRD = 0.1
         j = 0  # default initialisation
-        candidate_positions = [self.CAT]
-        for cat in cats:
-            best_fitness = self.evaluateFitness(cat)
+        candidate_positions = []
+        probabilities = []
+        for cat_copy in cats:
+            best_fitness = self.evaluateFitness(cat_copy)
             if SPC == True:
                 j = SMP - 1
-                candidate_positions.append(cat)
+                candidate_positions.append(cat_copy)
+                probabilities.append(0)
             else:
                 j = SMP
             cat_copies = []
             for i in range(0, j):
-                cat_copies.append(cat.getSolution)
+                cat_copies.append(cat_copy.getSolution)
             tc = CDC * len(self.TIMESLOTS)  # nr of timeslots we will "replace"/change
             sm = SRD * len(self.totalNumClasses)  # total nr of swaps
             for cat_copy in cat_copies:
@@ -745,20 +747,34 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                         if (new_fitness_value <= best_fitness):
                             best_fitness = new_fitness_value
                             candidate_positions.append(cat_copy)
-            flag = True
+                            probabilities.append(0)
+
             old_fitness = self.evaluateFitness(candidate_positions[0])
+            FSmax = best_fitness
+            FSmin = self.evaluateFitness(self.global_best_cat)
+            equal = True
             for i in range(len(candidate_positions) - 1):
                 fitness = self.evaluateFitness(candidate_positions[i])
-                if (fitness != old_fitness):  # a cat having a better than initial fitness had been found
-                    # TODO: calculate the selection probability for each candidate position;
-                    #  based it's difference from global best cat
-                    pass
-                else:
-                    # TODO: set selecting probability of each cat = 1
-                    pass
+                if fitness > FSmax:
+                    FSmax = fitness
+                if fitness< FSmin:
+                    FSmin = fitness
+                if fitness != old_fitness:  # a cat having a better than initial fitness had been found
+                    equal = False
+
+            FSb = FSmin # minimisation problem
+
+            if not equal:
+                for cat in candidate_positions:
+                    FSi = self.evaluateFitness(cat)
+                    Pi = abs(FSi - FSb) / abs(FSmax - FSmin)
+                    probabilities[i] = Pi
+            else:
+                probabilities = [1 for _ in candidate_positions]
             # pick a random position from the candidate positions the one to move to
-            random_pos = self.CAT  # need to choose somehow, paper does't specify (probably using the probabilities)
-            cat.setSolution(random_pos.getSolution())
+            # need to choose somehow, paper does't specify (probably using the probabilities)
+            random_pos = random.choices(candidate_positions, weights=probabilities, k=1)
+            cat_copy.setSolution(random_pos.getSolution())
 
     def trace(self, cats):
         # add code for tracing
