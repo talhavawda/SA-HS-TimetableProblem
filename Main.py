@@ -4,35 +4,31 @@ import time
 
 """Problem Constants"""
 SUBJECTS = [
-				"Home Language", "First Additional Language", "Mathematics", "Natural Science", "Social Science",
-				"Technology", "Economic and Management Science", "Life Orientation", "Arts and Culture"
-			]
+    "Home Language", "First Additional Language", "Mathematics", "Natural Science", "Social Science",
+    "Technology", "Economic and Management Science", "Life Orientation", "Arts and Culture"
+]
 
 # Using List Comprehension to define the Lesson and Timeslot numbers
 LESSONS = [lesson for lesson in range(1, 56)]
 TIMESLOTS = [timeslot for timeslot in range(1, 56)]
 
 
-
 def readInputFile(fileName: str):
+    inputFile = open(fileName)
 
-	inputFile = open(fileName)
+    numGr7Classes = int(inputFile.readline())
+    numGr8Classes = int(inputFile.readline())
+    numGr9Classes = int(inputFile.readline())
 
+    totalnumClasses = numGr7Classes + numGr8Classes + numGr9Classes
 
-	numGr7Classes = int(inputFile.readline())
-	numGr8Classes = int(inputFile.readline())
-	numGr9Classes = int(inputFile.readline())
+    while True:  # Get the next non-empty/non-blank line (to skip over any blank lines between the number of classes of each grade and the number of teachers )
+        lineString = inputFile.readline()
+        if lineString != "\n":
+            numTeachers = int(lineString)
+            break
 
-	totalnumClasses = numGr7Classes + numGr8Classes + numGr9Classes
-
-	while True:  # Get the next non-empty/non-blank line (to skip over any blank lines between the number of classes of each grade and the number of teachers )
-		lineString = inputFile.readline()
-		if lineString != "\n":
-			numTeachers = int(lineString)
-			break
-
-
-	"""
+    """
 		This table variable is a 2D list/array indicating the teacher to Class-Subject allocations i.e. which Teacher 
 		teaches a specific subject to a specific class. The rows are the classes and the columns are the subjects,
 		 and the value at [i, j] is the TeacherID of the teacher who teaches Subject j to Class i
@@ -42,28 +38,29 @@ def readInputFile(fileName: str):
 		
 
 	"""
-	teachingTable = []
+    teachingTable = []
 
-	for Class in range(totalnumClasses): # For each Class (using Uppercase so as to not be mistaken for the 'class' keyword)
-		while True:  # Get the next non-empty/non-blank line (to skip over any blank lines between the number of teachers and the table itself)
-			teacherAllocationString = inputFile.readline()
-			if teacherAllocationString != "\n":
-				break
+    for Class in range(
+            totalnumClasses):  # For each Class (using Uppercase so as to not be mistaken for the 'class' keyword)
+        while True:  # Get the next non-empty/non-blank line (to skip over any blank lines between the number of teachers and the table itself)
+            teacherAllocationString = inputFile.readline()
+            if teacherAllocationString != "\n":
+                break
 
-		teacherAllocations = []  #the array of allocations of Teachers to Subjects for this Class
+        teacherAllocations = []  # the array of allocations of Teachers to Subjects for this Class
 
-		for Subject in range(9): #For each (of the 9) Subject
-			teacherAllocationString = teacherAllocationString.strip() # Remove leading and trailing whitespaces so that the beginning of the string is a numerical value representing a teacher
+        for Subject in range(9):  # For each (of the 9) Subject
+            teacherAllocationString = teacherAllocationString.strip()  # Remove leading and trailing whitespaces so that the beginning of the string is a numerical value representing a teacher
 
-			"""
+            """
 				Get the index of the first comma in the teacherAllocationString
 				In the input file, teachers are separated by commas 
 				
 				
 			"""
-			commaIndex = teacherAllocationString.find(",")
+            commaIndex = teacherAllocationString.find(",")
 
-			"""
+            """
 				If we are at the last subject (Subject == 8), then  there wont be a comma after the 
 				TeacherID for this subject in the string (commaIndex will be -1), so dont do any slicing - the TeacherID (as a string)
 				for this Subject is the remaining teacherAllocationsString
@@ -73,29 +70,28 @@ def readInputFile(fileName: str):
 				before the comma
 			"""
 
-			if commaIndex == -1:
-				teacherIDString = teacherAllocationString
-			else:
-				teacherIDString = teacherAllocationString[:commaIndex]
+            if commaIndex == -1:
+                teacherIDString = teacherAllocationString
+            else:
+                teacherIDString = teacherAllocationString[:commaIndex]
 
-			teacherID = int(teacherIDString)
-			teacherAllocations.append(teacherID)
-			teacherAllocationString = teacherAllocationString[commaIndex + 1:]  # Remove the teacherID for this Subject from teacherAllocationString
+            teacherID = int(teacherIDString)
+            teacherAllocations.append(teacherID)
+            teacherAllocationString = teacherAllocationString[
+                                      commaIndex + 1:]  # Remove the teacherID for this Subject from teacherAllocationString
 
-		teachingTable.append(teacherAllocations)
+        teachingTable.append(teacherAllocations)
 
-	inputFile.close()
+    inputFile.close()
 
+    # A Variable of type Input to represent the input obtained from the text file
+    inputInstance = Input(teachingTable, numTeachers, numGr7Classes, numGr8Classes, numGr9Classes)
 
-	# A Variable of type Input to represent the input obtained from the text file
-	inputInstance = Input(teachingTable, numTeachers, numGr7Classes, numGr8Classes, numGr9Classes)
-
-	return inputInstance
-
+    return inputInstance
 
 
 def main():
-	"""
+    """
 		The main function of the program
 		It reads in the input text files, determines the relevant Data Structure variables,
 		solves the South African High School Timetable Problem (for Grades 7 to 9)
@@ -106,63 +102,59 @@ def main():
 
 	"""
 
-	print("\n\nSolving the Timetabling Problem for Grades 7 to 9 based on the  South African DOE's Curriculum Guidelines")
-	print("using a Genetic Algorithm and Cat Swarm Optimization Algorithm and comparing the results")
-	print("==============================================================================================================")
-	print("==============================================================================================================")
-	print("==============================================================================================================\n\n")
+    print(
+        "\n\nSolving the Timetabling Problem for Grades 7 to 9 based on the  South African DOE's Curriculum Guidelines")
+    print("using a Genetic Algorithm and Cat Swarm Optimization Algorithm and comparing the results")
+    print(
+        "==============================================================================================================")
+    print(
+        "==============================================================================================================")
+    print(
+        "==============================================================================================================\n\n")
 
+    print("Subjects: ")
+    for i in range(len(SUBJECTS)):
+        # Subjects are represented as digits from 0 to 8 but will display as 1 to 9
+        print("\tSubject ", i + 1, ": ", SUBJECTS[i], sep="")
 
-	print("Subjects: ")
-	for i in range(len(SUBJECTS)):
-		# Subjects are represented as digits from 0 to 8 but will display as 1 to 9
-		print("\tSubject ", i+1, ": ", SUBJECTS[i], sep="")
+    print("==================================================================")
+    print("==================================================================\n\n")
 
-	print("==================================================================")
-	print("==================================================================\n\n")
+    input1 = readInputFile("Input/easy.txt")
+    input2 = readInputFile("Input/medium.txt")
+    input3 = readInputFile("Input/hard.txt")
 
-	input1 = readInputFile("Input/easy.txt")
-	input2 = readInputFile("Input/medium.txt")
-	input3 = readInputFile("Input/hard.txt")
+    inputNumber = 1
 
+    for input in [input1, input2, input3]:
 
-	inputNumber = 1
+        print("INPUT", inputNumber)
+        print("----------")
+        input.print()
+        print("=================================================================")
 
-	for input in [input1, input2, input3]:
-
-		print("INPUT", inputNumber)
-		print("----------")
-		input.print()
-		print("=================================================================")
-
-
-		"""
+        """
 			I set the pop sizes to 100 for now  so that the program runs
 			TODO - determine appropriate population sizes
 		"""
-		populationSizeGA = 2
-		populationSizeCSA = 100
+        populationSizeGA = 3
+        populationSizeCSA = 100
 
-		geneticAlgorithm = GeneticAlgorithm(input, populationSizeGA)
-		catSwarmAlgorithm = CatSwarmAlgorithm(input, populationSizeCSA)
+        geneticAlgorithm = GeneticAlgorithm(input, populationSizeGA)
+        catSwarmAlgorithm = CatSwarmAlgorithm(input, populationSizeCSA)
 
-		for algorithm in [geneticAlgorithm, catSwarmAlgorithm]:
-			algorithmName = type(algorithm).__name__
+        for algorithm in [geneticAlgorithm, catSwarmAlgorithm]:
+            algorithmName = type(algorithm).__name__
 
-			print("\nSolving INPUT ", inputNumber," using the ", algorithmName, ":", sep="")
+            print("\nSolving INPUT ", inputNumber, " using the ", algorithmName, ":", sep="")
 
+            solution = algorithm.solveTimetable()
 
-			solution = algorithm.solveTimetable()
+            print("\n=================================================================")
 
-			print("\n=================================================================")
+        print("\n=================================================================\n\n")
 
-
-		print("\n=================================================================\n\n")
-
-
-		inputNumber += 1
+        inputNumber += 1
 
 
 main()
-
-
