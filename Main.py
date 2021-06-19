@@ -1,5 +1,6 @@
 from Algorithms import *
-
+import datetime
+import time
 
 """Problem Constants"""
 SUBJECTS = [
@@ -150,8 +151,16 @@ def main():
 
 			print("\nSolving INPUT ", inputNumber," using the ", algorithmName, ":", sep="")
 
+			#start = datetime.datetime.now()
+			start = time.time()
+
 			solution = algorithm.solveTimetable()
 
+			#end = datetime.datetime.now()
+			end = time.time()
+
+			timeTaken = end - start
+			print("Time taken:", timeTaken, "seconds")
 
 			print("\n=================================================================")
 
