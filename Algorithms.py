@@ -678,12 +678,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		return current_cat
 
-		pass
 
 	def Change_Random(self, current_cat):
-		# auxilliary procedure
+		# auxilliary procedure, section 3.4.3
 		pass
 
 	def Valid(self, current_cat):
 		# check whether current cat is valid
+		# shouldn't need to implement this if change random is guaranteed to return a valid solution
 		return  False
