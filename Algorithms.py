@@ -299,11 +299,13 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		# Continue updating for a 1000 iterations if the best representation has not been changed
 		iterationsSinceLastUpdate = 0
 
+		population = initialPopulation
+
 		while iterationsSinceLastUpdate < 1000:
 			generations += 1
 			foundBetterSoln = False
 			# calculate the fitness of the population and update the best fitness if necessary
-			for individual in initialPopulation:
+			for individual in population:
 				individualFitness = self.calculateFitness(individual)
 				if individualFitness > bestFitness:
 					bestIndividual = copy.deepcopy(individual) # store a copy of this individual as the best | cant just assign as a pointer will be assigned
@@ -316,11 +318,11 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			else:
 				iterationsSinceLastUpdate += 1
 
-			updatedPopulation = []
+			newPopulation = []
 
 			for i in range(self.populationSize):
 				# Select parents
-				parent1, parent2 = self.selection(population=initialPopulation)
+				parent1, parent2 = self.selection(population=population)
 				# produce a child from 2 parents
 				child = self.crossover(parent1, parent2)
 				# Probability for operators
@@ -330,9 +332,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 					# mutation on child
 					child = self.mutation(child)
 				# add child to new population
-				updatedPopulation.append(child)
+				newPopulation.append(child)
 
-			initialPopulation = updatedPopulation
+			population = newPopulation
 
 		print('Solution found in generation', indexOfBestSoln, ' with a fitness of ', bestFitness)
 		self.printSolution(bestIndividual)
