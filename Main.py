@@ -151,7 +151,7 @@ def main():
             bestSolution, generationBestSolution, fitnessBestSolution = algorithm.solveTimetable()
 
             print('Optimal solution found in generation', generationBestSolution, ' with a fitness of ', fitnessBestSolution)
-            self.printSolution(bestSolution)
+            algorithm.printSolution(bestSolution)
 
 
             print("\n=================================================================")
