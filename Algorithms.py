@@ -505,7 +505,11 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 	def crossover(self, chromosome1, chromosome2):
 		# TODO: Crossover
-		return chromosome1
+		crossoverPoint = random.randint(0, self.totalNumClasses-1)
+		selectedClasses1 = chromosome1[0:crossoverPoint]
+		selectedClasses2 = chromosome2[crossoverPoint:]
+		newChromosome = selectedClasses1 + selectedClasses2
+		return newChromosome
 
 	def selection(self, population):
 		# TODO: Selection
