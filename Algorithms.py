@@ -366,7 +366,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 class CatSwarmAlgorithm(TimetableAlgorithm):
 
-	# mode_index = 0
+	# mode_index =
+	bestCat = []
+
 
 	class CAT:
 		IDLE = 0
@@ -388,6 +390,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
 
 			self.VELOCITY = [[]]
+
+			self.maxVelocity = 50
 		"""
 		each dimension in the solution space should have its own velocity, random values in
 		the range 0 to maxVelocity
@@ -452,6 +456,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		# paper uses 5000 iterations
 		iteration_counter = 5000
 		global_best_cat = self.CAT()
+
 		# mixing ratio, initialised to 4% in paper for hybrid CS
 		MR = 0.04
 
@@ -501,14 +506,20 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			new_allocation = [[0 for i in range(self.totalNumClasses)]for j in range(56)] #cat i
 			for j in range(len(new_allocation[0])):
 				random.shuffle(teacherClassAlloc)
-				for i in range(len(new_allocation)):
+				for k in range(len(new_allocation)):
 					new_allocation[j][i] = teacherClassAlloc[i]
 
 
 
 			new_cat = self.CAT()
 			new_cat.setSolution(new_allocation)
-			new_cat.setVelocity()
+			new_cat.VELOCITY = new_cat.location
+			for l in range (len(new_cat.location[0])):
+				for m in range (len(new_cat.location)):
+					new_cat.VELOCITY[i][j] = random.randint(0,new_cat.maxVelocity)
+
+
+
 			CATS.append(new_allocation)
 
 			# also needs an entry for velocity, may not need to keep track of seeking/tracing if it's not used later
@@ -595,13 +606,13 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		newVelocity = current_cat.VELOCITY
 
 		# didnt initialize velocity array
-		# for i in range (len(newVelocity[0])):
-			# for j in range (len(newVelocity)):
-				# newVelocity[i][j] = newVelocity[i][j] + 2 (global_best_cat.VELOCITY[i][j] -
-		# current_cat.position[i][j])
-			# if newVelocity[i][j] > maxVelocity:
-				# newVelocity = maxVelocity
-		# current_cat.Velocity = newVelocity
+		for i in range (len(newVelocity[0])):
+			 for j in range (len(newVelocity)):
+				 # newVelocity[i][j] = newVelocity[i][j] + 2 (global_best_cat.VELOCITY[i][j] -
+		 # current_cat.position[i][j])
+			 		if newVelocity[i][j] > current_cat.maxVelocity:
+					 	newVelocity = current_cat.maxVelocity
+		 			current_cat.Velocity = newVelocity
 
 		for i in range (len(current_cat.position[0])):
 			for j in range (len(current_cat.position)):
