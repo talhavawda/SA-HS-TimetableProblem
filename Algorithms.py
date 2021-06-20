@@ -642,7 +642,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 # copied it as is from the paper, but I think we want to maximise - need to change it here and in seek
                 if current_cat_fitness <= global_best_fitness:  # assuming out fitness function wants to minimise
                     global_best_fitness = current_cat_fitness
-                    global_best_cat = current_cat
+                    self.global_best_cat = current_cat
 
                 # choose a random value between 0 and 1
                 random_value = random.random()
