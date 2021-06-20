@@ -736,7 +736,15 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 fitnessValue += HCW * (BASE ** n)
 
         # soft constraint
-
+        for i in range(self.totalNumClasses):
+            n = 0
+            for j in range(len(current_cat_solution[i])):
+                teacherVal = current_cat_solution[i][j]
+                for k in range(j+1, len(current_cat_solution[i])):
+                    if teacherVal == current_cat_solution[i][j]:
+                        n += 1
+            if n > 10:
+                fitnessValue += ITDW * BASE
         return fitnessValue
         pass
 
