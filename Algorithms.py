@@ -4,6 +4,7 @@ import datetime
 import time
 import math
 import typing
+import copy
 
 
 class Input:
@@ -167,6 +168,64 @@ class TimetableAlgorithm:
 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
 		"""
 
+    def getObjectiveValue(self, solution):
+        """
+			Abstract Function to be implemented by subclasses
+
+			:return: The objective function's value of this candidate solution
+		"""
+
+    def printSolution(self, solution):
+        """
+			Display a possible/candidate solution (i.e. an individual/chromosome)
+
+			:param solution: A candidate solution in the solution space
+			:return: None
+		"""
+        print("\n\nSOLUTION:\nClass-Lesson Timeslot Allocation Table:\n")
+
+        # Print Column Headings (Subjects)
+
+        print("Lessons ->", end="\t\t\t\t")
+        headerStr = "-----------------------"
+
+        # Lessons are represented as digits from 0 to 54 but will display as 1 to 55
+        for lesson in range(1, 56):
+            print(lesson, end="\t")
+            headerStr += "----"
+
+        print("\nClasses:")
+        print(headerStr)
+
+        classNames = []
+
+        for i in range(self.numGr7Classes):
+            className = "Grade 7 - Class " + str(i + 1)
+            classNames.append(className)
+
+        for i in range(self.numGr8Classes):
+            className = "Grade 8 - Class " + str(i + 1)
+            classNames.append(className)
+
+        for i in range(self.numGr9Classes):
+            className = "Grade 9 - Class " + str(i + 1)
+            classNames.append(className)
+
+        for Class in range(self.totalNumClasses):
+            print(classNames[Class], end="\t|\t")  # Row Heading
+            classAllocation = solution[Class]
+            for Lesson in self.LESSONS:
+                Timeslot = classAllocation[Lesson]
+                print(Timeslot + 1,
+                      end="\t")  # Timeslot's are represented as digits from 0 to 54 but will display as 1 to 55
+            print()
+
+        print(headerStr + "\n")
+
+        solutionValue = self.getObjectiveValue(solution)
+        print("\nSolution Value (Fitness):", solutionValue)
+        print("----------------------------------------------------------\n")
+
 
 """
 	GENETIC ALGORITHM
@@ -223,23 +282,25 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
         # Set benchmark fitness to the individual at 0
         bestIndividual = initialPopulation[0]
-        bestFitness = self.calculate_fitness(bestIndividual)
+        bestFitness = self.calculateFitness(bestIndividual)
         indexOfBestSoln = 0
-        iterrations = 0
+        generations = 0
         # Continue updating for a 1000 iterations if the best representation has not been changed
         iterationsSinceLastUpdate = 0
-        print("METHODS NOT IMPLEMENTED YET - MIGHT THROW AN ERROR SOMEWHERE")
+
         while iterationsSinceLastUpdate < 1000:
-            iterrations += 1
+            generations += 1
             foundBetterSoln = False
             # calculate the fitness of the population and update the best fitness if necessary
             for individual in initialPopulation:
-                individualFitness = self.calculate_fitness(individual)
+                individualFitness = self.calculateFitness(individual)
                 if individualFitness > bestFitness:
-                    bestIndividual = individual
+                    bestIndividual = copy.deepcopy(
+                        individual)  # store a copy of this individual as the best | cant just assign as a pointer will be assigned
                     bestFitness = individualFitness
                     foundBetterSoln = True
-                    indexOfBestSoln = iterrations
+                    indexOfBestSoln = generations
+
             if foundBetterSoln:
                 iterationsSinceLastUpdate = 0
             else:
@@ -247,7 +308,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
             updatedPopulation = []
 
-            for i in range(len(initialPopulation)):
+            for i in range(self.populationSize):
                 # Select parents
                 parent1, parent2 = self.selection(population=initialPopulation)
                 # produce a child from 2 parents
@@ -262,8 +323,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
                 updatedPopulation.append(child)
 
             initialPopulation = updatedPopulation
-        print('Solution found in ', indexOfBestSoln, ' evolutions with a fitness of ', bestFitness)
-        print(bestIndividual)
+
+        print('Solution found in generation', indexOfBestSoln, ' with a fitness of ', bestFitness)
+        self.printSolution(bestIndividual)
 
     """Helper Functions for solveTimetable()"""
 
@@ -281,6 +343,8 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 			:return:	The initial population for this Problem to be used by the Genetic Algorithm
 		"""
+
+        print("\n Initialising Population:\n")
 
         population = []  # list of individual chromosomes -> size will be self.populationSize after we add all the chromosomes
 
@@ -363,7 +427,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 					same class, generating a different initial allocation to work with
 				"""
                 if isValidAllocation:
-
+                    # if True:
                     newIndividual.append(classAllocation)
 
                     for lesson in self.LESSONS:  # ALT: for lesson in range(len(self.LESSONS))
@@ -374,10 +438,11 @@ class GeneticAlgorithm(TimetableAlgorithm):
                             classAllocation[lesson])  # add this timeslot to this teacher's allocated timeslots
 
                     currentClass = currentClass + 1
-                    print('individual', i + 1, ' class', currentClass, '\n',
-                          classAllocation)  # i+1 as we want to display starting from 1
+                    # print('Individual', i + 1, ' Class', currentClass, '\n', #classAllocation)  # i+1 as we want to display starting from 1
+                    print('Individual', i + 1, ' Class', currentClass, "allocated")
 
             population.append(newIndividual)
+            self.printSolution(newIndividual)
 
         return population
 
@@ -408,9 +473,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
             MAX_ITER = len(classI)
             for j in range(MAX_ITER):
                 # get a random period
-                x1 = random.randint(0, 54)
+                x1 = random.randint(0, 54)  # random integer in range [0, 54]
                 # get a second random period
-                x2 = random.randint(0, 54)
+                x2 = random.randint(0, 54)  # random integer in range [0, 54]
                 period1 = classI[x1]
                 period2 = classI[x2]
                 # get the 2 relevant subjects
@@ -435,7 +500,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
                     break
             # The loop will run and the mutated class will be added to the new chromosome
             mutatedChromosome.append(classI)
-            print(mutatedChromosome)
+        # print(mutatedChromosome)
         return mutatedChromosome
 
     def crossover(self, chromosome1, chromosome2):
@@ -448,7 +513,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
         parent2 = population[1]  # population[random.randint(0, len(population))]
         return parent1, parent2
 
-    def calculate_fitness(self, chromosome):
+    def calculateFitness(self, chromosome):
         # TODO: GA fitness
         # return fitness of chromosome
         # +5 for every correct allocation. Do we need this?
@@ -514,8 +579,11 @@ class GeneticAlgorithm(TimetableAlgorithm):
                 for t in range(s + 2, 11):
                     if subject == subjectsAllocatedForClass[t]:
                         fitness -= 1
-        print('Individual fitness = ', fitness)
+        # print('Individual fitness = ', fitness)
         return fitness
+
+    def getObjectiveValue(self, solution):
+        return self.calculateFitness(solution)
 
 
 """
@@ -591,16 +659,15 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
 		"""
-        # I'm going to write out the steps here to help myself a bit
 
         # execute initialisation procedure to initialise cats
         initialCats = self.intialiseCats()
 
         # set global best fitness to worst possible
-        global_best_fitness = 1000000  # may need to change once we determine objective function, place holder value for now
+        global_best_fitness = 1000000  # paper treats cat swarm as a minimisation problem, so start with a very large best fitness
 
         # paper uses 5000 iterations
-        iteration_counter = 500
+        iteration_counter = 5000
         # mixing ratio, initialised to 4% in paper for hybrid CS
         MR = 0.04
 
@@ -608,10 +675,10 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             for current_cat in initialCats:
                 # set current cat equal to the first cat
                 # calculate fitness of current_cat
-                current_cat_fitness = self.evaluateFitness(current_cat)
+                current_cat_fitness = self.calculateFitness(current_cat)
 
-                # is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a tyop)?
-                # copied it as is from the paper, but I think we want to maximise - need to change it here and in seek
+                # is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a typo,
+                # meant to be global_best_fitness)?
                 if current_cat_fitness <= global_best_fitness:  # assuming out fitness function wants to minimise
                     global_best_fitness = current_cat_fitness
                     self.global_best_cat = current_cat
@@ -620,13 +687,11 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 random_value = random.random()
                 # is random number > MR
                 if random_value > MR:
-                    # current_cat[self.mode_index] = self.SEEKING
                     current_cat.setState(self.CAT.SEEKING)
-                # self.seek(current_cat)
                 else:
-                    # current_cat[self.mode_index] = self.TRACING
                     current_cat.setState(self.CAT.TRACING)
-                # self.trace(current_cat) put the "behaviour" here bc it's not clear where it should go, and in the
+
+                # put the "behaviour" of the cats here as it's not clear where it should go, and in the
                 # original CSO algorithm, we move all the cats at once
                 seeking_cats = []
                 for cat in initialCats:
@@ -638,8 +703,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                     if cat.getState() == self.CAT.TRACING:
                         tracing_cats.append(cat)
                 self.trace(tracing_cats)
-        # Execute local search refining procedure in order to improve the quality of resultant time timetable
-        # regarding teachers gaps
+        # Execute local search refining procedure in order to improve the quality of resultant time timetable ; don't
+        # think we do this outside of evaluation(and the paper doesn't say how)
         return self.global_best_cat
 
     def intialiseCats(self):
@@ -702,7 +767,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
         return CATS
 
-    def evaluateFitness(self, current_cat: CAT):
+    def calculateFitness(self, current_cat: CAT):
         # change later
         BASE = 1.3
         fitnessValue = 0
@@ -741,13 +806,22 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             n = 0
             for j in range(len(current_cat_solution[i])):
                 teacherVal = current_cat_solution[i][j]
-                for k in range(j+1, len(current_cat_solution[i])):
-                    if teacherVal == current_cat_solution[i][k]:
+                for k in range(j + 1, len(current_cat_solution[i])):
+                    if teacherVal == current_cat_solution[i][j]:
                         n += 1
-            if n>10 :
+            if n > 10:
                 fitnessValue += ITDW * BASE
 
         return fitnessValue
+        pass
+
+    def getObjectiveValue(self, solution):
+        """
+			Implementing function from superclass
+			:param solution:
+			:return:
+		"""
+        return self.calculateFitness(solution)
 
     def seek(self, cats: typing.List[CAT]):
         # add code for seeking
@@ -759,7 +833,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         j = 0  # default initialisation
         candidate_positions = []
         for cat_copy in cats:
-            best_fitness = self.evaluateFitness(cat_copy)
+            best_fitness = self.calculateFitness(cat_copy)
             if SPC:
                 j = SMP - 1
                 candidate_positions.append(cat_copy)
@@ -776,17 +850,17 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 for i in range(0, round(sm)):
                     cat = self.Single_Swap(cat)
                     # if (self.Valid(cat)):  # if statement is not necessary if single swap only returns valid swaps
-                    new_fitness_value = self.evaluateFitness(cat)
+                    new_fitness_value = self.calculateFitness(cat)
                     if new_fitness_value <= best_fitness:
                         best_fitness = new_fitness_value
                         candidate_positions.append(cat)
 
-            old_fitness = self.evaluateFitness(candidate_positions[0])
+            old_fitness = self.calculateFitness(candidate_positions[0])
             FSmax = best_fitness
-            FSmin = self.evaluateFitness(self.global_best_cat)
+            FSmin = self.calculateFitness(self.global_best_cat)
             equal = True
             for i in range(len(candidate_positions) - 1):
-                fitness = self.evaluateFitness(candidate_positions[i])
+                fitness = self.calculateFitness(candidate_positions[i])
                 if fitness > FSmax:
                     FSmax = fitness
                 if fitness < FSmin:
@@ -798,12 +872,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             probabilities = [1.0 for _ in candidate_positions]
             if not equal:
                 for i in range(len(candidate_positions)):
-                    FSi = self.evaluateFitness(candidate_positions[i])
-                    Pi = abs(FSi - FSb) / abs(FSmax - FSmin)
+                    FSi = self.calculateFitness(candidate_positions[i])
+                    Pi = abs(FSi - FSb) / abs(FSmax - FSmin)  # formula from equation 15
                     probabilities[i] = Pi
 
             # pick a random position from the candidate positions the one to move to
-            # need to choose somehow, paper does't specify (probably using the probabilities)
+            # need to choose somehow, paper doesn't specify (probably using the probabilities)
             random_pos = random.choices(candidate_positions, weights=probabilities, k=1)[0]  # function returns a list
             # of size k
             cat_copy.setSolution(random_pos.getSolution())
@@ -811,11 +885,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
     def trace(self, cats: typing.List[CAT]):
         # add code for tracing
         for cat in cats:
-            c1 = 1  # i can't find where they set this value??? or explain it???
+            c1 = 2.0  # From the not-hybrid algorithm
             similarity = self.Similarity(cat)
             distance = self.totalNumClasses * len(self.TIMESLOTS) - similarity
             rand_number = random.random()
             cs = rand_number * c1 * distance  # number of cells to be swapped
+            # meant to be equivalent to the velocity from the original paper
 
             for _ in range(round(cs)):
                 self.Single_Swap(cat)
@@ -849,19 +924,26 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 break
 
         if (current_cat_solution[randClass][randCell1] != current_cat_solution[randClass][randCell2]) and (
-        not inCol1) and (not inCol2):
+                not inCol1) and (not inCol2):
             tempCat = current_cat_solution[randClass][randCell1]
-            current_cat_solution[randClass][randCell1] = current_cat[randClass][randCell2]
+            current_cat_solution[randClass][randCell1] = current_cat_solution[randClass][randCell2]
             current_cat_solution[randClass][randCell2] = tempCat
 
         current_cat.setSolution(current_cat_solution)
         return current_cat
 
     def Change_Random(self, cat_copy: CAT):
+        """
+        changes a random column in the cat_copy solution to the corresponding column in the best cat
+        :param cat_copy: cat to be changed
+        :return: modified cat
+        """
         # auxilliary procedure, section 3.4.3
         rand_col = random.randint(0, len(self.TIMESLOTS) - 1)
         cat_solution = cat_copy.getSolution()
         global_best_solution = self.global_best_cat.getSolution()
+
+        # need to first compensate for the swap we are about to make
         for row in range(len(cat_solution)):
             for col in range(len(cat_solution[row])):
                 if cat_solution[row][col] == global_best_solution[row][col] and (not col == rand_col):

@@ -1,0 +1,1514 @@
+Index: Algorithms.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import copy\r\nimport random\r\nimport datetime\r\nimport time\r\nimport math\r\nimport typing\r\nimport copy\r\n\r\n\r\nclass Input:\r\n\t\"\"\"\r\n\t\tA class to represent the problem instance (i.e. the variables obtained from the Sample Input textfile)\r\n\t\"\"\"\r\n\r\n\tdef __init__(self, teachingTable, numTeachers: int, numGr7Classes: int, numGr8Classes: int, numGr9Classes: int):\r\n\t\t\"\"\"\r\n\t\t\tConstructor\r\n\r\n\t\t\t:param teachingTable:\tA 2D list/array indicating the teacher to Class-Subject allocations\r\n\t\t\tThe rows are the classes and the columns are the subjects, and the value at [i, j] is the TeacherID of\r\n\t\t\tthe teacher who teaches Subject j to Class i\r\n\r\n\t\t\t:param numTeachers\t\tThe number of teachers teaching the Grade 7 to 9's\r\n\t\t\t:param numGr7Classes\tThe number of classes in Grade 7\r\n\t\t\t:param numGr8Classes\tThe number of classes in Grade 8\r\n\t\t\t:param numGr9Classes\tThe number of classes in Grade 9\r\n\r\n\t\t\"\"\"\r\n\t\tself.teachingTable = teachingTable\r\n\t\tself.numTeachers = numTeachers\r\n\t\tself.numGr7Classes = numGr7Classes\r\n\t\tself.numGr8Classes = numGr8Classes\r\n\t\tself.numGr9Classes = numGr9Classes\r\n\t\tself.totalnumClasses = self.numGr7Classes + self.numGr8Classes + self.numGr9Classes\r\n\r\n\tdef print(self):\r\n\t\t\"\"\"\r\n\t\t\tDisplays (to the Console) the values of this input instance\r\n\r\n\t\t\t- Displays the Number of classes in each Grade, the number of teachers, and the\r\n\t\t\t  Teacher Class-Subject Allocation Table (i.e. the teacher that teaches Class i Subject j)\r\n\r\n\t\t\t:return: None\r\n\t\t\"\"\"\r\n\r\n\t\tprint(\"Number of classes in Grade 7: \\t\\t\\t\\t\", self.numGr7Classes)\r\n\t\tprint(\"Number of classes in Grade 8: \\t\\t\\t\\t\", self.numGr8Classes)\r\n\t\tprint(\"Number of classes in Grade 9: \\t\\t\\t\\t\", self.numGr9Classes)\r\n\t\tprint(\"\\nNumber of teachers teaching in Grades 7-9:\\t\", self.numTeachers)\r\n\r\n\t\tprint(\"\\n\\nTeacher Class-Subject Allocation Table:\\n\")\r\n\r\n\t\t# Print Column Headings (Subjects)\r\n\r\n\t\tprint(\"Subjects ->\", end=\"\\t\\t\\t\\t\")\r\n\t\theaderStr = \"-----------------------\"\r\n\r\n\t\t# Subjects are represented as digits from 0 to 8 but will display as 1 to 9\r\n\t\tfor subject in range(1, 10):\r\n\t\t\tprint(subject, end=\"\\t\")\r\n\t\t\theaderStr += \"----\"\r\n\r\n\t\tprint(\"\\nClasses:\")\r\n\t\tprint(headerStr)\r\n\r\n\t\tclassNames = []\r\n\r\n\t\tfor i in range(self.numGr7Classes):\r\n\t\t\tclassName = \"Grade 7 - Class \" + str(i + 1)\r\n\t\t\tclassNames.append(className)\r\n\r\n\t\tfor i in range(self.numGr8Classes):\r\n\t\t\tclassName = \"Grade 8 - Class \" + str(i + 1)\r\n\t\t\tclassNames.append(className)\r\n\r\n\t\tfor i in range(self.numGr9Classes):\r\n\t\t\tclassName = \"Grade 9 - Class \" + str(i + 1)\r\n\t\t\tclassNames.append(className)\r\n\r\n\t\tfor Class in range(self.totalnumClasses):\r\n\t\t\tprint(classNames[Class], end=\"\\t|\\t\")  # Row Heading\r\n\t\t\tfor Teacher in self.teachingTable[Class]:\r\n\t\t\t\tprint(Teacher + 1,\r\n\t\t\t\t\t  end=\"\\t\")  # TeacherID's are represented as digits from 0 to numTeachers-1 but will display as 1 to numTeachers\r\n\t\t\tprint()\r\n\r\n\t\tprint(headerStr + \"\\n\")\r\n\r\n\r\nclass TimetableAlgorithm:\r\n\t\"\"\"\r\n\t\tThe abstract class to represent an algorithm used to solve our Timetable Problem\r\n\r\n\t\tA specific algorithm that we use sublcasses this class and implements its functions.\r\n\t\tAn instance of the subclass will be used to solve the Timetabling Problem on a given input\r\n\t\"\"\"\r\n\r\n\t\"\"\"CLASS CONSTANTS\"\"\"\r\n\tSUBJECTS = [\r\n\t\t\"Home Language\", \"First Additional Language\", \"Mathematics\", \"Natural Science\", \"Social Science\",\r\n\t\t\"Technology\", \"Economic and Management Science\", \"Life Orientation\", \"Arts and Culture\"\r\n\t]\r\n\r\n\t# Using List Comprehension to define the Lesson and Timeslot numbers\r\n\t# In the code, we are representing the number of Lessons and Timeslots from 0-54 as indexes begin at 0 (Mathematically, its from 1-55)\r\n\t# So Day numbers will be represented from 0-4 and to get the day number of a timeslot, use floor(timeslot // 5)\r\n\r\n\tLESSONS = [lesson for lesson in range(0, 55)]\r\n\tTIMESLOTS = [timeslot for timeslot in range(0, 55)]  # The permutation of all the timeslots in increasing order\r\n\tTIMESLOTS_SET = set(\r\n\t\tTIMESLOTS)  # Representing the Timeslots as a set | Will be used to compare to a generated timeslot to determine if it is a valid permutation\r\n\r\n\t# Indicates the Subject index of a lesson - index is the lesson number, and value is the Subject index at that lesson\r\n\t# Use the SUBJECTS constant to get the Subject name at that Subject index\r\n\tLESSON_SUBJECTS = [\r\n\t\t0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\r\n\t\t1, 1, 1, 1, 1, 1, 1, 1,\r\n\t\t2, 2, 2, 2, 2, 2, 2, 2, 2,\r\n\t\t3, 3, 3, 3, 3, 3,\r\n\t\t4, 4, 4, 4, 4, 4,\r\n\t\t5, 5, 5, 5,\r\n\t\t6, 6, 6, 6,\r\n\t\t7, 7, 7, 7,\r\n\t\t8, 8, 8, 8\r\n\t]\r\n\r\n\tdef __init__(self, input: Input, populationSize: int):\r\n\t\t\"\"\"\r\n\t\t\tConstructor\r\n\r\n\t\t\t:param input:\tAn object of type Input containing the teachingTable, numTeachers, numGr7Classes, numGr8Classes,\r\n\t\t\t numGr9Classes, totalNumClasses variables of this problem instance\r\n\r\n\t\t\tThe teachingTable is a 2D list/array indicating the teacher to Class-Subject allocations\r\n\t\t\tThe rows are the classes and the columns are the subjects, and the value at [i, j] is the TeacherID of\r\n\t\t\tthe teacher who teachers Subject j to Class i\r\n\r\n\t\t\t:param populationSize\tthe size of the population to use for the Algorithm\r\n\r\n\t\t\"\"\"\r\n\r\n\t\tself.teachingTable = input.teachingTable\r\n\t\tself.numTeachers = input.numTeachers\r\n\t\tself.numGr7Classes = input.numGr7Classes\r\n\t\tself.numGr8Classes = input.numGr8Classes\r\n\t\tself.numGr9Classes = input.numGr9Classes\r\n\t\tself.totalNumClasses = input.totalnumClasses\r\n\t\tself.populationSize = populationSize\r\n\r\n\tdef solveTimetable(self):\r\n\t\t\"\"\"\r\n\t\t\tSolve the Timetable Problem using this algorithm\r\n\t\t\tThis function can call helper functions defined in the subclass that it can use to solve\r\n\r\n\r\n\t\t\tA solution in the Solution Space for this Problem is a 2D-array/list of integer values indicating the\r\n\t\t\tTimeslot that a specific Class has a specific Lesson\r\n\t\t\tThe rows are the classes and the columns are the lessons, and the value at [i, j] in this 2D array/list\r\n\t\t\tis the Timeslot number that Class i has Lesson j in the week\r\n\t\t\tIt can also be viewed as a list of sublists with each sublist being a row in the table -\r\n\t\t\teach sublist (of size 55) representing (the timeslot to lesson allocations of) a Class,\r\n\t\t\tand sublist i is a permutation of the integers 0-54 (as all 55 lessons must be allocated to timeslots, and to unique timeslots)\r\n\t\t\tFor sublist i, the value at index j is the timeslot that Class i has Lesson j\r\n\r\n\t\t\tThus we can view a solution as a list of permutations of the set {0, 1, ..., 54}\r\n\r\n\r\n\t\t\t:return:\tThe optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)\r\n\t\t\"\"\"\r\n\r\n\tdef getObjectiveValue(self, solution):\r\n\t\t\"\"\"\r\n\t\t\tAbstract Function to be implemented by subclasses\r\n\r\n\t\t\t:return: The objective function's value of this candidate solution\r\n\t\t\"\"\"\r\n\r\n\r\n\tdef printSolution(self, solution):\r\n\t\t\"\"\"\r\n\t\t\tDisplay a possible/candidate solution (i.e. an individual/chromosome)\r\n\r\n\t\t\t:param solution: A candidate solution in the solution space\r\n\t\t\t:return: None\r\n\t\t\"\"\"\r\n\t\tprint(\"\\n\\nSOLUTION:\\nClass-Lesson Timeslot Allocation Table:\\n\")\r\n\r\n\t\t# Print Column Headings (Subjects)\r\n\r\n\t\tprint(\"Lessons ->\", end=\"\\t\\t\\t\\t\")\r\n\t\theaderStr = \"-----------------------\"\r\n\r\n\t\t# Lessons are represented as digits from 0 to 54 but will display as 1 to 55\r\n\t\tfor lesson in range(1, 56):\r\n\t\t\tprint(lesson, end=\"\\t\")\r\n\t\t\theaderStr += \"----\"\r\n\r\n\t\tprint(\"\\nClasses:\")\r\n\t\tprint(headerStr)\r\n\r\n\t\tclassNames = []\r\n\r\n\t\tfor i in range(self.numGr7Classes):\r\n\t\t\tclassName = \"Grade 7 - Class \" + str(i + 1)\r\n\t\t\tclassNames.append(className)\r\n\r\n\t\tfor i in range(self.numGr8Classes):\r\n\t\t\tclassName = \"Grade 8 - Class \" + str(i + 1)\r\n\t\t\tclassNames.append(className)\r\n\r\n\t\tfor i in range(self.numGr9Classes):\r\n\t\t\tclassName = \"Grade 9 - Class \" + str(i + 1)\r\n\t\t\tclassNames.append(className)\r\n\r\n\t\tfor Class in range(self.totalNumClasses):\r\n\t\t\tprint(classNames[Class], end=\"\\t|\\t\")  # Row Heading\r\n\t\t\tclassAllocation = solution[Class]\r\n\t\t\tfor Lesson in self.LESSONS:\r\n\t\t\t\tTimeslot = classAllocation[Lesson]\r\n\t\t\t\tprint(Timeslot+1,\r\n\t\t\t\t\t  end=\"\\t\")  # Timeslot's are represented as digits from 0 to 54 but will display as 1 to 55\r\n\t\t\tprint()\r\n\r\n\t\tprint(headerStr + \"\\n\")\r\n\r\n\t\tsolutionValue = self.getObjectiveValue(solution)\r\n\t\tprint(\"\\nSolution Value (Fitness):\", solutionValue)\r\n\t\tprint(\"----------------------------------------------------------\\n\")\r\n\r\n\"\"\"\r\n\tGENETIC ALGORITHM\r\n\"\"\"\r\n\r\n\r\nclass GeneticAlgorithm(TimetableAlgorithm):\r\n\r\n\tdef __init__(self, input: Input, populationSize: int = 10):\r\n\t\t\"\"\"\r\n\t\t\tConstructor for the Genetic Algorithm\r\n\r\n\t\t\tParameters are the same as that of its superclass TimetableAlgorithm\r\n\t\t\tPopuzlation Size is assigned a default value of 100\r\n\r\n\t\t\tNote that this class has the same class variables specified in the __init__() constructor\r\n\t\t\tof the superclass TimetableAlgorithm\r\n\r\n\t\t\"\"\"\r\n\r\n\t\t# Call super constructor\r\n\t\tsuper().__init__(input, populationSize)\r\n\r\n\tdef solveTimetable(self):\r\n\t\t\"\"\"\r\n\t\t\tImplementing this abstract function defined in the superclass\r\n\r\n\t\t\tSolve the Timetable Problem using this Genetic algorithm\r\n\r\n\t\t\tSee the docstring of solveTimetable() in the superclass for a description of a solution (chromosome)\r\n\r\n\t\t\tA gene is an integer value that represents a timeslot\r\n\t\t\tThus the Gene  Pool is all values in the range [0 ,54]\r\n\r\n\t\t\tWe can think of a  super-gene in a chromosome as a permutation list of the set {0, 1, ..., 54}\r\n\t\t\tIt is useful to think of a super-gene, as a constraint of our problem is that each row (sub-list) in the solution table\r\n\t\t\tis a list representing a permutation of the numbers 0-54\r\n\t\t\tThe number of super-genes (sublists) in a chromosome for a problem instance is input.totalNumClasses\r\n\r\n\t\t\t:return:\tThe optimal feasible solution after the termination criteria has been met, and its associated fitness value (as a tuple, in that order)\r\n\t\t\"\"\"\r\n\r\n\t\t# initialise Population\r\n\t\t# start = datetime.datetime.now()\r\n\t\tstart = time.time()\r\n\r\n\t\tinitialPopulation = self.initialisePopulation()\r\n\r\n\t\t# end = datetime.datetime.now()\r\n\t\tend = time.time()\r\n\r\n\t\ttimeTaken = end - start\r\n\t\tprint(\"Time taken to init:\", timeTaken, \"seconds\")\r\n\r\n\t\t# Set benchmark fitness to the individual at 0\r\n\t\tbestIndividual = initialPopulation[0]\r\n\t\tbestFitness = self.calculateFitness(bestIndividual)\r\n\t\tindexOfBestSoln = 0\r\n\t\tgenerations = 0\r\n\t\t# Continue updating for a 1000 iterations if the best representation has not been changed\r\n\t\titerationsSinceLastUpdate = 0\r\n\r\n\t\twhile iterationsSinceLastUpdate < 1000:\r\n\t\t\tgenerations += 1\r\n\t\t\tfoundBetterSoln = False\r\n\t\t\t# calculate the fitness of the population and update the best fitness if necessary\r\n\t\t\tfor individual in initialPopulation:\r\n\t\t\t\tindividualFitness = self.calculateFitness(individual)\r\n\t\t\t\tif individualFitness > bestFitness:\r\n\t\t\t\t\tbestIndividual = copy.deepcopy(individual) # store a copy of this individual as the best | cant just assign as a pointer will be assigned\r\n\t\t\t\t\tbestFitness = individualFitness\r\n\t\t\t\t\tfoundBetterSoln = True\r\n\t\t\t\t\tindexOfBestSoln = generations\r\n\r\n\t\t\tif foundBetterSoln:\r\n\t\t\t\titerationsSinceLastUpdate = 0\r\n\t\t\telse:\r\n\t\t\t\titerationsSinceLastUpdate += 1\r\n\r\n\t\t\tupdatedPopulation = []\r\n\r\n\t\t\tfor i in range(self.populationSize):\r\n\t\t\t\t# Select parents\r\n\t\t\t\tparent1, parent2 = self.selection(population=initialPopulation)\r\n\t\t\t\t# produce a child from 2 parents\r\n\t\t\t\tchild = self.crossover(parent1, parent2)\r\n\t\t\t\t# Probability for operators\r\n\t\t\t\tprobability = random.random()\r\n\t\t\t\t# if probability is less than 0.1 then conduct mutation on child\r\n\t\t\t\tif probability < 0.1:\r\n\t\t\t\t\t# mutation on child\r\n\t\t\t\t\tchild = self.mutation(child)\r\n\t\t\t\t# add child to new population\r\n\t\t\t\tupdatedPopulation.append(child)\r\n\r\n\t\t\tinitialPopulation = updatedPopulation\r\n\r\n\t\tprint('Solution found in generation', indexOfBestSoln, ' with a fitness of ', bestFitness)\r\n\t\tself.printSolution(bestIndividual)\r\n\r\n\r\n\r\n\t\"\"\"Helper Functions for solveTimetable()\"\"\"\r\n\r\n\tdef initialisePopulation(self):\r\n\t\t\"\"\"\r\n\t\t\tInitialises the population (generates the initial population) for the Genetic Algorithm\r\n\r\n\t\t\tSize of population is self.populationSize\r\n\r\n\t\t\t[DEPRECATED]The chromosomes are randomly generated by repeatedly generating shuffled lists of the TIMESLOTS list\r\n\r\n\t\t\tThe chromosomes are built by doing each value in the chromosome table, ensuring teachers dont have clashes\r\n\t\t\t(i.e. repeatedly selecting a random value of the available remaining timeslots for that class\r\n\t\t\t(timeslot for a Class-Lesson) till that teacher doesnt have a clash)\r\n\r\n\t\t\t:return:\tThe initial population for this Problem to be used by the Genetic Algorithm\r\n\t\t\"\"\"\r\n\r\n\t\tprint(\"\\n Initialising Population:\\n\")\r\n\r\n\t\tpopulation = []  # list of individual chromosomes -> size will be self.populationSize after we add all the chromosomes\r\n\r\n\t\tfor i in range(self.populationSize):  # Create chromosome individual i\r\n\r\n\t\t\t\"\"\"\r\n\t\t\t\tChromosome i is a 2D-array / a list of sub-lists with the number of rows (sublists being seld.totalNumClasses)\r\n\t\t\t\tand the number of columns (size of a sublist)  being 55 (representing the lessons)\r\n\t\t\t\"\"\"\r\n\t\t\tnewIndividual = []  # Chromosome i\r\n\r\n\t\t\t# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome\r\n\t\t\tteacherTimeslotAllocations = self.getEmptyTeacherAllocation()\r\n\r\n\t\t\tcurrentClass = 0\r\n\r\n\t\t\twhile currentClass < self.totalNumClasses:  # Create timeslot allocation for each class j in chromosome i\r\n\r\n\t\t\t\t# generate an lesson-timeslot allocation  for class j\r\n\r\n\t\t\t\t# classAllocation = list(range(55))\r\n\t\t\t\t# random.shuffle(classAllocation)\r\n\r\n\t\t\t\tclassAllocation = random.sample(self.TIMESLOTS, len(\r\n\t\t\t\t\tself.TIMESLOTS))  # random.sample(list, size) returns a new shuffled list. The original list remains unchanged.\r\n\r\n\t\t\t\t\"\"\"\r\n\t\t\t\t\tDetermine if this class allocation a valid one with respect to teacher times\r\n\t\t\t\t\t(i.e. there are (currently) no timeslot conflicts for any teacher when adding this allocation- \r\n\t\t\t\t\tHard Constraint 3: A teacher can only teach one lesson in a specific timeslot)\r\n\t\t\t\t\"\"\"\r\n\t\t\t\tisValidAllocation = True\r\n\r\n\t\t\t\tfor lesson in range(len(self.LESSONS)):  # For each of the 55 lessons that we allocated a timeslot\r\n\r\n\t\t\t\t\ttimeslot = classAllocation[lesson]  # the timeslot allocated to this lesson\r\n\r\n\t\t\t\t\tsubject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this lesson is\r\n\t\t\t\t\tteacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson\r\n\r\n\t\t\t\t\t# check if this teacher is not already teaching in this timeslot\r\n\r\n\t\t\t\t\tteacherAllocation = teacherTimeslotAllocations[teacher]\r\n\r\n\t\t\t\t\tif timeslot in teacherAllocation:  # teacher is already allocated to this timeslot - i.e. there is a clash\r\n\t\t\t\t\t\t# BELOW IS TO SWAP WHEN THERE'S A CLASH - SEEMS TO BE TAKING LONGER THAN JUST GENERATING A NEW ALLOCATION FOR THIS CLASS\r\n\t\t\t\t\t\t\"\"\"\r\n\t\t\t\t\t\t# Find another teacher that teaches this class to swap with\r\n\t\t\t\t\t\tswapFound = False\r\n\r\n\t\t\t\t\t\tfor otherLesson in range(len(self.LESSONS)):  # For each of the 55 lessons\r\n\t\t\t\t\t\t\tif otherLesson != lesson:\r\n\t\t\t\t\t\t\t\totherTimeslot = classAllocation[lesson]  # the timeslot allocated to this other lesson\r\n\r\n\t\t\t\t\t\t\t\tif otherTimeslot not in teacherAllocation: # the current teacher is free in this other timeslot\r\n\t\t\t\t\t\t\t\t\totherSubject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this other lesson is\r\n\t\t\t\t\t\t\t\t\totherTeacher = self.teachingTable[currentClass][subject]  # teacher that teaches this other lesson\r\n\t\t\t\t\t\t\t\t\totherTeacherAllocation = teacherTimeslotAllocations[teacher]\r\n\r\n\t\t\t\t\t\t\t\t\tif timeslot not in otherTeacherAllocation: # the other teacher is free in this current timeslot\r\n\t\t\t\t\t\t\t\t\t\tswapFound = True\r\n\t\t\t\t\t\t\t\t\t\t# we can swap timeslots\r\n\t\t\t\t\t\t\t\t\t\tclassAllocation[lesson] = otherTimeslot\r\n\t\t\t\t\t\t\t\t\t\tclassAllocation[otherLesson] = timeslot\r\n\t\t\t\t\t\t\t\t\t\tbreak # stop the search as we've found another lesson to swap with\r\n\r\n\r\n\t\t\t\t\t\tif swapFound == False: # if we did not find another lesson to swap with (since there is a clash), then this cannot be a valid allocation\r\n\t\t\t\t\t\t\tisValidAllocation = False\r\n\t\t\t\t\t\t\"\"\"\r\n\r\n\t\t\t\t\t\tisValidAllocation = False\r\n\r\n\t\t\t\t\"\"\"\r\n\t\t\t\t\tIf this lesson-timeslot allocation for this class is valid, then add it in its place to the chromosome\r\n\t\t\t\t\tand add to the teacher allocations\r\n\t\t\t\t\tThen increment the class number to move on to the next class\r\n\t\t\t\t\t\r\n\t\t\t\t\tIf this allocation is invalid (the condition below is False) then the loop will run again for the \r\n\t\t\t\t\tsame class, generating a different initial allocation to work with\r\n\t\t\t\t\"\"\"\r\n\t\t\t\tif isValidAllocation:\r\n\t\t\t\t#if True:\r\n\t\t\t\t\tnewIndividual.append(classAllocation)\r\n\r\n\t\t\t\t\tfor lesson in self.LESSONS:  # ALT: for lesson in range(len(self.LESSONS))\r\n\t\t\t\t\t\tsubject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this lesson is\r\n\t\t\t\t\t\tteacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson\r\n\t\t\t\t\t\tteacherTimeslotAllocations[teacher].append(classAllocation[lesson])  # add this timeslot to this teacher's allocated timeslots\r\n\r\n\t\t\t\t\tcurrentClass = currentClass + 1\r\n\t\t\t\t\t#print('Individual', i + 1, ' Class', currentClass, '\\n', #classAllocation)  # i+1 as we want to display starting from 1\r\n\t\t\t\t\tprint('Individual', i + 1, ' Class', currentClass, \"allocated\")\r\n\r\n\t\t\tpopulation.append(newIndividual)\r\n\t\t\tself.printSolution(newIndividual)\r\n\r\n\t\treturn population\r\n\r\n\tdef getEmptyTeacherAllocation(self) -> [[]]:\r\n\t\tteacherTimeslotAllocations = []\r\n\t\tfor teacher in range(self.numTeachers):  # Add an empty array for each Teacher\r\n\t\t\tteacherAllocation = []\r\n\t\t\tteacherTimeslotAllocations.append(teacherAllocation)\r\n\t\treturn teacherTimeslotAllocations\r\n\r\n\tdef getTeacherAllocation(self, chromosome):\r\n\t\tteacherAllocation = self.getEmptyTeacherAllocation()\r\n\t\t# take the individuals distibution and assign to relevant teachers\r\n\t\tfor i in range(len(chromosome)):\r\n\t\t\tfor j in range(len(chromosome[i])):\r\n\t\t\t\tsub = self.LESSON_SUBJECTS[j]\r\n\t\t\t\tteacher = self.teachingTable[i][sub]\r\n\t\t\t\tteacherAllocation[teacher].append(chromosome[i][j])\r\n\t\treturn teacherAllocation\r\n\r\n\r\n\tdef mutation(self, chromosome):\r\n\t\tmutatedChromosome = []\r\n\t\tteacherAllocation = self.getTeacherAllocation(chromosome)\r\n\t\tfor i in range(len(chromosome)):\r\n\t\t\t# get the class i\r\n\t\t\tclassI = chromosome[i]\r\n\t\t\tisMutated = False\r\n\t\t\tMAX_ITER = len(classI)\r\n\t\t\tfor j in range(MAX_ITER):\r\n\t\t\t\t# get a random period\r\n\t\t\t\tx1 = random.randint(0, 54) # random integer in range [0, 54]\r\n\t\t\t\t# get a second random period\r\n\t\t\t\tx2 = random.randint(0, 54)  # random integer in range [0, 54]\r\n\t\t\t\tperiod1 = classI[x1]\r\n\t\t\t\tperiod2 = classI[x2]\r\n\t\t\t\t# get the 2 relevant subjects\r\n\t\t\t\tsubject1 = self.LESSON_SUBJECTS[x1]\r\n\t\t\t\tsubject2 = self.LESSON_SUBJECTS[x2]\r\n\t\t\t\tteacher1 = self.teachingTable[i][subject1]\r\n\t\t\t\tteacher2 = self.teachingTable[i][subject2]\r\n\t\t\t\t# get the teacher allocations of those subjects\r\n\t\t\t\tteacherAlloc1 = teacherAllocation[teacher1]\r\n\t\t\t\tteacherAlloc2 = teacherAllocation[teacher2]\r\n\t\t\t\tif period1 not in teacherAlloc2 and period2 not in teacherAlloc1:\r\n\t\t\t\t\tisMutated = True\r\n\t\t\t\t\t# update teacher allocations for future\r\n\t\t\t\t\tteacherAlloc1.remove(period1)\r\n\t\t\t\t\tteacherAlloc1.append(period2)\r\n\t\t\t\t\tteacherAlloc2.remove(period2)\r\n\t\t\t\t\tteacherAlloc1.append(period1)\r\n\t\t\t\t\t# updating the class\r\n\t\t\t\t\tclassI[x1] = period2\r\n\t\t\t\t\tclassI[x2] = period1\r\n\t\t\t\tif isMutated:\r\n\t\t\t\t\tbreak\r\n\t\t\t# The loop will run and the mutated class will be added to the new chromosome\r\n\t\t\tmutatedChromosome.append(classI)\r\n\t\t\t#print(mutatedChromosome)\r\n\t\treturn mutatedChromosome\r\n\r\n\tdef crossover(self, chromosome1, chromosome2):\r\n\t\t# TODO: Crossover\r\n\t\treturn chromosome1\r\n\r\n\tdef selection(self, population):\r\n\t\t# TODO: Selection\r\n\t\tparent1 = population[0]  # population[random.randint(0, len(population))]\r\n\t\tparent2 = population[1]  # population[random.randint(0, len(population))]\r\n\t\treturn parent1, parent2\r\n\r\n\tdef calculateFitness(self, chromosome):\r\n\t\t# TODO: GA fitness\r\n\t\t# return fitness of chromosome\r\n\t\t# +5 for every correct allocation. Do we need this?\r\n\t\t# +3 for a double period [done]\r\n\t\t# -2 for more than 2 periods on a subject in a day [done]\r\n\t\t# -1 for two single periods on the same day for a subject [done]\r\n\t\t# -2 for each time a teacher teaches for more than 4 periods consecutively [done]\r\n\t\tfitness = 0\r\n\t\t# for each subject evaluate the allocation (class and teacher wise)\r\n\t\t# empty teacher allocation array\r\n\t\tteacherAllocation = self.getTeacherAllocation(chromosome)\r\n\t\t# check to see if any teacher works more than 4periods at once\r\n\t\tfor teacher in teacherAllocation:\r\n\t\t\tworkingPeriods = teacher\r\n\t\t\t# sort in order [0, 54]\r\n\t\t\tworkingPeriods.sort()\r\n\t\t\tconsecutive = 0\r\n\t\t\tfor i in range(len(workingPeriods) - 1):\r\n\t\t\t\tif workingPeriods[i] + 1 == workingPeriods[i + 1]:\r\n\t\t\t\t\tconsecutive += 1\r\n\t\t\t\telse:\r\n\t\t\t\t\tconsecutive = 0\r\n\t\t\t\tif consecutive == 4:\r\n\t\t\t\t\tfitness -= 2\r\n\t\t\t\t\tconsecutive = 0\r\n\r\n\t\t# reward double periods\r\n\t\t# for each class in the chromosome\r\n\t\tfor i in range(len(chromosome)):\r\n\t\t\t# for each slot in the class\r\n\t\t\tfor j in range(len(chromosome[i]) - 1):\r\n\t\t\t\t# for each slot after j\r\n\t\t\t\tfor k in range(j + 1, len(chromosome[i]) - 1):\r\n\t\t\t\t\t# get subject being held at j\r\n\t\t\t\t\tsubject1 = self.LESSON_SUBJECTS[j]\r\n\t\t\t\t\t# get subject being held at k\r\n\t\t\t\t\tsubject2 = self.LESSON_SUBJECTS[k]\r\n\t\t\t\t\t# check if they are the same subject\r\n\t\t\t\t\tif subject1 == subject2:\r\n\t\t\t\t\t\t# check if they are consecutive\r\n\t\t\t\t\t\tif chromosome[i][j] + 1 == chromosome[i][k]:\r\n\t\t\t\t\t\t\tfitness += 3\r\n\t\t\t\t\telse:\r\n\t\t\t\t\t\tbreak\r\n\t\t# penalize two seperate periods on the same day\r\n\t\tfor gene in chromosome:\r\n\t\t\tsubjectsAllocatedForClass = []\r\n\t\t\tfor g in range(len(gene)):\r\n\t\t\t\tpos = gene.index(g)\r\n\t\t\t\tsubject = self.LESSON_SUBJECTS[pos]\r\n\t\t\t\tsubjectsAllocatedForClass.append(subject)\r\n\t\t\tfor s in range(len(subjectsAllocatedForClass) - 2):\r\n\t\t\t\t# 3 consec periods of the same subject\r\n\t\t\t\tif subjectsAllocatedForClass[s] == subjectsAllocatedForClass[s + 1] and subjectsAllocatedForClass[s] == \\\r\n\t\t\t\t\t\tsubjectsAllocatedForClass[s + 2]:\r\n\t\t\t\t\tfitness -= 2\r\n\t\t\t\telse:\r\n\t\t\t\t\tcontinue\r\n\t\t\tcounter = 0\r\n\t\t\t# check if there is 2 periods of the same subjects in the same day[not consecutive]\r\n\t\t\tfor s in range(len(subjectsAllocatedForClass)):\r\n\t\t\t\tsubject = subjectsAllocatedForClass[s]\r\n\t\t\t\tfor t in range(s + 2, 11):\r\n\t\t\t\t\tif subject == subjectsAllocatedForClass[t]:\r\n\t\t\t\t\t\tfitness -= 1\r\n\t\t#print('Individual fitness = ', fitness)\r\n\t\treturn fitness\r\n\r\n\tdef getObjectiveValue(self, solution):\r\n\t\treturn self.calculateFitness(solution)\r\n\r\n\r\n\"\"\"\r\n\tCAT SWARM OPTIMIZATION ALGORITHM\r\n\"\"\"\r\n\r\n\r\nclass CatSwarmAlgorithm(TimetableAlgorithm):\r\n\tclass CAT:\r\n\t\tSEEKING = 1\r\n\t\tTRACING = 2\r\n\r\n\t\tdef __init__(self):\r\n\t\t\tself.state = 0\r\n\t\t\t\"\"\"\r\n\t\t\t0 for when the cat is idle 1 in seek mode and 2 for trace mode \r\n\t\t\t\"\"\"\r\n\t\t\t# self.location = 0 # don't think we need location if we have solution\r\n\t\t\t\"\"\"\r\n\t\t\t\tcurrent position in the solution space, changes when cat given permission to seek\r\n\t\t\t\"\"\"\r\n\t\t\tself.solution = [[]]\r\n\t\t\t\"\"\"current solution the cat possesses\r\n\t\t\t\"\"\"\r\n\t\t\t# we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step\r\n\t\t\tself.velocity = 0.0\r\n\r\n\t\tdef setState(self, newState: int):\r\n\t\t\t\"\"\"\r\n\t\t\t\t\tsetter for state\r\n\t\t\t\"\"\"\r\n\t\t\tself.state = newState\r\n\r\n\t\t# we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step\r\n\t\tdef setVelocity(self, newVelocity: int):\r\n\t\t\t\"\"\"\r\n\t\t\t\t\tsetter for location\r\n\t\t\t\"\"\"\r\n\t\t\tself.velocity = newVelocity\r\n\r\n\t\tdef setSolution(self, newSolution: [[]]):\r\n\t\t\t\"\"\"\r\n\t\t\t\t\tsetter for solution\r\n\t\t\t\"\"\"\r\n\t\t\tself.solution = newSolution\r\n\r\n\t\tdef getState(self):\r\n\t\t\t\"\"\"\r\n\t\t\t\t\tgetter for state\r\n\t\t\t\"\"\"\r\n\t\t\treturn self.state\r\n\r\n\t\tdef getSolution(self):\r\n\t\t\t\"\"\"\r\n\t\t\t\t\tgetter for solution\r\n\t\t\t\"\"\"\r\n\t\t\treturn self.solution\r\n\r\n\t\t# we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step\r\n\t\tdef getVelociy(self):\r\n\t\t\t\"\"\"\r\n\t\t\t\t\tgetter for velocity\r\n\t\t\t\"\"\"\r\n\t\t\treturn self.velocity\r\n\r\n\t\t\t'''\r\n            don't think we need location if we have solution\r\n            def setLocation(self, newlocation: int):\r\n                \"\"\"\r\n                        setter for location\r\n                \"\"\"\r\n                self.location = newlocation\r\n                '''\r\n\r\n\t\t'''\r\n        don't think we need location if we have solution\r\n        def getLocation(self):\r\n            \"\"\"\r\n\t\t\t\t\tgetter for solution\r\n\t\t\t\"\"\"\r\n            return self.location\r\n            '''\r\n\r\n\tdef __init__(self, input: Input, populationSize: int):\r\n\t\t\"\"\"\r\n\t\t\tConstructor for the Cat Swarm Optimization Algorithm\r\n\r\n\t\t\tParameters are the same as that of its superclass TimetableAlgorithm\r\n\r\n\t\t\tNote that this class has the same class variables specified in the __init__() constructor\r\n\t\t\tof the superclass TimetableAlgorithm\r\n\r\n\t\t\"\"\"\r\n\t\t# Call super constructor\r\n\t\tsuper().__init__(input, populationSize)\r\n\t\tself.global_best_cat = self.CAT()\r\n\r\n\tdef solveTimetable(self):\r\n\t\t\"\"\"\r\n\t\t\tImplementing this abstract function defined in the superclass\r\n\r\n\t\t\tSolve the Timetable Problem using this Cat Swarm Optimization algorithm\r\n\t\t\tThis function can call helper functions defined in the subclass that it can use to solve\r\n\r\n\t\t\t:return:\tThe optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)\r\n\t\t\"\"\"\r\n\r\n\t\t# execute initialisation procedure to initialise cats\r\n\t\tinitialCats = self.intialiseCats()\r\n\r\n\t\t# set global best fitness to worst possible\r\n\t\tglobal_best_fitness = 1000000  # paper treats cat swarm as a minimisation problem, so start with a very large best fitness\r\n\r\n\t\t# paper uses 5000 iterations\r\n\t\titeration_counter = 5000\r\n\t\t# mixing ratio, initialised to 4% in paper for hybrid CS\r\n\t\tMR = 0.04\r\n\r\n\t\tfor i in range(0, iteration_counter):\r\n\t\t\tfor current_cat in initialCats:\r\n\t\t\t\t# set current cat equal to the first cat\r\n\t\t\t\t# calculate fitness of current_cat\r\n\t\t\t\tcurrent_cat_fitness = self.calculateFitness(current_cat)\r\n\r\n\t\t\t\t# is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a typo,\r\n\t\t\t\t# meant to be global_best_fitness)?\r\n\t\t\t\tif current_cat_fitness <= global_best_fitness:  # assuming out fitness function wants to minimise\r\n\t\t\t\t\tglobal_best_fitness = current_cat_fitness\r\n\t\t\t\t\tself.global_best_cat = current_cat\r\n\r\n\t\t\t\t# choose a random value between 0 and 1\r\n\t\t\t\trandom_value = random.random()\r\n\t\t\t\t# is random number > MR\r\n\t\t\t\tif random_value > MR:\r\n\t\t\t\t\tcurrent_cat.setState(self.CAT.SEEKING)\r\n\t\t\t\telse:\r\n\t\t\t\t\tcurrent_cat.setState(self.CAT.TRACING)\r\n\r\n\t\t\t\t# put the \"behaviour\" of the cats here as it's not clear where it should go, and in the\r\n\t\t\t\t# original CSO algorithm, we move all the cats at once\r\n\t\t\t\tseeking_cats = []\r\n\t\t\t\tfor cat in initialCats:\r\n\t\t\t\t\tif cat.getState() == self.CAT.SEEKING:\r\n\t\t\t\t\t\tseeking_cats.append(cat)\r\n\t\t\t\tself.seek(seeking_cats)\r\n\t\t\t\ttracing_cats = []\r\n\t\t\t\tfor cat in initialCats:\r\n\t\t\t\t\tif cat.getState() == self.CAT.TRACING:\r\n\t\t\t\t\t\ttracing_cats.append(cat)\r\n\t\t\t\tself.trace(tracing_cats)\r\n\t\t# Execute local search refining procedure in order to improve the quality of resultant time timetable ; don't\r\n\t\t# think we do this outside of evaluation(and the paper doesn't say how)\r\n\t\treturn self.global_best_cat\r\n\r\n\tdef intialiseCats(self):\r\n\t\t# initialise n cats (paper says 30, we may need to change)\r\n\t\t# revisiting the logic later\r\n\t\tCATS = []  # list of individual cats -> size will be self.populationSize after we add all the cats\r\n\r\n\t\tfor i in range(self.populationSize):  # Create cat i\r\n\r\n\t\t\tteacherClassAlloc = list(range(1, self.numTeachers))\r\n\r\n\t\t\t# rows = classes, cols= timeslots\r\n\t\t\tnew_allocation = [[0 for _ in range(len(self.TIMESLOTS))] for _ in range(self.totalNumClasses)]  # cat i\r\n\r\n\t\t\t# col by row instead of row by col to ensure no duplicate teachers\r\n\t\t\tfor j in range(len(new_allocation[0])):\r\n\t\t\t\trandom.shuffle(teacherClassAlloc)\r\n\t\t\t\tfor k in range(len(new_allocation)):\r\n\t\t\t\t\tnew_allocation[j][k] = teacherClassAlloc[k]\r\n\r\n\t\t\tnew_cat = self.CAT()\r\n\t\t\tnew_cat.setSolution(new_allocation)\r\n\t\t\tCATS.append(new_cat)\r\n\r\n\t\t\t# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers)\r\n\t\t\t# as we building the chromosome\r\n\t\t\t'''\r\n            \r\n            teacherTimeslotAllocations = []\r\n\r\n            for teacher in range(self.numTeachers):  # Add an empty array for each Teacher\r\n                teacherAllocation = []\r\n                teacherTimeslotAllocations.append(teacherAllocation)\r\n\r\n        '''\r\n\t\treturn CATS\r\n\r\n\tdef calculateFitness(self, current_cat: CAT):\r\n\t\t# change later\r\n\t\tBASE = 1.3\r\n\t\tfitnessValue = 0\r\n\t\tHCW = 10\r\n\t\tICDW = 0.95\r\n\t\tITDW = 0.6\r\n\t\tTEPW = 0.06  # might not use this because we don't include gaps(-1) or empty classes in our population\\\r\n\t\tcurrent_cat_solution = current_cat.getSolution()\r\n\r\n\t\t# hard constraint of assigning a teacher to more than 1 class during the same timeslot\r\n\t\tfor j in range(len(current_cat_solution[0])):\r\n\t\t\tn = 0\r\n\t\t\tfor i in range(self.totalNumClasses):\r\n\t\t\t\tteacherVal = current_cat_solution[i][j]\r\n\t\t\t\tfor k in range(i + 1, self.totalNumClasses):\r\n\t\t\t\t\tif teacherVal == current_cat_solution[k][j]:\r\n\t\t\t\t\t\tn += 1\r\n\r\n\t\t\tfitnessValue += HCW * (BASE ** n)\r\n\r\n\t\t# constraint of having the same teacher for more than 2 timeslots a day\r\n\t\tfor i in range(self.totalNumClasses):\r\n\t\t\tn = 0\r\n\t\t\tfor j in range(len(current_cat_solution[i]), step=11):\r\n\t\t\t\tteacherVal = current_cat_solution[i][j]\r\n\t\t\t\tfor k in range(j + 1, j + 12):\r\n\t\t\t\t\tif k < len(current_cat_solution[i]):\r\n\t\t\t\t\t\tif teacherVal == current_cat_solution[i][k]:\r\n\t\t\t\t\t\t\tn += 1\r\n\r\n\t\t\tif n > 2:\r\n\t\t\t\tfitnessValue += HCW * (BASE ** n)\r\n\r\n\t\t# soft constraint\r\n\t\tfor i in range(self.totalNumClasses):\r\n\t\t\tn = 0\r\n\t\t\tfor j in range(len(current_cat_solution[i])):\r\n\t\t\t\tteacherVal = current_cat_solution[i][j]\r\n\t\t\t\tfor k in range(j + 1, len(current_cat_solution[i])):\r\n\t\t\t\t\tif teacherVal == current_cat_solution[i][j]:\r\n\t\t\t\t\t\tn += 1\r\n\t\t\tif n > 10:\r\n\t\t\t\tfitnessValue += ITDW * BASE\r\n\t\treturn fitnessValue\r\n\t\tpass\r\n\r\n\r\n\tdef getObjectiveValue(self, solution):\r\n\t\t\"\"\"\r\n\t\t\tImplementing function from superclass\r\n\t\t\t:param solution:\r\n\t\t\t:return:\r\n\t\t\"\"\"\r\n\t\treturn self.calculateFitness(solution)\r\n\r\n\tdef seek(self, cats: typing.List[CAT]):\r\n\t\t# add code for seeking\r\n\t\t# values from the paper after experimentation\r\n\t\tSPC = True\r\n\t\tSMP = 2\r\n\t\tCDC = 0.1\r\n\t\tSRD = 0.1\r\n\t\tj = 0  # default initialisation\r\n\t\tcandidate_positions = []\r\n\t\tfor cat_copy in cats:\r\n\t\t\tbest_fitness = self.calculateFitness(cat_copy)\r\n\t\t\tif SPC:\r\n\t\t\t\tj = SMP - 1\r\n\t\t\t\tcandidate_positions.append(cat_copy)\r\n\t\t\telse:\r\n\t\t\t\tj = SMP\r\n\t\t\tcat_copies = []\r\n\t\t\tfor i in range(0, j):\r\n\t\t\t\tcat_copies.append(copy.deepcopy(cat_copy))\r\n\t\t\ttc = CDC * len(self.TIMESLOTS)  # nr of timeslots we will \"replace\"/change\r\n\t\t\tsm = SRD * self.totalNumClasses  # total nr of swaps\r\n\t\t\tfor cat in cat_copies:\r\n\t\t\t\tfor _ in range(round(tc)):\r\n\t\t\t\t\tself.Change_Random(cat)  # insert tc random timeslots from global_best_cat to cat\r\n\t\t\t\tfor i in range(0, round(sm)):\r\n\t\t\t\t\tcat = self.Single_Swap(cat)\r\n\t\t\t\t\t# if (self.Valid(cat)):  # if statement is not necessary if single swap only returns valid swaps\r\n\t\t\t\t\tnew_fitness_value = self.calculateFitness(cat)\r\n\t\t\t\t\tif new_fitness_value <= best_fitness:\r\n\t\t\t\t\t\tbest_fitness = new_fitness_value\r\n\t\t\t\t\t\tcandidate_positions.append(cat)\r\n\r\n\t\t\told_fitness = self.calculateFitness(candidate_positions[0])\r\n\t\t\tFSmax = best_fitness\r\n\t\t\tFSmin = self.calculateFitness(self.global_best_cat)\r\n\t\t\tequal = True\r\n\t\t\tfor i in range(len(candidate_positions) - 1):\r\n\t\t\t\tfitness = self.calculateFitness(candidate_positions[i])\r\n\t\t\t\tif fitness > FSmax:\r\n\t\t\t\t\tFSmax = fitness\r\n\t\t\t\tif fitness < FSmin:\r\n\t\t\t\t\tFSmin = fitness\r\n\t\t\t\tif fitness != old_fitness:  # a cat having a better than initial fitness had been found\r\n\t\t\t\t\tequal = False\r\n\r\n\t\t\tFSb = FSmin  # minimisation problem\r\n\t\t\tprobabilities = [1.0 for _ in candidate_positions]\r\n\t\t\tif not equal:\r\n\t\t\t\tfor i in range(len(candidate_positions)):\r\n\t\t\t\t\tFSi = self.calculateFitness(candidate_positions[i])\r\n\t\t\t\t\tPi = abs(FSi - FSb) / abs(FSmax - FSmin)  # formula from equation 15\r\n\t\t\t\t\tprobabilities[i] = Pi\r\n\r\n\t\t\t# pick a random position from the candidate positions the one to move to\r\n\t\t\t# need to choose somehow, paper doesn't specify (probably using the probabilities)\r\n\t\t\trandom_pos = random.choices(candidate_positions, weights=probabilities, k=1)[0]  # function returns a list\r\n\t\t\t# of size k\r\n\t\t\tcat_copy.setSolution(random_pos.getSolution())\r\n\r\n\tdef trace(self, cats: typing.List[CAT]):\r\n\t\t# add code for tracing\r\n\t\tfor cat in cats:\r\n\t\t\tc1 = 2.0  # From the not-hybrid algorithm\r\n\t\t\tsimilarity = self.Similarity(cat)\r\n\t\t\tdistance = self.totalNumClasses * len(self.TIMESLOTS) - similarity\r\n\t\t\trand_number = random.random()\r\n\t\t\tcs = rand_number * c1 * distance  # number of cells to be swapped\r\n\t\t\t# meant to be equivalent to the velocity from the original paper\r\n\r\n\t\t\tfor _ in range(round(cs)):\r\n\t\t\t\tself.Single_Swap(cat)\r\n\r\n\tdef Similarity(self, cat: CAT):\r\n\t\tsimilarity = 0\r\n\t\tcat_solution = cat.getSolution()\r\n\t\tglobal_best_cat_solution = self.global_best_cat.getSolution()\r\n\t\tfor i in range(len(cat_solution)):\r\n\t\t\tfor j in range(len(cat_solution[i])):\r\n\t\t\t\tif cat_solution[i][j] == global_best_cat_solution[i][j]:\r\n\t\t\t\t\tsimilarity += 1\r\n\t\treturn similarity\r\n\r\n\tdef Single_Swap(self, current_cat: CAT):\r\n\t\trandClass = random.randint(0, self.totalNumClasses)\r\n\t\trandCell1 = random.randint(0, 56)\r\n\t\trandCell2 = random.randint(0, 56)\r\n\t\tcurrent_cat_solution = current_cat.getSolution()\r\n\r\n\t\tinCol1 = False\r\n\t\tinCol2 = False\r\n\t\tfor i in range(self.totalNumClasses):\r\n\t\t\tif current_cat_solution[i][randCell1] == current_cat_solution[randClass][randCell2]:\r\n\t\t\t\tinCol1 = True\r\n\t\t\t\tbreak\r\n\r\n\t\tfor i in range(self.totalNumClasses):\r\n\t\t\tif current_cat_solution[i][randCell2] == current_cat_solution[randClass][randCell1]:\r\n\t\t\t\tinCol2 = True\r\n\t\t\t\tbreak\r\n\r\n\t\tif (current_cat_solution[randClass][randCell1] != current_cat_solution[randClass][randCell2]) and (\r\n\t\t\t\tnot inCol1) and (not inCol2):\r\n\t\t\ttempCat = current_cat_solution[randClass][randCell1]\r\n\t\t\tcurrent_cat_solution[randClass][randCell1] = current_cat_solution[randClass][randCell2]\r\n\t\t\tcurrent_cat_solution[randClass][randCell2] = tempCat\r\n\r\n\t\tcurrent_cat.setSolution(current_cat_solution)\r\n\t\treturn current_cat\r\n\r\n\tdef Change_Random(self, cat_copy: CAT):\r\n\t\t\"\"\"\r\n        changes a random column in the cat_copy solution to the corresponding column in the best cat\r\n        :param cat_copy: cat to be changed\r\n        :return: modified cat\r\n        \"\"\"\r\n\t\t# auxilliary procedure, section 3.4.3\r\n\t\trand_col = random.randint(0, len(self.TIMESLOTS) - 1)\r\n\t\tcat_solution = cat_copy.getSolution()\r\n\t\tglobal_best_solution = self.global_best_cat.getSolution()\r\n\r\n\t\t# need to first compensate for the swap we are about to make\r\n\t\tfor row in range(len(cat_solution)):\r\n\t\t\tfor col in range(len(cat_solution[row])):\r\n\t\t\t\tif cat_solution[row][col] == global_best_solution[row][col] and (not col == rand_col):\r\n\t\t\t\t\tcat_solution[row][col] = cat_solution[row][rand_col]\r\n\t\t\t\t\tbreak  # only do this once per class\r\n\r\n\t\t# swap\r\n\t\tfor row in range(len(cat_solution)):\r\n\t\t\tfor col in range(len(cat_solution[row])):\r\n\t\t\t\tcat_solution[row][col] = global_best_solution[row][col]\r\n\r\n\t\tcat_copy.setSolution(cat_solution)\r\n\t\treturn cat_copy\r\n\r\n\t'''def Valid(self, current_cat: CAT):\r\n        # check whether current cat is valid\r\n        # shouldn't need to implement this if change random is guaranteed to return a valid solution\r\n        return False\r\n        \r\n        don't think we need this\r\n        '''\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Algorithms.py	(revision 982bfb9c79482e878079b03319781b9a143b87ac)
++++ Algorithms.py	(date 1624192665805)
+@@ -8,12 +8,12 @@
+ 
+ 
+ class Input:
+-	"""
++    """
+ 		A class to represent the problem instance (i.e. the variables obtained from the Sample Input textfile)
+ 	"""
+ 
+-	def __init__(self, teachingTable, numTeachers: int, numGr7Classes: int, numGr8Classes: int, numGr9Classes: int):
+-		"""
++    def __init__(self, teachingTable, numTeachers: int, numGr7Classes: int, numGr8Classes: int, numGr9Classes: int):
++        """
+ 			Constructor
+ 
+ 			:param teachingTable:	A 2D list/array indicating the teacher to Class-Subject allocations
+@@ -26,15 +26,15 @@
+ 			:param numGr9Classes	The number of classes in Grade 9
+ 
+ 		"""
+-		self.teachingTable = teachingTable
+-		self.numTeachers = numTeachers
+-		self.numGr7Classes = numGr7Classes
+-		self.numGr8Classes = numGr8Classes
+-		self.numGr9Classes = numGr9Classes
+-		self.totalnumClasses = self.numGr7Classes + self.numGr8Classes + self.numGr9Classes
++        self.teachingTable = teachingTable
++        self.numTeachers = numTeachers
++        self.numGr7Classes = numGr7Classes
++        self.numGr8Classes = numGr8Classes
++        self.numGr9Classes = numGr9Classes
++        self.totalnumClasses = self.numGr7Classes + self.numGr8Classes + self.numGr9Classes
+ 
+-	def print(self):
+-		"""
++    def print(self):
++        """
+ 			Displays (to the Console) the values of this input instance
+ 
+ 			- Displays the Number of classes in each Grade, the number of teachers, and the
+@@ -43,89 +43,89 @@
+ 			:return: None
+ 		"""
+ 
+-		print("Number of classes in Grade 7: \t\t\t\t", self.numGr7Classes)
+-		print("Number of classes in Grade 8: \t\t\t\t", self.numGr8Classes)
+-		print("Number of classes in Grade 9: \t\t\t\t", self.numGr9Classes)
+-		print("\nNumber of teachers teaching in Grades 7-9:\t", self.numTeachers)
++        print("Number of classes in Grade 7: \t\t\t\t", self.numGr7Classes)
++        print("Number of classes in Grade 8: \t\t\t\t", self.numGr8Classes)
++        print("Number of classes in Grade 9: \t\t\t\t", self.numGr9Classes)
++        print("\nNumber of teachers teaching in Grades 7-9:\t", self.numTeachers)
+ 
+-		print("\n\nTeacher Class-Subject Allocation Table:\n")
++        print("\n\nTeacher Class-Subject Allocation Table:\n")
+ 
+-		# Print Column Headings (Subjects)
++        # Print Column Headings (Subjects)
+ 
+-		print("Subjects ->", end="\t\t\t\t")
+-		headerStr = "-----------------------"
++        print("Subjects ->", end="\t\t\t\t")
++        headerStr = "-----------------------"
+ 
+-		# Subjects are represented as digits from 0 to 8 but will display as 1 to 9
+-		for subject in range(1, 10):
+-			print(subject, end="\t")
+-			headerStr += "----"
++        # Subjects are represented as digits from 0 to 8 but will display as 1 to 9
++        for subject in range(1, 10):
++            print(subject, end="\t")
++            headerStr += "----"
+ 
+-		print("\nClasses:")
+-		print(headerStr)
++        print("\nClasses:")
++        print(headerStr)
+ 
+-		classNames = []
++        classNames = []
+ 
+-		for i in range(self.numGr7Classes):
+-			className = "Grade 7 - Class " + str(i + 1)
+-			classNames.append(className)
++        for i in range(self.numGr7Classes):
++            className = "Grade 7 - Class " + str(i + 1)
++            classNames.append(className)
+ 
+-		for i in range(self.numGr8Classes):
+-			className = "Grade 8 - Class " + str(i + 1)
+-			classNames.append(className)
++        for i in range(self.numGr8Classes):
++            className = "Grade 8 - Class " + str(i + 1)
++            classNames.append(className)
+ 
+-		for i in range(self.numGr9Classes):
+-			className = "Grade 9 - Class " + str(i + 1)
+-			classNames.append(className)
++        for i in range(self.numGr9Classes):
++            className = "Grade 9 - Class " + str(i + 1)
++            classNames.append(className)
+ 
+-		for Class in range(self.totalnumClasses):
+-			print(classNames[Class], end="\t|\t")  # Row Heading
+-			for Teacher in self.teachingTable[Class]:
+-				print(Teacher + 1,
+-					  end="\t")  # TeacherID's are represented as digits from 0 to numTeachers-1 but will display as 1 to numTeachers
+-			print()
++        for Class in range(self.totalnumClasses):
++            print(classNames[Class], end="\t|\t")  # Row Heading
++            for Teacher in self.teachingTable[Class]:
++                print(Teacher + 1,
++                      end="\t")  # TeacherID's are represented as digits from 0 to numTeachers-1 but will display as 1 to numTeachers
++            print()
+ 
+-		print(headerStr + "\n")
++        print(headerStr + "\n")
+ 
+ 
+ class TimetableAlgorithm:
+-	"""
++    """
+ 		The abstract class to represent an algorithm used to solve our Timetable Problem
+ 
+ 		A specific algorithm that we use sublcasses this class and implements its functions.
+ 		An instance of the subclass will be used to solve the Timetabling Problem on a given input
+ 	"""
+ 
+-	"""CLASS CONSTANTS"""
+-	SUBJECTS = [
+-		"Home Language", "First Additional Language", "Mathematics", "Natural Science", "Social Science",
+-		"Technology", "Economic and Management Science", "Life Orientation", "Arts and Culture"
+-	]
++    """CLASS CONSTANTS"""
++    SUBJECTS = [
++        "Home Language", "First Additional Language", "Mathematics", "Natural Science", "Social Science",
++        "Technology", "Economic and Management Science", "Life Orientation", "Arts and Culture"
++    ]
+ 
+-	# Using List Comprehension to define the Lesson and Timeslot numbers
+-	# In the code, we are representing the number of Lessons and Timeslots from 0-54 as indexes begin at 0 (Mathematically, its from 1-55)
+-	# So Day numbers will be represented from 0-4 and to get the day number of a timeslot, use floor(timeslot // 5)
++    # Using List Comprehension to define the Lesson and Timeslot numbers
++    # In the code, we are representing the number of Lessons and Timeslots from 0-54 as indexes begin at 0 (Mathematically, its from 1-55)
++    # So Day numbers will be represented from 0-4 and to get the day number of a timeslot, use floor(timeslot // 5)
+ 
+-	LESSONS = [lesson for lesson in range(0, 55)]
+-	TIMESLOTS = [timeslot for timeslot in range(0, 55)]  # The permutation of all the timeslots in increasing order
+-	TIMESLOTS_SET = set(
+-		TIMESLOTS)  # Representing the Timeslots as a set | Will be used to compare to a generated timeslot to determine if it is a valid permutation
++    LESSONS = [lesson for lesson in range(0, 55)]
++    TIMESLOTS = [timeslot for timeslot in range(0, 55)]  # The permutation of all the timeslots in increasing order
++    TIMESLOTS_SET = set(
++        TIMESLOTS)  # Representing the Timeslots as a set | Will be used to compare to a generated timeslot to determine if it is a valid permutation
+ 
+-	# Indicates the Subject index of a lesson - index is the lesson number, and value is the Subject index at that lesson
+-	# Use the SUBJECTS constant to get the Subject name at that Subject index
+-	LESSON_SUBJECTS = [
+-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+-		1, 1, 1, 1, 1, 1, 1, 1,
+-		2, 2, 2, 2, 2, 2, 2, 2, 2,
+-		3, 3, 3, 3, 3, 3,
+-		4, 4, 4, 4, 4, 4,
+-		5, 5, 5, 5,
+-		6, 6, 6, 6,
+-		7, 7, 7, 7,
+-		8, 8, 8, 8
+-	]
++    # Indicates the Subject index of a lesson - index is the lesson number, and value is the Subject index at that lesson
++    # Use the SUBJECTS constant to get the Subject name at that Subject index
++    LESSON_SUBJECTS = [
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
++        1, 1, 1, 1, 1, 1, 1, 1,
++        2, 2, 2, 2, 2, 2, 2, 2, 2,
++        3, 3, 3, 3, 3, 3,
++        4, 4, 4, 4, 4, 4,
++        5, 5, 5, 5,
++        6, 6, 6, 6,
++        7, 7, 7, 7,
++        8, 8, 8, 8
++    ]
+ 
+-	def __init__(self, input: Input, populationSize: int):
+-		"""
++    def __init__(self, input: Input, populationSize: int):
++        """
+ 			Constructor
+ 
+ 			:param input:	An object of type Input containing the teachingTable, numTeachers, numGr7Classes, numGr8Classes,
+@@ -139,16 +139,16 @@
+ 
+ 		"""
+ 
+-		self.teachingTable = input.teachingTable
+-		self.numTeachers = input.numTeachers
+-		self.numGr7Classes = input.numGr7Classes
+-		self.numGr8Classes = input.numGr8Classes
+-		self.numGr9Classes = input.numGr9Classes
+-		self.totalNumClasses = input.totalnumClasses
+-		self.populationSize = populationSize
++        self.teachingTable = input.teachingTable
++        self.numTeachers = input.numTeachers
++        self.numGr7Classes = input.numGr7Classes
++        self.numGr8Classes = input.numGr8Classes
++        self.numGr9Classes = input.numGr9Classes
++        self.totalNumClasses = input.totalnumClasses
++        self.populationSize = populationSize
+ 
+-	def solveTimetable(self):
+-		"""
++    def solveTimetable(self):
++        """
+ 			Solve the Timetable Problem using this algorithm
+ 			This function can call helper functions defined in the subclass that it can use to solve
+ 
+@@ -168,65 +168,65 @@
+ 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
+ 		"""
+ 
+-	def getObjectiveValue(self, solution):
+-		"""
++    def getObjectiveValue(self, solution):
++        """
+ 			Abstract Function to be implemented by subclasses
+ 
+ 			:return: The objective function's value of this candidate solution
+ 		"""
+ 
+-
+-	def printSolution(self, solution):
+-		"""
++    def printSolution(self, solution):
++        """
+ 			Display a possible/candidate solution (i.e. an individual/chromosome)
+ 
+ 			:param solution: A candidate solution in the solution space
+ 			:return: None
+ 		"""
+-		print("\n\nSOLUTION:\nClass-Lesson Timeslot Allocation Table:\n")
++        print("\n\nSOLUTION:\nClass-Lesson Timeslot Allocation Table:\n")
+ 
+-		# Print Column Headings (Subjects)
++        # Print Column Headings (Subjects)
+ 
+-		print("Lessons ->", end="\t\t\t\t")
+-		headerStr = "-----------------------"
++        print("Lessons ->", end="\t\t\t\t")
++        headerStr = "-----------------------"
+ 
+-		# Lessons are represented as digits from 0 to 54 but will display as 1 to 55
+-		for lesson in range(1, 56):
+-			print(lesson, end="\t")
+-			headerStr += "----"
++        # Lessons are represented as digits from 0 to 54 but will display as 1 to 55
++        for lesson in range(1, 56):
++            print(lesson, end="\t")
++            headerStr += "----"
+ 
+-		print("\nClasses:")
+-		print(headerStr)
++        print("\nClasses:")
++        print(headerStr)
+ 
+-		classNames = []
++        classNames = []
+ 
+-		for i in range(self.numGr7Classes):
+-			className = "Grade 7 - Class " + str(i + 1)
+-			classNames.append(className)
++        for i in range(self.numGr7Classes):
++            className = "Grade 7 - Class " + str(i + 1)
++            classNames.append(className)
+ 
+-		for i in range(self.numGr8Classes):
+-			className = "Grade 8 - Class " + str(i + 1)
+-			classNames.append(className)
++        for i in range(self.numGr8Classes):
++            className = "Grade 8 - Class " + str(i + 1)
++            classNames.append(className)
+ 
+-		for i in range(self.numGr9Classes):
+-			className = "Grade 9 - Class " + str(i + 1)
+-			classNames.append(className)
++        for i in range(self.numGr9Classes):
++            className = "Grade 9 - Class " + str(i + 1)
++            classNames.append(className)
+ 
+-		for Class in range(self.totalNumClasses):
+-			print(classNames[Class], end="\t|\t")  # Row Heading
+-			classAllocation = solution[Class]
+-			for Lesson in self.LESSONS:
+-				Timeslot = classAllocation[Lesson]
+-				print(Timeslot+1,
+-					  end="\t")  # Timeslot's are represented as digits from 0 to 54 but will display as 1 to 55
+-			print()
++        for Class in range(self.totalNumClasses):
++            print(classNames[Class], end="\t|\t")  # Row Heading
++            classAllocation = solution[Class]
++            for Lesson in self.LESSONS:
++                Timeslot = classAllocation[Lesson]
++                print(Timeslot + 1,
++                      end="\t")  # Timeslot's are represented as digits from 0 to 54 but will display as 1 to 55
++            print()
+ 
+-		print(headerStr + "\n")
++        print(headerStr + "\n")
+ 
+-		solutionValue = self.getObjectiveValue(solution)
+-		print("\nSolution Value (Fitness):", solutionValue)
+-		print("----------------------------------------------------------\n")
++        solutionValue = self.getObjectiveValue(solution)
++        print("\nSolution Value (Fitness):", solutionValue)
++        print("----------------------------------------------------------\n")
+ 
++
+ """
+ 	GENETIC ALGORITHM
+ """
+@@ -234,8 +234,8 @@
+ 
+ class GeneticAlgorithm(TimetableAlgorithm):
+ 
+-	def __init__(self, input: Input, populationSize: int = 10):
+-		"""
++    def __init__(self, input: Input, populationSize: int = 10):
++        """
+ 			Constructor for the Genetic Algorithm
+ 
+ 			Parameters are the same as that of its superclass TimetableAlgorithm
+@@ -246,11 +246,11 @@
+ 
+ 		"""
+ 
+-		# Call super constructor
+-		super().__init__(input, populationSize)
++        # Call super constructor
++        super().__init__(input, populationSize)
+ 
+-	def solveTimetable(self):
+-		"""
++    def solveTimetable(self):
++        """
+ 			Implementing this abstract function defined in the superclass
+ 
+ 			Solve the Timetable Problem using this Genetic algorithm
+@@ -268,70 +268,69 @@
+ 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated fitness value (as a tuple, in that order)
+ 		"""
+ 
+-		# initialise Population
+-		# start = datetime.datetime.now()
+-		start = time.time()
++        # initialise Population
++        # start = datetime.datetime.now()
++        start = time.time()
+ 
+-		initialPopulation = self.initialisePopulation()
++        initialPopulation = self.initialisePopulation()
+ 
+-		# end = datetime.datetime.now()
+-		end = time.time()
++        # end = datetime.datetime.now()
++        end = time.time()
+ 
+-		timeTaken = end - start
+-		print("Time taken to init:", timeTaken, "seconds")
++        timeTaken = end - start
++        print("Time taken to init:", timeTaken, "seconds")
+ 
+-		# Set benchmark fitness to the individual at 0
+-		bestIndividual = initialPopulation[0]
+-		bestFitness = self.calculateFitness(bestIndividual)
+-		indexOfBestSoln = 0
+-		generations = 0
+-		# Continue updating for a 1000 iterations if the best representation has not been changed
+-		iterationsSinceLastUpdate = 0
++        # Set benchmark fitness to the individual at 0
++        bestIndividual = initialPopulation[0]
++        bestFitness = self.calculateFitness(bestIndividual)
++        indexOfBestSoln = 0
++        generations = 0
++        # Continue updating for a 1000 iterations if the best representation has not been changed
++        iterationsSinceLastUpdate = 0
+ 
+-		while iterationsSinceLastUpdate < 1000:
+-			generations += 1
+-			foundBetterSoln = False
+-			# calculate the fitness of the population and update the best fitness if necessary
+-			for individual in initialPopulation:
+-				individualFitness = self.calculateFitness(individual)
+-				if individualFitness > bestFitness:
+-					bestIndividual = copy.deepcopy(individual) # store a copy of this individual as the best | cant just assign as a pointer will be assigned
+-					bestFitness = individualFitness
+-					foundBetterSoln = True
+-					indexOfBestSoln = generations
++        while iterationsSinceLastUpdate < 1000:
++            generations += 1
++            foundBetterSoln = False
++            # calculate the fitness of the population and update the best fitness if necessary
++            for individual in initialPopulation:
++                individualFitness = self.calculateFitness(individual)
++                if individualFitness > bestFitness:
++                    bestIndividual = copy.deepcopy(
++                        individual)  # store a copy of this individual as the best | cant just assign as a pointer will be assigned
++                    bestFitness = individualFitness
++                    foundBetterSoln = True
++                    indexOfBestSoln = generations
+ 
+-			if foundBetterSoln:
+-				iterationsSinceLastUpdate = 0
+-			else:
+-				iterationsSinceLastUpdate += 1
++            if foundBetterSoln:
++                iterationsSinceLastUpdate = 0
++            else:
++                iterationsSinceLastUpdate += 1
+ 
+-			updatedPopulation = []
++            updatedPopulation = []
+ 
+-			for i in range(self.populationSize):
+-				# Select parents
+-				parent1, parent2 = self.selection(population=initialPopulation)
+-				# produce a child from 2 parents
+-				child = self.crossover(parent1, parent2)
+-				# Probability for operators
+-				probability = random.random()
+-				# if probability is less than 0.1 then conduct mutation on child
+-				if probability < 0.1:
+-					# mutation on child
+-					child = self.mutation(child)
+-				# add child to new population
+-				updatedPopulation.append(child)
++            for i in range(self.populationSize):
++                # Select parents
++                parent1, parent2 = self.selection(population=initialPopulation)
++                # produce a child from 2 parents
++                child = self.crossover(parent1, parent2)
++                # Probability for operators
++                probability = random.random()
++                # if probability is less than 0.1 then conduct mutation on child
++                if probability < 0.1:
++                    # mutation on child
++                    child = self.mutation(child)
++                # add child to new population
++                updatedPopulation.append(child)
+ 
+-			initialPopulation = updatedPopulation
++            initialPopulation = updatedPopulation
+ 
+-		print('Solution found in generation', indexOfBestSoln, ' with a fitness of ', bestFitness)
+-		self.printSolution(bestIndividual)
++        print('Solution found in generation', indexOfBestSoln, ' with a fitness of ', bestFitness)
++        self.printSolution(bestIndividual)
+ 
+-
+-
+-	"""Helper Functions for solveTimetable()"""
++    """Helper Functions for solveTimetable()"""
+ 
+-	def initialisePopulation(self):
+-		"""
++    def initialisePopulation(self):
++        """
+ 			Initialises the population (generates the initial population) for the Genetic Algorithm
+ 
+ 			Size of population is self.populationSize
+@@ -345,54 +344,54 @@
+ 			:return:	The initial population for this Problem to be used by the Genetic Algorithm
+ 		"""
+ 
+-		print("\n Initialising Population:\n")
++        print("\n Initialising Population:\n")
+ 
+-		population = []  # list of individual chromosomes -> size will be self.populationSize after we add all the chromosomes
++        population = []  # list of individual chromosomes -> size will be self.populationSize after we add all the chromosomes
+ 
+-		for i in range(self.populationSize):  # Create chromosome individual i
++        for i in range(self.populationSize):  # Create chromosome individual i
+ 
+-			"""
++            """
+ 				Chromosome i is a 2D-array / a list of sub-lists with the number of rows (sublists being seld.totalNumClasses)
+ 				and the number of columns (size of a sublist)  being 55 (representing the lessons)
+ 			"""
+-			newIndividual = []  # Chromosome i
++            newIndividual = []  # Chromosome i
+ 
+-			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
+-			teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
++            # Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
++            teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
+ 
+-			currentClass = 0
++            currentClass = 0
+ 
+-			while currentClass < self.totalNumClasses:  # Create timeslot allocation for each class j in chromosome i
++            while currentClass < self.totalNumClasses:  # Create timeslot allocation for each class j in chromosome i
+ 
+-				# generate an lesson-timeslot allocation  for class j
++                # generate an lesson-timeslot allocation  for class j
+ 
+-				# classAllocation = list(range(55))
+-				# random.shuffle(classAllocation)
++                # classAllocation = list(range(55))
++                # random.shuffle(classAllocation)
+ 
+-				classAllocation = random.sample(self.TIMESLOTS, len(
+-					self.TIMESLOTS))  # random.sample(list, size) returns a new shuffled list. The original list remains unchanged.
++                classAllocation = random.sample(self.TIMESLOTS, len(
++                    self.TIMESLOTS))  # random.sample(list, size) returns a new shuffled list. The original list remains unchanged.
+ 
+-				"""
++                """
+ 					Determine if this class allocation a valid one with respect to teacher times
+ 					(i.e. there are (currently) no timeslot conflicts for any teacher when adding this allocation- 
+ 					Hard Constraint 3: A teacher can only teach one lesson in a specific timeslot)
+ 				"""
+-				isValidAllocation = True
++                isValidAllocation = True
+ 
+-				for lesson in range(len(self.LESSONS)):  # For each of the 55 lessons that we allocated a timeslot
++                for lesson in range(len(self.LESSONS)):  # For each of the 55 lessons that we allocated a timeslot
+ 
+-					timeslot = classAllocation[lesson]  # the timeslot allocated to this lesson
++                    timeslot = classAllocation[lesson]  # the timeslot allocated to this lesson
+ 
+-					subject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this lesson is
+-					teacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson
++                    subject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this lesson is
++                    teacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson
+ 
+-					# check if this teacher is not already teaching in this timeslot
++                    # check if this teacher is not already teaching in this timeslot
+ 
+-					teacherAllocation = teacherTimeslotAllocations[teacher]
++                    teacherAllocation = teacherTimeslotAllocations[teacher]
+ 
+-					if timeslot in teacherAllocation:  # teacher is already allocated to this timeslot - i.e. there is a clash
+-						# BELOW IS TO SWAP WHEN THERE'S A CLASH - SEEMS TO BE TAKING LONGER THAN JUST GENERATING A NEW ALLOCATION FOR THIS CLASS
+-						"""
++                    if timeslot in teacherAllocation:  # teacher is already allocated to this timeslot - i.e. there is a clash
++                        # BELOW IS TO SWAP WHEN THERE'S A CLASH - SEEMS TO BE TAKING LONGER THAN JUST GENERATING A NEW ALLOCATION FOR THIS CLASS
++                        """
+ 						# Find another teacher that teaches this class to swap with
+ 						swapFound = False
+ 
+@@ -417,9 +416,9 @@
+ 							isValidAllocation = False
+ 						"""
+ 
+-						isValidAllocation = False
++                        isValidAllocation = False
+ 
+-				"""
++                """
+ 					If this lesson-timeslot allocation for this class is valid, then add it in its place to the chromosome
+ 					and add to the teacher allocations
+ 					Then increment the class number to move on to the next class
+@@ -427,163 +426,164 @@
+ 					If this allocation is invalid (the condition below is False) then the loop will run again for the 
+ 					same class, generating a different initial allocation to work with
+ 				"""
+-				if isValidAllocation:
+-				#if True:
+-					newIndividual.append(classAllocation)
++                if isValidAllocation:
++                    # if True:
++                    newIndividual.append(classAllocation)
+ 
+-					for lesson in self.LESSONS:  # ALT: for lesson in range(len(self.LESSONS))
+-						subject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this lesson is
+-						teacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson
+-						teacherTimeslotAllocations[teacher].append(classAllocation[lesson])  # add this timeslot to this teacher's allocated timeslots
++                    for lesson in self.LESSONS:  # ALT: for lesson in range(len(self.LESSONS))
++                        subject = self.LESSON_SUBJECTS[
++                            lesson]  # get the index/number of the subject that this lesson is
++                        teacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson
++                        teacherTimeslotAllocations[teacher].append(
++                            classAllocation[lesson])  # add this timeslot to this teacher's allocated timeslots
+ 
+-					currentClass = currentClass + 1
+-					#print('Individual', i + 1, ' Class', currentClass, '\n', #classAllocation)  # i+1 as we want to display starting from 1
+-					print('Individual', i + 1, ' Class', currentClass, "allocated")
++                    currentClass = currentClass + 1
++                    # print('Individual', i + 1, ' Class', currentClass, '\n', #classAllocation)  # i+1 as we want to display starting from 1
++                    print('Individual', i + 1, ' Class', currentClass, "allocated")
+ 
+-			population.append(newIndividual)
+-			self.printSolution(newIndividual)
++            population.append(newIndividual)
++            self.printSolution(newIndividual)
+ 
+-		return population
++        return population
+ 
+-	def getEmptyTeacherAllocation(self) -> [[]]:
+-		teacherTimeslotAllocations = []
+-		for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
+-			teacherAllocation = []
+-			teacherTimeslotAllocations.append(teacherAllocation)
+-		return teacherTimeslotAllocations
++    def getEmptyTeacherAllocation(self) -> [[]]:
++        teacherTimeslotAllocations = []
++        for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
++            teacherAllocation = []
++            teacherTimeslotAllocations.append(teacherAllocation)
++        return teacherTimeslotAllocations
+ 
+-	def getTeacherAllocation(self, chromosome):
+-		teacherAllocation = self.getEmptyTeacherAllocation()
+-		# take the individuals distibution and assign to relevant teachers
+-		for i in range(len(chromosome)):
+-			for j in range(len(chromosome[i])):
+-				sub = self.LESSON_SUBJECTS[j]
+-				teacher = self.teachingTable[i][sub]
+-				teacherAllocation[teacher].append(chromosome[i][j])
+-		return teacherAllocation
++    def getTeacherAllocation(self, chromosome):
++        teacherAllocation = self.getEmptyTeacherAllocation()
++        # take the individuals distibution and assign to relevant teachers
++        for i in range(len(chromosome)):
++            for j in range(len(chromosome[i])):
++                sub = self.LESSON_SUBJECTS[j]
++                teacher = self.teachingTable[i][sub]
++                teacherAllocation[teacher].append(chromosome[i][j])
++        return teacherAllocation
+ 
+-
+-	def mutation(self, chromosome):
+-		mutatedChromosome = []
+-		teacherAllocation = self.getTeacherAllocation(chromosome)
+-		for i in range(len(chromosome)):
+-			# get the class i
+-			classI = chromosome[i]
+-			isMutated = False
+-			MAX_ITER = len(classI)
+-			for j in range(MAX_ITER):
+-				# get a random period
+-				x1 = random.randint(0, 54) # random integer in range [0, 54]
+-				# get a second random period
+-				x2 = random.randint(0, 54)  # random integer in range [0, 54]
+-				period1 = classI[x1]
+-				period2 = classI[x2]
+-				# get the 2 relevant subjects
+-				subject1 = self.LESSON_SUBJECTS[x1]
+-				subject2 = self.LESSON_SUBJECTS[x2]
+-				teacher1 = self.teachingTable[i][subject1]
+-				teacher2 = self.teachingTable[i][subject2]
+-				# get the teacher allocations of those subjects
+-				teacherAlloc1 = teacherAllocation[teacher1]
+-				teacherAlloc2 = teacherAllocation[teacher2]
+-				if period1 not in teacherAlloc2 and period2 not in teacherAlloc1:
+-					isMutated = True
+-					# update teacher allocations for future
+-					teacherAlloc1.remove(period1)
+-					teacherAlloc1.append(period2)
+-					teacherAlloc2.remove(period2)
+-					teacherAlloc1.append(period1)
+-					# updating the class
+-					classI[x1] = period2
+-					classI[x2] = period1
+-				if isMutated:
+-					break
+-			# The loop will run and the mutated class will be added to the new chromosome
+-			mutatedChromosome.append(classI)
+-			#print(mutatedChromosome)
+-		return mutatedChromosome
++    def mutation(self, chromosome):
++        mutatedChromosome = []
++        teacherAllocation = self.getTeacherAllocation(chromosome)
++        for i in range(len(chromosome)):
++            # get the class i
++            classI = chromosome[i]
++            isMutated = False
++            MAX_ITER = len(classI)
++            for j in range(MAX_ITER):
++                # get a random period
++                x1 = random.randint(0, 54)  # random integer in range [0, 54]
++                # get a second random period
++                x2 = random.randint(0, 54)  # random integer in range [0, 54]
++                period1 = classI[x1]
++                period2 = classI[x2]
++                # get the 2 relevant subjects
++                subject1 = self.LESSON_SUBJECTS[x1]
++                subject2 = self.LESSON_SUBJECTS[x2]
++                teacher1 = self.teachingTable[i][subject1]
++                teacher2 = self.teachingTable[i][subject2]
++                # get the teacher allocations of those subjects
++                teacherAlloc1 = teacherAllocation[teacher1]
++                teacherAlloc2 = teacherAllocation[teacher2]
++                if period1 not in teacherAlloc2 and period2 not in teacherAlloc1:
++                    isMutated = True
++                    # update teacher allocations for future
++                    teacherAlloc1.remove(period1)
++                    teacherAlloc1.append(period2)
++                    teacherAlloc2.remove(period2)
++                    teacherAlloc1.append(period1)
++                    # updating the class
++                    classI[x1] = period2
++                    classI[x2] = period1
++                if isMutated:
++                    break
++            # The loop will run and the mutated class will be added to the new chromosome
++            mutatedChromosome.append(classI)
++        # print(mutatedChromosome)
++        return mutatedChromosome
+ 
+-	def crossover(self, chromosome1, chromosome2):
+-		# TODO: Crossover
+-		return chromosome1
++    def crossover(self, chromosome1, chromosome2):
++        # TODO: Crossover
++        return chromosome1
+ 
+-	def selection(self, population):
+-		# TODO: Selection
+-		parent1 = population[0]  # population[random.randint(0, len(population))]
+-		parent2 = population[1]  # population[random.randint(0, len(population))]
+-		return parent1, parent2
++    def selection(self, population):
++        # TODO: Selection
++        parent1 = population[0]  # population[random.randint(0, len(population))]
++        parent2 = population[1]  # population[random.randint(0, len(population))]
++        return parent1, parent2
+ 
+-	def calculateFitness(self, chromosome):
+-		# TODO: GA fitness
+-		# return fitness of chromosome
+-		# +5 for every correct allocation. Do we need this?
+-		# +3 for a double period [done]
+-		# -2 for more than 2 periods on a subject in a day [done]
+-		# -1 for two single periods on the same day for a subject [done]
+-		# -2 for each time a teacher teaches for more than 4 periods consecutively [done]
+-		fitness = 0
+-		# for each subject evaluate the allocation (class and teacher wise)
+-		# empty teacher allocation array
+-		teacherAllocation = self.getTeacherAllocation(chromosome)
+-		# check to see if any teacher works more than 4periods at once
+-		for teacher in teacherAllocation:
+-			workingPeriods = teacher
+-			# sort in order [0, 54]
+-			workingPeriods.sort()
+-			consecutive = 0
+-			for i in range(len(workingPeriods) - 1):
+-				if workingPeriods[i] + 1 == workingPeriods[i + 1]:
+-					consecutive += 1
+-				else:
+-					consecutive = 0
+-				if consecutive == 4:
+-					fitness -= 2
+-					consecutive = 0
++    def calculateFitness(self, chromosome):
++        # TODO: GA fitness
++        # return fitness of chromosome
++        # +5 for every correct allocation. Do we need this?
++        # +3 for a double period [done]
++        # -2 for more than 2 periods on a subject in a day [done]
++        # -1 for two single periods on the same day for a subject [done]
++        # -2 for each time a teacher teaches for more than 4 periods consecutively [done]
++        fitness = 0
++        # for each subject evaluate the allocation (class and teacher wise)
++        # empty teacher allocation array
++        teacherAllocation = self.getTeacherAllocation(chromosome)
++        # check to see if any teacher works more than 4periods at once
++        for teacher in teacherAllocation:
++            workingPeriods = teacher
++            # sort in order [0, 54]
++            workingPeriods.sort()
++            consecutive = 0
++            for i in range(len(workingPeriods) - 1):
++                if workingPeriods[i] + 1 == workingPeriods[i + 1]:
++                    consecutive += 1
++                else:
++                    consecutive = 0
++                if consecutive == 4:
++                    fitness -= 2
++                    consecutive = 0
+ 
+-		# reward double periods
+-		# for each class in the chromosome
+-		for i in range(len(chromosome)):
+-			# for each slot in the class
+-			for j in range(len(chromosome[i]) - 1):
+-				# for each slot after j
+-				for k in range(j + 1, len(chromosome[i]) - 1):
+-					# get subject being held at j
+-					subject1 = self.LESSON_SUBJECTS[j]
+-					# get subject being held at k
+-					subject2 = self.LESSON_SUBJECTS[k]
+-					# check if they are the same subject
+-					if subject1 == subject2:
+-						# check if they are consecutive
+-						if chromosome[i][j] + 1 == chromosome[i][k]:
+-							fitness += 3
+-					else:
+-						break
+-		# penalize two seperate periods on the same day
+-		for gene in chromosome:
+-			subjectsAllocatedForClass = []
+-			for g in range(len(gene)):
+-				pos = gene.index(g)
+-				subject = self.LESSON_SUBJECTS[pos]
+-				subjectsAllocatedForClass.append(subject)
+-			for s in range(len(subjectsAllocatedForClass) - 2):
+-				# 3 consec periods of the same subject
+-				if subjectsAllocatedForClass[s] == subjectsAllocatedForClass[s + 1] and subjectsAllocatedForClass[s] == \
+-						subjectsAllocatedForClass[s + 2]:
+-					fitness -= 2
+-				else:
+-					continue
+-			counter = 0
+-			# check if there is 2 periods of the same subjects in the same day[not consecutive]
+-			for s in range(len(subjectsAllocatedForClass)):
+-				subject = subjectsAllocatedForClass[s]
+-				for t in range(s + 2, 11):
+-					if subject == subjectsAllocatedForClass[t]:
+-						fitness -= 1
+-		#print('Individual fitness = ', fitness)
+-		return fitness
++        # reward double periods
++        # for each class in the chromosome
++        for i in range(len(chromosome)):
++            # for each slot in the class
++            for j in range(len(chromosome[i]) - 1):
++                # for each slot after j
++                for k in range(j + 1, len(chromosome[i]) - 1):
++                    # get subject being held at j
++                    subject1 = self.LESSON_SUBJECTS[j]
++                    # get subject being held at k
++                    subject2 = self.LESSON_SUBJECTS[k]
++                    # check if they are the same subject
++                    if subject1 == subject2:
++                        # check if they are consecutive
++                        if chromosome[i][j] + 1 == chromosome[i][k]:
++                            fitness += 3
++                    else:
++                        break
++        # penalize two seperate periods on the same day
++        for gene in chromosome:
++            subjectsAllocatedForClass = []
++            for g in range(len(gene)):
++                pos = gene.index(g)
++                subject = self.LESSON_SUBJECTS[pos]
++                subjectsAllocatedForClass.append(subject)
++            for s in range(len(subjectsAllocatedForClass) - 2):
++                # 3 consec periods of the same subject
++                if subjectsAllocatedForClass[s] == subjectsAllocatedForClass[s + 1] and subjectsAllocatedForClass[s] == \
++                        subjectsAllocatedForClass[s + 2]:
++                    fitness -= 2
++                else:
++                    continue
++            counter = 0
++            # check if there is 2 periods of the same subjects in the same day[not consecutive]
++            for s in range(len(subjectsAllocatedForClass)):
++                subject = subjectsAllocatedForClass[s]
++                for t in range(s + 2, 11):
++                    if subject == subjectsAllocatedForClass[t]:
++                        fitness -= 1
++        # print('Individual fitness = ', fitness)
++        return fitness
+ 
+-	def getObjectiveValue(self, solution):
+-		return self.calculateFitness(solution)
++    def getObjectiveValue(self, solution):
++        return self.calculateFitness(solution)
+ 
+ 
+ """
+@@ -592,64 +592,64 @@
+ 
+ 
+ class CatSwarmAlgorithm(TimetableAlgorithm):
+-	class CAT:
+-		SEEKING = 1
+-		TRACING = 2
++    class CAT:
++        SEEKING = 1
++        TRACING = 2
+ 
+-		def __init__(self):
+-			self.state = 0
+-			"""
++        def __init__(self):
++            self.state = 0
++            """
+ 			0 for when the cat is idle 1 in seek mode and 2 for trace mode 
+ 			"""
+-			# self.location = 0 # don't think we need location if we have solution
+-			"""
++            # self.location = 0 # don't think we need location if we have solution
++            """
+ 				current position in the solution space, changes when cat given permission to seek
+ 			"""
+-			self.solution = [[]]
+-			"""current solution the cat possesses
++            self.solution = [[]]
++            """current solution the cat possesses
+ 			"""
+-			# we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
+-			self.velocity = 0.0
++            # we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
++            self.velocity = 0.0
+ 
+-		def setState(self, newState: int):
+-			"""
++        def setState(self, newState: int):
++            """
+ 					setter for state
+ 			"""
+-			self.state = newState
++            self.state = newState
+ 
+-		# we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
+-		def setVelocity(self, newVelocity: int):
+-			"""
++        # we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
++        def setVelocity(self, newVelocity: int):
++            """
+ 					setter for location
+ 			"""
+-			self.velocity = newVelocity
++            self.velocity = newVelocity
+ 
+-		def setSolution(self, newSolution: [[]]):
+-			"""
++        def setSolution(self, newSolution: [[]]):
++            """
+ 					setter for solution
+ 			"""
+-			self.solution = newSolution
++            self.solution = newSolution
+ 
+-		def getState(self):
+-			"""
++        def getState(self):
++            """
+ 					getter for state
+ 			"""
+-			return self.state
++            return self.state
+ 
+-		def getSolution(self):
+-			"""
++        def getSolution(self):
++            """
+ 					getter for solution
+ 			"""
+-			return self.solution
++            return self.solution
+ 
+-		# we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
+-		def getVelociy(self):
+-			"""
++        # we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
++        def getVelociy(self):
++            """
+ 					getter for velocity
+ 			"""
+-			return self.velocity
++            return self.velocity
+ 
+-			'''
++            '''
+             don't think we need location if we have solution
+             def setLocation(self, newlocation: int):
+                 """
+@@ -658,7 +658,7 @@
+                 self.location = newlocation
+                 '''
+ 
+-		'''
++        '''
+         don't think we need location if we have solution
+         def getLocation(self):
+             """
+@@ -667,8 +667,8 @@
+             return self.location
+             '''
+ 
+-	def __init__(self, input: Input, populationSize: int):
+-		"""
++    def __init__(self, input: Input, populationSize: int):
++        """
+ 			Constructor for the Cat Swarm Optimization Algorithm
+ 
+ 			Parameters are the same as that of its superclass TimetableAlgorithm
+@@ -677,12 +677,12 @@
+ 			of the superclass TimetableAlgorithm
+ 
+ 		"""
+-		# Call super constructor
+-		super().__init__(input, populationSize)
+-		self.global_best_cat = self.CAT()
++        # Call super constructor
++        super().__init__(input, populationSize)
++        self.global_best_cat = self.CAT()
+ 
+-	def solveTimetable(self):
+-		"""
++    def solveTimetable(self):
++        """
+ 			Implementing this abstract function defined in the superclass
+ 
+ 			Solve the Timetable Problem using this Cat Swarm Optimization algorithm
+@@ -691,78 +691,78 @@
+ 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
+ 		"""
+ 
+-		# execute initialisation procedure to initialise cats
+-		initialCats = self.intialiseCats()
++        # execute initialisation procedure to initialise cats
++        initialCats = self.intialiseCats()
+ 
+-		# set global best fitness to worst possible
+-		global_best_fitness = 1000000  # paper treats cat swarm as a minimisation problem, so start with a very large best fitness
++        # set global best fitness to worst possible
++        global_best_fitness = 1000000  # paper treats cat swarm as a minimisation problem, so start with a very large best fitness
+ 
+-		# paper uses 5000 iterations
+-		iteration_counter = 5000
+-		# mixing ratio, initialised to 4% in paper for hybrid CS
+-		MR = 0.04
++        # paper uses 5000 iterations
++        iteration_counter = 5000
++        # mixing ratio, initialised to 4% in paper for hybrid CS
++        MR = 0.04
+ 
+-		for i in range(0, iteration_counter):
+-			for current_cat in initialCats:
+-				# set current cat equal to the first cat
+-				# calculate fitness of current_cat
+-				current_cat_fitness = self.calculateFitness(current_cat)
++        for i in range(0, iteration_counter):
++            for current_cat in initialCats:
++                # set current cat equal to the first cat
++                # calculate fitness of current_cat
++                current_cat_fitness = self.calculateFitness(current_cat)
+ 
+-				# is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a typo,
+-				# meant to be global_best_fitness)?
+-				if current_cat_fitness <= global_best_fitness:  # assuming out fitness function wants to minimise
+-					global_best_fitness = current_cat_fitness
+-					self.global_best_cat = current_cat
++                # is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a typo,
++                # meant to be global_best_fitness)?
++                if current_cat_fitness <= global_best_fitness:  # assuming out fitness function wants to minimise
++                    global_best_fitness = current_cat_fitness
++                    self.global_best_cat = current_cat
+ 
+-				# choose a random value between 0 and 1
+-				random_value = random.random()
+-				# is random number > MR
+-				if random_value > MR:
+-					current_cat.setState(self.CAT.SEEKING)
+-				else:
+-					current_cat.setState(self.CAT.TRACING)
++                # choose a random value between 0 and 1
++                random_value = random.random()
++                # is random number > MR
++                if random_value > MR:
++                    current_cat.setState(self.CAT.SEEKING)
++                else:
++                    current_cat.setState(self.CAT.TRACING)
+ 
+-				# put the "behaviour" of the cats here as it's not clear where it should go, and in the
+-				# original CSO algorithm, we move all the cats at once
+-				seeking_cats = []
+-				for cat in initialCats:
+-					if cat.getState() == self.CAT.SEEKING:
+-						seeking_cats.append(cat)
+-				self.seek(seeking_cats)
+-				tracing_cats = []
+-				for cat in initialCats:
+-					if cat.getState() == self.CAT.TRACING:
+-						tracing_cats.append(cat)
+-				self.trace(tracing_cats)
+-		# Execute local search refining procedure in order to improve the quality of resultant time timetable ; don't
+-		# think we do this outside of evaluation(and the paper doesn't say how)
+-		return self.global_best_cat
++                # put the "behaviour" of the cats here as it's not clear where it should go, and in the
++                # original CSO algorithm, we move all the cats at once
++                seeking_cats = []
++                for cat in initialCats:
++                    if cat.getState() == self.CAT.SEEKING:
++                        seeking_cats.append(cat)
++                self.seek(seeking_cats)
++                tracing_cats = []
++                for cat in initialCats:
++                    if cat.getState() == self.CAT.TRACING:
++                        tracing_cats.append(cat)
++                self.trace(tracing_cats)
++        # Execute local search refining procedure in order to improve the quality of resultant time timetable ; don't
++        # think we do this outside of evaluation(and the paper doesn't say how)
++        return self.global_best_cat
+ 
+-	def intialiseCats(self):
+-		# initialise n cats (paper says 30, we may need to change)
+-		# revisiting the logic later
+-		CATS = []  # list of individual cats -> size will be self.populationSize after we add all the cats
++    def intialiseCats(self):
++        # initialise n cats (paper says 30, we may need to change)
++        # revisiting the logic later
++        CATS = []  # list of individual cats -> size will be self.populationSize after we add all the cats
+ 
+-		for i in range(self.populationSize):  # Create cat i
++        for i in range(self.populationSize):  # Create cat i
+ 
+-			teacherClassAlloc = list(range(1, self.numTeachers))
++            teacherClassAlloc = list(range(1, self.numTeachers))
+ 
+-			# rows = classes, cols= timeslots
+-			new_allocation = [[0 for _ in range(len(self.TIMESLOTS))] for _ in range(self.totalNumClasses)]  # cat i
++            # rows = classes, cols= timeslots
++            new_allocation = [[0 for _ in range(len(self.TIMESLOTS))] for _ in range(self.totalNumClasses)]  # cat i
+ 
+-			# col by row instead of row by col to ensure no duplicate teachers
+-			for j in range(len(new_allocation[0])):
+-				random.shuffle(teacherClassAlloc)
+-				for k in range(len(new_allocation)):
+-					new_allocation[j][k] = teacherClassAlloc[k]
++            # col by row instead of row by col to ensure no duplicate teachers
++            for j in range(len(new_allocation[0])):
++                random.shuffle(teacherClassAlloc)
++                for k in range(len(new_allocation)):
++                    new_allocation[j][k] = teacherClassAlloc[k]
+ 
+-			new_cat = self.CAT()
+-			new_cat.setSolution(new_allocation)
+-			CATS.append(new_cat)
++            new_cat = self.CAT()
++            new_cat.setSolution(new_allocation)
++            CATS.append(new_cat)
+ 
+-			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers)
+-			# as we building the chromosome
+-			'''
++            # Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers)
++            # as we building the chromosome
++            '''
+             
+             teacherTimeslotAllocations = []
+ 
+@@ -771,200 +771,199 @@
+                 teacherTimeslotAllocations.append(teacherAllocation)
+ 
+         '''
+-		return CATS
++        return CATS
+ 
+-	def calculateFitness(self, current_cat: CAT):
+-		# change later
+-		BASE = 1.3
+-		fitnessValue = 0
+-		HCW = 10
+-		ICDW = 0.95
+-		ITDW = 0.6
+-		TEPW = 0.06  # might not use this because we don't include gaps(-1) or empty classes in our population\
+-		current_cat_solution = current_cat.getSolution()
++    def calculateFitness(self, current_cat: CAT):
++        # change later
++        BASE = 1.3
++        fitnessValue = 0
++        HCW = 10
++        ICDW = 0.95
++        ITDW = 0.6
++        TEPW = 0.06  # might not use this because we don't include gaps(-1) or empty classes in our population\
++        current_cat_solution = current_cat.getSolution()
+ 
+-		# hard constraint of assigning a teacher to more than 1 class during the same timeslot
+-		for j in range(len(current_cat_solution[0])):
+-			n = 0
+-			for i in range(self.totalNumClasses):
+-				teacherVal = current_cat_solution[i][j]
+-				for k in range(i + 1, self.totalNumClasses):
+-					if teacherVal == current_cat_solution[k][j]:
+-						n += 1
++        # hard constraint of assigning a teacher to more than 1 class during the same timeslot
++        for j in range(len(current_cat_solution[0])):
++            n = 0
++            for i in range(self.totalNumClasses):
++                teacherVal = current_cat_solution[i][j]
++                for k in range(i + 1, self.totalNumClasses):
++                    if teacherVal == current_cat_solution[k][j]:
++                        n += 1
+ 
+-			fitnessValue += HCW * (BASE ** n)
++            fitnessValue += HCW * (BASE ** n)
+ 
+-		# constraint of having the same teacher for more than 2 timeslots a day
+-		for i in range(self.totalNumClasses):
+-			n = 0
+-			for j in range(len(current_cat_solution[i]), step=11):
+-				teacherVal = current_cat_solution[i][j]
+-				for k in range(j + 1, j + 12):
+-					if k < len(current_cat_solution[i]):
+-						if teacherVal == current_cat_solution[i][k]:
+-							n += 1
++        # constraint of having the same teacher for more than 2 timeslots a day
++        for i in range(self.totalNumClasses):
++            n = 0
++            for j in range(len(current_cat_solution[i]), step=11):
++                teacherVal = current_cat_solution[i][j]
++                for k in range(j + 1, j + 12):
++                    if k < len(current_cat_solution[i]):
++                        if teacherVal == current_cat_solution[i][k]:
++                            n += 1
+ 
+-			if n > 2:
+-				fitnessValue += HCW * (BASE ** n)
++            if n > 2:
++                fitnessValue += HCW * (BASE ** n)
+ 
+-		# soft constraint
+-		for i in range(self.totalNumClasses):
+-			n = 0
+-			for j in range(len(current_cat_solution[i])):
+-				teacherVal = current_cat_solution[i][j]
+-				for k in range(j + 1, len(current_cat_solution[i])):
+-					if teacherVal == current_cat_solution[i][j]:
+-						n += 1
+-			if n > 10:
+-				fitnessValue += ITDW * BASE
+-		return fitnessValue
+-		pass
++        # soft constraint
++        for i in range(self.totalNumClasses):
++            n = 0
++            for j in range(len(current_cat_solution[i])):
++                teacherVal = current_cat_solution[i][j]
++                for k in range(j + 1, len(current_cat_solution[i])):
++                    if teacherVal == current_cat_solution[i][j]:
++                        n += 1
++            if n > 10:
++                fitnessValue += ITDW * BASE
++        return fitnessValue
++        pass
+ 
+-
+-	def getObjectiveValue(self, solution):
+-		"""
++    def getObjectiveValue(self, solution):
++        """
+ 			Implementing function from superclass
+ 			:param solution:
+ 			:return:
+ 		"""
+-		return self.calculateFitness(solution)
++        return self.calculateFitness(solution)
+ 
+-	def seek(self, cats: typing.List[CAT]):
+-		# add code for seeking
+-		# values from the paper after experimentation
+-		SPC = True
+-		SMP = 2
+-		CDC = 0.1
+-		SRD = 0.1
+-		j = 0  # default initialisation
+-		candidate_positions = []
+-		for cat_copy in cats:
+-			best_fitness = self.calculateFitness(cat_copy)
+-			if SPC:
+-				j = SMP - 1
+-				candidate_positions.append(cat_copy)
+-			else:
+-				j = SMP
+-			cat_copies = []
+-			for i in range(0, j):
+-				cat_copies.append(copy.deepcopy(cat_copy))
+-			tc = CDC * len(self.TIMESLOTS)  # nr of timeslots we will "replace"/change
+-			sm = SRD * self.totalNumClasses  # total nr of swaps
+-			for cat in cat_copies:
+-				for _ in range(round(tc)):
+-					self.Change_Random(cat)  # insert tc random timeslots from global_best_cat to cat
+-				for i in range(0, round(sm)):
+-					cat = self.Single_Swap(cat)
+-					# if (self.Valid(cat)):  # if statement is not necessary if single swap only returns valid swaps
+-					new_fitness_value = self.calculateFitness(cat)
+-					if new_fitness_value <= best_fitness:
+-						best_fitness = new_fitness_value
+-						candidate_positions.append(cat)
++    def seek(self, cats: typing.List[CAT]):
++        # add code for seeking
++        # values from the paper after experimentation
++        SPC = True
++        SMP = 2
++        CDC = 0.1
++        SRD = 0.1
++        j = 0  # default initialisation
++        candidate_positions = []
++        for cat_copy in cats:
++            best_fitness = self.calculateFitness(cat_copy)
++            if SPC:
++                j = SMP - 1
++                candidate_positions.append(cat_copy)
++            else:
++                j = SMP
++            cat_copies = []
++            for i in range(0, j):
++                cat_copies.append(copy.deepcopy(cat_copy))
++            tc = CDC * len(self.TIMESLOTS)  # nr of timeslots we will "replace"/change
++            sm = SRD * self.totalNumClasses  # total nr of swaps
++            for cat in cat_copies:
++                for _ in range(round(tc)):
++                    self.Change_Random(cat)  # insert tc random timeslots from global_best_cat to cat
++                for i in range(0, round(sm)):
++                    cat = self.Single_Swap(cat)
++                    # if (self.Valid(cat)):  # if statement is not necessary if single swap only returns valid swaps
++                    new_fitness_value = self.calculateFitness(cat)
++                    if new_fitness_value <= best_fitness:
++                        best_fitness = new_fitness_value
++                        candidate_positions.append(cat)
+ 
+-			old_fitness = self.calculateFitness(candidate_positions[0])
+-			FSmax = best_fitness
+-			FSmin = self.calculateFitness(self.global_best_cat)
+-			equal = True
+-			for i in range(len(candidate_positions) - 1):
+-				fitness = self.calculateFitness(candidate_positions[i])
+-				if fitness > FSmax:
+-					FSmax = fitness
+-				if fitness < FSmin:
+-					FSmin = fitness
+-				if fitness != old_fitness:  # a cat having a better than initial fitness had been found
+-					equal = False
++            old_fitness = self.calculateFitness(candidate_positions[0])
++            FSmax = best_fitness
++            FSmin = self.calculateFitness(self.global_best_cat)
++            equal = True
++            for i in range(len(candidate_positions) - 1):
++                fitness = self.calculateFitness(candidate_positions[i])
++                if fitness > FSmax:
++                    FSmax = fitness
++                if fitness < FSmin:
++                    FSmin = fitness
++                if fitness != old_fitness:  # a cat having a better than initial fitness had been found
++                    equal = False
+ 
+-			FSb = FSmin  # minimisation problem
+-			probabilities = [1.0 for _ in candidate_positions]
+-			if not equal:
+-				for i in range(len(candidate_positions)):
+-					FSi = self.calculateFitness(candidate_positions[i])
+-					Pi = abs(FSi - FSb) / abs(FSmax - FSmin)  # formula from equation 15
+-					probabilities[i] = Pi
++            FSb = FSmin  # minimisation problem
++            probabilities = [1.0 for _ in candidate_positions]
++            if not equal:
++                for i in range(len(candidate_positions)):
++                    FSi = self.calculateFitness(candidate_positions[i])
++                    Pi = abs(FSi - FSb) / abs(FSmax - FSmin)  # formula from equation 15
++                    probabilities[i] = Pi
+ 
+-			# pick a random position from the candidate positions the one to move to
+-			# need to choose somehow, paper doesn't specify (probably using the probabilities)
+-			random_pos = random.choices(candidate_positions, weights=probabilities, k=1)[0]  # function returns a list
+-			# of size k
+-			cat_copy.setSolution(random_pos.getSolution())
++            # pick a random position from the candidate positions the one to move to
++            # need to choose somehow, paper doesn't specify (probably using the probabilities)
++            random_pos = random.choices(candidate_positions, weights=probabilities, k=1)[0]  # function returns a list
++            # of size k
++            cat_copy.setSolution(random_pos.getSolution())
+ 
+-	def trace(self, cats: typing.List[CAT]):
+-		# add code for tracing
+-		for cat in cats:
+-			c1 = 2.0  # From the not-hybrid algorithm
+-			similarity = self.Similarity(cat)
+-			distance = self.totalNumClasses * len(self.TIMESLOTS) - similarity
+-			rand_number = random.random()
+-			cs = rand_number * c1 * distance  # number of cells to be swapped
+-			# meant to be equivalent to the velocity from the original paper
++    def trace(self, cats: typing.List[CAT]):
++        # add code for tracing
++        for cat in cats:
++            c1 = 2.0  # From the not-hybrid algorithm
++            similarity = self.Similarity(cat)
++            distance = self.totalNumClasses * len(self.TIMESLOTS) - similarity
++            rand_number = random.random()
++            cs = rand_number * c1 * distance  # number of cells to be swapped
++            # meant to be equivalent to the velocity from the original paper
+ 
+-			for _ in range(round(cs)):
+-				self.Single_Swap(cat)
++            for _ in range(round(cs)):
++                self.Single_Swap(cat)
+ 
+-	def Similarity(self, cat: CAT):
+-		similarity = 0
+-		cat_solution = cat.getSolution()
+-		global_best_cat_solution = self.global_best_cat.getSolution()
+-		for i in range(len(cat_solution)):
+-			for j in range(len(cat_solution[i])):
+-				if cat_solution[i][j] == global_best_cat_solution[i][j]:
+-					similarity += 1
+-		return similarity
++    def Similarity(self, cat: CAT):
++        similarity = 0
++        cat_solution = cat.getSolution()
++        global_best_cat_solution = self.global_best_cat.getSolution()
++        for i in range(len(cat_solution)):
++            for j in range(len(cat_solution[i])):
++                if cat_solution[i][j] == global_best_cat_solution[i][j]:
++                    similarity += 1
++        return similarity
+ 
+-	def Single_Swap(self, current_cat: CAT):
+-		randClass = random.randint(0, self.totalNumClasses)
+-		randCell1 = random.randint(0, 56)
+-		randCell2 = random.randint(0, 56)
+-		current_cat_solution = current_cat.getSolution()
++    def Single_Swap(self, current_cat: CAT):
++        randClass = random.randint(0, self.totalNumClasses)
++        randCell1 = random.randint(0, 56)
++        randCell2 = random.randint(0, 56)
++        current_cat_solution = current_cat.getSolution()
+ 
+-		inCol1 = False
+-		inCol2 = False
+-		for i in range(self.totalNumClasses):
+-			if current_cat_solution[i][randCell1] == current_cat_solution[randClass][randCell2]:
+-				inCol1 = True
+-				break
++        inCol1 = False
++        inCol2 = False
++        for i in range(self.totalNumClasses):
++            if current_cat_solution[i][randCell1] == current_cat_solution[randClass][randCell2]:
++                inCol1 = True
++                break
+ 
+-		for i in range(self.totalNumClasses):
+-			if current_cat_solution[i][randCell2] == current_cat_solution[randClass][randCell1]:
+-				inCol2 = True
+-				break
++        for i in range(self.totalNumClasses):
++            if current_cat_solution[i][randCell2] == current_cat_solution[randClass][randCell1]:
++                inCol2 = True
++                break
+ 
+-		if (current_cat_solution[randClass][randCell1] != current_cat_solution[randClass][randCell2]) and (
+-				not inCol1) and (not inCol2):
+-			tempCat = current_cat_solution[randClass][randCell1]
+-			current_cat_solution[randClass][randCell1] = current_cat_solution[randClass][randCell2]
+-			current_cat_solution[randClass][randCell2] = tempCat
++        if (current_cat_solution[randClass][randCell1] != current_cat_solution[randClass][randCell2]) and (
++                not inCol1) and (not inCol2):
++            tempCat = current_cat_solution[randClass][randCell1]
++            current_cat_solution[randClass][randCell1] = current_cat_solution[randClass][randCell2]
++            current_cat_solution[randClass][randCell2] = tempCat
+ 
+-		current_cat.setSolution(current_cat_solution)
+-		return current_cat
++        current_cat.setSolution(current_cat_solution)
++        return current_cat
+ 
+-	def Change_Random(self, cat_copy: CAT):
+-		"""
++    def Change_Random(self, cat_copy: CAT):
++        """
+         changes a random column in the cat_copy solution to the corresponding column in the best cat
+         :param cat_copy: cat to be changed
+         :return: modified cat
+         """
+-		# auxilliary procedure, section 3.4.3
+-		rand_col = random.randint(0, len(self.TIMESLOTS) - 1)
+-		cat_solution = cat_copy.getSolution()
+-		global_best_solution = self.global_best_cat.getSolution()
++        # auxilliary procedure, section 3.4.3
++        rand_col = random.randint(0, len(self.TIMESLOTS) - 1)
++        cat_solution = cat_copy.getSolution()
++        global_best_solution = self.global_best_cat.getSolution()
+ 
+-		# need to first compensate for the swap we are about to make
+-		for row in range(len(cat_solution)):
+-			for col in range(len(cat_solution[row])):
+-				if cat_solution[row][col] == global_best_solution[row][col] and (not col == rand_col):
+-					cat_solution[row][col] = cat_solution[row][rand_col]
+-					break  # only do this once per class
++        # need to first compensate for the swap we are about to make
++        for row in range(len(cat_solution)):
++            for col in range(len(cat_solution[row])):
++                if cat_solution[row][col] == global_best_solution[row][col] and (not col == rand_col):
++                    cat_solution[row][col] = cat_solution[row][rand_col]
++                    break  # only do this once per class
+ 
+-		# swap
+-		for row in range(len(cat_solution)):
+-			for col in range(len(cat_solution[row])):
+-				cat_solution[row][col] = global_best_solution[row][col]
++        # swap
++        for row in range(len(cat_solution)):
++            for col in range(len(cat_solution[row])):
++                cat_solution[row][col] = global_best_solution[row][col]
+ 
+-		cat_copy.setSolution(cat_solution)
+-		return cat_copy
++        cat_copy.setSolution(cat_solution)
++        return cat_copy
+ 
+-	'''def Valid(self, current_cat: CAT):
++    '''def Valid(self, current_cat: CAT):
+         # check whether current cat is valid
+         # shouldn't need to implement this if change random is guaranteed to return a valid solution
+         return False
