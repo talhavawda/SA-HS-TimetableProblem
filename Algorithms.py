@@ -87,7 +87,9 @@ class Input:
 
 		print(headerStr + "\n")
 
-seedVal = 0
+
+
+seedVal = 0 # global variable | used by weightedSampler()
 
 class TimetableAlgorithm:
 	"""
