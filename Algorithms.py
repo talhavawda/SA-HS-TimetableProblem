@@ -725,11 +725,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         # constraint of having the same teacher for more than 2 timeslots a day
         for i in range(self.totalNumClasses):
             n = 0
-            for j in range(len(current_cat_solution[i])):
+            for j in range(len(current_cat_solution[i]), step=11):
                 teacherVal = current_cat_solution[i][j]
                 for k in range(j + 1, j + 12):
-                    if teacherVal == current_cat_solution[i][k]:
-                        n += 1
+                    if k < len(current_cat_solution[i]):
+                        if teacherVal == current_cat_solution[i][k]:
+                            n += 1
 
             if n > 2:
                 fitnessValue += HCW * (BASE ** n)
@@ -838,7 +839,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 inCol2 = True
                 break
 
-        if (current_cat_solution[randClass][randCell1] != current_cat_solution[randClass][randCell2]) and (not inCol1) and (not inCol2):
+        if (current_cat_solution[randClass][randCell1] != current_cat_solution[randClass][randCell2]) and (
+        not inCol1) and (not inCol2):
             tempCat = current_cat_solution[randClass][randCell1]
             current_cat_solution[randClass][randCell1] = current_cat[randClass][randCell2]
             current_cat_solution[randClass][randCell2] = tempCat
