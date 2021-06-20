@@ -613,13 +613,18 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 	def recombination(self, chromosome1, chromosome2):
 		# TODO: Recombination (Crossover)
-		
-		crossoverPoint = random.randint(0, self.totalNumClasses-1)
-		selectedClasses1 = chromosome1[0:crossoverPoint]
-		selectedClasses2 = chromosome2[crossoverPoint:]
-		newChromosome = selectedClasses1 + selectedClasses2
+		child = []
+		crossoverPoint = random.randint(1, self.totalNumClasses)
+		print(crossoverPoint)
+		class1Selection = chromosome1[0:crossoverPoint]
+		print(class1Selection)
+		class2Selection = chromosome2[crossoverPoint:]
+		for i in class1Selection:
+			child.append(i)
+		for i in range(class2Selection):
+			child.append(i)
 
-		return newChromosome
+		return child
 
 
 
