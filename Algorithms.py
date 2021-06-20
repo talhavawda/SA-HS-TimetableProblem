@@ -640,7 +640,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 # calculate fitness of current_cat
                 current_cat_fitness = self.evaluateFitness(current_cat)
 
-                # is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a tyop)?
+                # is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a typo,
+                # meant to be global_best_fitness)?
                 if current_cat_fitness <= global_best_fitness:  # assuming out fitness function wants to minimise
                     global_best_fitness = current_cat_fitness
                     self.global_best_cat = current_cat
@@ -679,7 +680,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             teacherClassAlloc = list(range(1, self.numTeachers))
 
             # rows = classes, cols= timeslots
-            new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
+            new_allocation = [[0 for _ in range(len(self.TIMESLOTS))] for _ in range(self.totalNumClasses)]  # cat i
 
             # col by row instead of row by col to ensure no duplicate teachers
             for j in range(len(new_allocation[0])):
