@@ -1085,10 +1085,10 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 						teacherTimeslotAllocations[teacher].append(
 							classAllocation[lesson])  # add this timeslot to this teacher's allocated timeslots
 
-					print('Individual', i + 1, ' Class', currentClass + 1, "allocated")
+					print('Cat', i + 1, ' Class', currentClass + 1, "allocated")
 					currentClass = currentClass + 1
 				else:
-					print("\tInvalid allocation", 'Individual', i + 1, ' Class', currentClass + 1)
+					print("\tInvalid allocation", 'Cat', i + 1, ' Class', currentClass + 1)
 
 
 			CATS.append(newcat)
