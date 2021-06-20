@@ -438,25 +438,25 @@ class GeneticAlgorithm(TimetableAlgorithm):
 					teacherAllocation = teacherTimeslotAllocations[teacher]
 
 					if timeslot in teacherAllocation:  # teacher is already allocated to this timeslot - i.e. there is a clash
-						print("Lesson\t", lesson)
-						print("Timeslot\t", timeslot)
-						print("Subject\t", self.LESSON_SUBJECTS[lesson])
-						print("This teachers allocation: \t", teacherAllocation)
-						print("Teacher\t", teacher)
+						#print("Lesson\t", lesson)
+						#print("Timeslot\t", timeslot)
+						#print("Subject\t", self.LESSON_SUBJECTS[lesson])
+						#print("This teachers allocation: \t", teacherAllocation)
+						#print("Teacher\t", teacher)
 						#print("All teachers", teacherTimeslotAllocations)
-						# BELOW IS TO SWAP WHEN THERE'S A CLASH - SEEMS TO BE TAKING LONGER THAN JUST GENERATING A NEW ALLOCATION FOR THIS CLASS
+
 
 						# Find another teacher that teaches this class (a subject) to swap with
 						swapFound = False
 
 						for otherSubject in range(self.NUM_SUBJECTS):
 							if otherSubject != subject:
-								print("\tChecking subject", otherSubject)
+								#print("\tChecking subject", otherSubject)
 								# Get teacher that teaches this other subject to this class
 								otherTeacher = self.teachingTable[currentClass][otherSubject]
 								otherTeacherAllocation = teacherTimeslotAllocations[otherTeacher]
-								print("\t\tOther teacher: \t", otherTeacher)
-								print("\t\tOther teacher's allocation: \t", otherTeacherAllocation)
+								#print("\t\tOther teacher: \t", otherTeacher)
+								#print("\t\tOther teacher's allocation: \t", otherTeacherAllocation)
 
 								if timeslot not in otherTeacherAllocation:  # the other teacher is free in this current timeslot
 									# See if this current teacher is free in any of the timeslots that this other teacher teaches this class
@@ -470,10 +470,12 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 										if otherTimeslot not in teacherAllocation:  # the current teacher is free in this other timeslot
 											swapFound = True
-											print("swap found")
+											#print("swap found")
 											# we can swap timeslots
-											classAllocation[lesson] = otherTimeslot
-											classAllocation[otherLesson] = timeslot
+											temp = copy.deepcopy(classAllocation[lesson])
+											classAllocation[lesson] = copy.deepcopy(classAllocation[otherLesson])
+											classAllocation[otherLesson] = temp
+
 											break  # stop the search as we've found another lesson to swap with
 
 
@@ -496,8 +498,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 										swapFound = True
 										print("swap found")
 										# we can swap timeslots
-										classAllocation[lesson] = otherTimeslot
-										classAllocation[otherLesson] = timeslot
+										temp = copy.deepcopy(classAllocation[lesson])
+										classAllocation[lesson] = copy.deepcopy(classAllocation[otherLesson])
+										classAllocation[otherLesson] = temp
 										break # stop the search as we've found another lesson to swap with
 						"""
 
@@ -718,12 +721,16 @@ class GeneticAlgorithm(TimetableAlgorithm):
 	def calculateFitness(self, chromosome):
 		# TODO: GA fitness
 		# return fitness of chromosome
-		# +5 for every correct allocation. Do we need this?
+		# +1 for every allocation (as they meet the hard constraints).
 		# +3 for a double period [done]
 		# -2 for more than 2 lesson periods of a subject in a day [done]
 		# -1 for two single periods on the same day for a subject [done]
 		# -2 for each time a teacher teaches for more than 4 periods consecutively [done]
 		fitness = 0
+
+		# Assign +1 for every allocation
+		fitness += self.totalNumClasses * self.NUM_LESSONS
+
 		# for each subject evaluate the allocation (class and teacher wise)
 		# empty teacher allocation array
 		teacherAllocation = self.getTeacherAllocation(chromosome)
@@ -766,7 +773,6 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			Class = chromosome[i]
 			subjectsAllocation = [] # a list where the indexes are the timeslots and the values are the subjects at that timeslot
 			for timeslot in range(self.NUM_TIMESLOTS):
-				print(Class)
 				lesson = Class.index(timeslot) # get the lesson that is being taught at this timeslot
 				subject = self.LESSON_SUBJECTS[lesson] # get subject number of this lesson
 				subjectsAllocation.append(subject)
