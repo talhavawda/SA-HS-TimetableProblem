@@ -5,6 +5,7 @@ import time
 import math
 import typing
 import copy
+import bisect
 
 
 class Input:
@@ -85,6 +86,9 @@ class Input:
 			print()
 
 		print(headerStr + "\n")
+
+
+seedVal = 0 # Global Variable For weightedSampler() function
 
 
 class TimetableAlgorithm:
@@ -322,9 +326,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 			for i in range(self.populationSize):
 				# Select parents
-				parent1, parent2 = self.selection(population=population)
+				parent1, parent2 = self.selection(population)
 				# produce a child from 2 parents
-				child = self.crossover(parent1, parent2)
+				child = self.recombination(parent1, parent2)
 				# Probability for operators
 				probability = random.random()
 				# if probability is less than 0.1 then conduct mutation on child
@@ -476,6 +480,65 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		return teacherAllocation
 
 
+
+
+	def weightedSampler(self, seq, weights):
+		"""
+			Return a random-sample function that picks from seq weighted by (the corresponding) weights.
+
+			Code Acknowledgement: Artificial Intelligence: A Modern Approach (https://github.com/aimacode/aima-python)
+		"""
+
+		totals = []
+
+		# random.seed(datetime.now())
+
+		global seedVal
+		random.seed(seedVal)
+		seedVal += 42345876
+
+		for w in weights:
+			totals.append(w + totals[-1] if totals else w)
+
+		return lambda: seq[bisect.bisect(totals, random.uniform(0, totals[-1]))]
+
+
+
+	def selection(self, population):
+		"""
+			Select and return 2 parents from the population
+
+			Selection Strategy - Roulette Selection (Fitness Proportionate Selection)
+				- 	The parents are selected at random with the chance/probability of a chromosome being selected is proportional to its fitness
+					-	Fitter individuals have a higher chance of being selected (for 'mating' and passing on their genes to child chromosomes)
+					-	This ensures a reasonable spread of both good and bad chromosomes (with good/fit chromosomes being favoured)
+				- 	This Selection Strategy was used as we want a mixture of both good and bad chromosomes
+					-	If we only pick the fittest parents from the current population (Elitism Selection) then we
+						lose chromosomes that are unfit but have part of the solution in them.
+						It also leads to a loss of diversity and premature convergence (which is undesirable for Genetic Algorithms)
+							-	Loss of Diversity is where the population consists of chromosomes of similar genes,
+							which can lead to having a local optimal solution, but not being able to reach the global optimal solution
+
+			:param population: the population to select 2 parents from
+			:return:
+		"""
+
+		# fitnesses[i] is the fitness value of the chromosome population[i]
+		fitnesses = [self.calculateFitness(chromosome) for chromosome in population]
+
+
+		"""
+			weightedSampler() does the Roulette Selection
+			It returns a function that picks a random sample that picks from population weighted by the fitnesses
+		"""
+		sampler = self.weightedSampler(population, fitnesses)
+
+		parent1 = sampler()
+		parent2 = sampler()
+
+		return parent1, parent2
+
+
 	def mutation(self, chromosome):
 		"""
 			Do Mutation on a chromosome
@@ -540,15 +603,11 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 		return mutatedChromosome
 
-	def crossover(self, chromosome1, chromosome2):
-		# TODO: Crossover
+	def recombination(self, chromosome1, chromosome2):
+		# TODO: Recombination (Crossover)
 		return chromosome1
 
-	def selection(self, population):
-		# TODO: Selection
-		parent1 = population[0]  # population[random.randint(0, len(population))]
-		parent2 = population[1]  # population[random.randint(0, len(population))]
-		return parent1, parent2
+
 
 	def calculateFitness(self, chromosome):
 		# TODO: GA fitness
