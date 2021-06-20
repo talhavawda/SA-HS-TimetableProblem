@@ -802,6 +802,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 class CatSwarmAlgorithm(TimetableAlgorithm):
 	class CAT:
+
 		SEEKING = 1
 		TRACING = 2
 
@@ -815,8 +816,6 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				current position in the solution space, changes when cat given permission to seek
 			"""
 			self.solution = [[]]
-			"""current solution the cat possesses
-			"""
 
 
 		def setState(self, newState: int):
@@ -857,6 +856,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		"""
 		# Call super constructor
 		super().__init__(input, populationSize)
+
+		# set best cat
 		self.global_best_cat = self.CAT()
 
 	def solveTimetable(self):
@@ -873,11 +874,11 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		initialCats = self.intialiseCats()
 
 		# set global best fitness to worst possible
-		global_best_fitness = -50000  # We are maximising our fitness value so set to very low value
+		global_best_fitness = 0 # We are maximising our fitness value so set to very low value
 
 		# paper uses 5000 iterations
 		iteration_counter = 5000
-		# mixing ratio, initialised to 4% in paper for hybrid CS
+		# mixing ratio, initialised to 4% in paper for hybrid CS, seeking/trace ratio
 		MR = 0.04
 
 		for i in range(0, iteration_counter):
@@ -913,17 +914,21 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				self.trace(tracing_cats)
 		# Execute local search refining procedure in order to improve the quality of resultant time timetable ; don't
 		# think we do this outside of evaluation(and the paper doesn't say how)
+
 		return self.global_best_cat
 
 
 	def intialiseCats(self):
 		# initialise n cats (paper says 30, we may need to change)
 		# revisiting the logic later
+		# logic should be the same as initialization of the genetic Algo
 		CATS = []  # list of individual cats -> size will be self.populationSize after we add all the cats
 
 		for i in range(self.populationSize):  # Create cat i
 
-			new_cat = []
+			new_cat = self.CAT()
+
+
 			teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
 
 			currentClass = 0
@@ -933,23 +938,46 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			isValidAllocation = True
 
+
 			for lesson in range (len(self.LESSONS)):
 				timeslot = classAllocation[lesson]
 				subject = self.LESSON_SUBJECTS[lesson]
 				teacher = self.teachingTable[currentClass][subject]
 				teacherAllocation = teacherTimeslotAllocations[teacher]
 
-				if timeslot in teacherAllocation:
-					isValidAllocation = False
-			if isValidAllocation:
-				new_cat.setSolution(classAllocation)
-				for lesson in self.LESSONS:
-					subject = self.LESSON_SUBJECTS[lesson]
-					teacher = self.teachingTable[currentClass][subject]
-					teacherTimeslotAllocations[teacher].append(classAllocation[lesson])
 
-				currentClass = currentClass + 1
-				print('cat', i + 1, 'class', currentClass, '\n', classAllocation)
+				if timeslot in teacherAllocation:
+					swapfound = False
+
+					for otherLesson in range(self.NUM_LESSONS):
+						if otherLesson != lesson:
+							otherTimeslot = classAllocation[lesson]
+
+							if otherTimeslot not in teacherAllocation:
+								otherSubject = self.LESSON_SUBJECTS[lesson]
+								otherTeacher = self.teachingTable[currentClass][subject]
+								otherTeachingAllocation = teacherTimeslotAllocations[teacher]
+
+								if timeslot not in otherTeachingAllocation:
+									swapfound = True
+									classAllocation[lesson] = otherTimeslot
+									classAllocation[otherLesson] = timeslot
+									break
+				
+				if swapfound == False:
+					isValidAllocation = False
+				
+
+
+				if isValidAllocation:
+					new_cat.setSolution(classAllocation)
+					for lesson in self.LESSONS:
+						subject = self.LESSON_SUBJECTS[lesson]
+						teacher = self.teachingTable[currentClass][subject]
+						teacherTimeslotAllocations[teacher].append(classAllocation[lesson])
+
+			currentClass = currentClass + 1
+			print('cat', i + 1, 'class', currentClass, '\n', classAllocation)
 			CATS.append(new_cat)
 
 			"""
@@ -977,7 +1005,75 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		return CATS
 
 	def calculateFitness(self, current_cat: CAT):
-		# change later
+		# fitness for genetic algorithm
+		# return fitness of chromosome
+		# +5 for every correct allocation. Do we need this?
+		# +3 for a double period [done]
+		# -2 for more than 2 periods on a subject in a day [done]
+		# -1 for two single periods on the same day for a subject [done]
+		# -2 for each time a teacher teaches for more than 4 periods consecutively [done]
+		fitness = 0
+		# for each subject evaluate the allocation (class and teacher wise)
+		# empty teacher allocation array
+		teacherAllocation = self.getTeacherAllocation(current_cat)
+		# check to see if any teacher works more than 4periods at once
+		for teacher in teacherAllocation:
+			workingPeriods = teacher
+			# sort in order [0, 54]
+			workingPeriods.sort()
+			consecutive = 0
+			for i in range(len(workingPeriods) - 1):
+				if workingPeriods[i] + 1 == workingPeriods[i + 1]:
+					consecutive += 1
+				else:
+					consecutive = 0
+				if consecutive == 4:
+					fitness -= 2
+					consecutive = 0
+
+		# reward double periods
+		# for each class in the chromosome
+		for i in range(len(current_cat.getSolution())):
+			# for each slot in the class
+			for j in range(len(current_cat.getSolution([0])) - 1):
+				# for each slot after j
+				for k in range(j + 1, current_cat.getSolution([0]) - 1):
+					# get subject being held at j
+					subject1 = self.LESSON_SUBJECTS[j]
+					# get subject being held at k
+					subject2 = self.LESSON_SUBJECTS[k]
+					# check if they are the same subject
+					if subject1 == subject2:
+						# check if they are consecutive
+						if current_cat.getSolution([i][j]) + 1 == current_cat.getSolution([i][k]):
+							fitness += 3
+					else:
+						break
+		# penalize two seperate periods on the same day
+		for m in current_cat.getSolution():
+			subjectsAllocatedForClass = []
+			for g in range(len(m)):
+				pos = m.index(g)
+				subject = self.LESSON_SUBJECTS[pos]
+				subjectsAllocatedForClass.append(subject)
+			for s in range(len(subjectsAllocatedForClass) - 2):
+				# 3 consec periods of the same subject
+				if subjectsAllocatedForClass[s] == subjectsAllocatedForClass[s + 1] and subjectsAllocatedForClass[s] == \
+						subjectsAllocatedForClass[s + 2]:
+					fitness -= 2
+				else:
+					continue
+			counter = 0
+			# check if there is 2 periods of the same subjects in the same day[not consecutive]
+			for s in range(len(subjectsAllocatedForClass)):
+				subject = subjectsAllocatedForClass[s]
+				for t in range(s + 2, 11):
+					if subject == subjectsAllocatedForClass[t]:
+						fitness -= 1
+		# print('Individual fitness = ', fitness)
+
+		"""
+		# fitness for csa
 		BASE = 1.3
 		fitnessValue = 0
 		HCW = 10
@@ -1022,6 +1118,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				fitnessValue += ITDW * BASE
 
 		return fitnessValue
+		"""
+		return fitness
 		pass
 
 	def getObjectiveValue(self, solution):
@@ -1033,12 +1131,90 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		return self.calculateFitness(solution)
 
 	def seek(self, cats: typing.List[CAT]):
+
+		for current_cat in cats:
+			"""
+				establish candidate pool, mutate candidates, determine next position
+			"""
+			"""
+				SMP[] Seeking memory pool, a list containing candidate solutions
+			"""
+			SMP = []
+			"""
+				SPC [] boolean to determine if we should consider self positioning
+			"""
+			SPC = 1
+
+			# initialize candidates
+
+			for i in range(5):
+
+				new_candidate = current_cat.getSolution
+				SMP.append(new_candidate)
+
+			"""
+				CDC - dimension change ratio, percentage of dimensions that will undergo mutation
+				SRD - mutation ratio, determines the extent of mutation
+				Mutate the candidates
+			"""
+
+
+			CDC = 0.5
+			SRD = 0.2
+
+
+			# mutation algorithm
+
+			for k in range (len(SMP)-SPC):  # iterate candidates
+				mutatedSolution = SMP[k]
+				for i in range(len(mutatedSolution[0])):  # choose values to mutate
+					for j in range(mutatedSolution):
+						random_value1 = random.random()
+						if random_value1 > CDC:
+							random_value2 = random.random()
+							mutatedSolution[i][j] = ((1 + random_value2 * SRD) * mutatedSolution[i][j])
+						else:
+							continue
+				SMP[k] = mutatedSolution
+			"""
+				Determine the next position from the list of candidates
+			"""
+
+			old_fitness = self.calculateFitness(SMP[0])  #
+			FSmax = self.calculateFitness(current_cat)
+			FSmin = self.calculateFitness(self.global_best_cat)
+			equal = True
+			for i in range(len(SMP) - 1):
+				fitness = self.calculateFitness(SMP[i])
+				if fitness > FSmax:
+					FSmax = fitness
+				if fitness < FSmin:
+					FSmin = fitness
+				if fitness != old_fitness:  # a cat having a better than initial fitness had been found
+					equal = False
+			FSb = self.calculateFitness(self.global_best_cat)
+
+			probabilities = [1.0 for _ in SMP]
+			if not equal:
+				for i in range(len(SMP)):
+					FSi = self.calculateFitness(SMP[i])
+					Pi = abs(FSi - FSb) / abs(FSmax - FSb)  # formula from equation 15
+					probabilities[i] = Pi
+
+			# pick a random position from the candidate positions the one to move to
+			# need to choose somehow, paper doesn't specify (probably using the probabilities)
+			random_pos = random.choices(SMP, weights=probabilities, k=1)[0]  # function returns a list
+			# of size k
+			current_cat.setSolution(random_pos.getSolution())
+
+
+		"""
 		# add code for seeking
 		# values from the paper after experimentation
-		SPC = True
-		SMP = 2
-		CDC = 0.1
-		SRD = 0.1
+		SPC = True  # self positioning consideration
+		SMP = 2  # seeking memory pool for candidate solutions
+		CDC = 0.1  # percentage of dimensions to mutate
+		SRD = 0.1  # extent of mutation
 		j = 0  # default initialisation
 		candidate_positions = []
 		for cat_copy in cats:
@@ -1064,7 +1240,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 						best_fitness = new_fitness_value
 						candidate_positions.append(cat)
 
-			old_fitness = self.calculateFitness(candidate_positions[0])
+			old_fitness = self.calculateFitness(candidate_positions[0]) #
 			FSmax = best_fitness
 			FSmin = self.calculateFitness(self.global_best_cat)
 			equal = True
@@ -1090,6 +1266,9 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			random_pos = random.choices(candidate_positions, weights=probabilities, k=1)[0]  # function returns a list
 			# of size k
 			cat_copy.setSolution(random_pos.getSolution())
+			"""
+		return
+
 
 	def trace(self, cats: typing.List[CAT]):
 		# add code for tracing
@@ -1141,6 +1320,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		current_cat.setSolution(current_cat_solution)
 		return current_cat
 
+
 	def Change_Random(self, cat_copy: CAT):
 		"""
 		changes a random column in the cat_copy solution to the corresponding column in the best cat
@@ -1173,6 +1353,18 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			teacherAllocation = []
 			teacherTimeslotAllocations.append(teacherAllocation)
 		return teacherTimeslotAllocations
+
+	def getTeacherAllocation(self, current_cat: CAT):
+		teacherAllocation = self.getEmptyTeacherAllocation()
+		# take the individuals distribution and assign to relevant teachers
+		for Class in range(self.totalNumClasses):
+			for Lesson in range(self.NUM_LESSONS):
+				Subject = self.LESSON_SUBJECTS[Lesson]
+				Teacher = self.teachingTable[Class][Subject]
+				timeslot = current_cat.getSolution([Class][Lesson])
+				teacherAllocation[Teacher].append(timeslot)
+
+		return teacherAllocation
 
 	'''def Valid(self, current_cat: CAT):
 		# check whether current cat is valid
