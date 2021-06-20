@@ -680,10 +680,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
             # rows = classes, cols= timeslots
             new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
+
+            # col by row instead of row by col to ensure no duplicate teachers
             for j in range(len(new_allocation[0])):
                 random.shuffle(teacherClassAlloc)
-                for i in range(len(new_allocation)):
-                    new_allocation[j][i] = teacherClassAlloc[i]
+                for k in range(len(new_allocation)):
+                    new_allocation[j][k] = teacherClassAlloc[k]
 
             new_cat = self.CAT()
             new_cat.setSolution(new_allocation)
@@ -852,17 +854,24 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         if (current_cat_solution[randClass][randCell1] != current_cat_solution[randClass][randCell2]) and (
                 not inCol1) and (not inCol2):
             tempCat = current_cat_solution[randClass][randCell1]
-            current_cat_solution[randClass][randCell1] = current_cat[randClass][randCell2]
+            current_cat_solution[randClass][randCell1] = current_cat_solution[randClass][randCell2]
             current_cat_solution[randClass][randCell2] = tempCat
 
         current_cat.setSolution(current_cat_solution)
         return current_cat
 
     def Change_Random(self, cat_copy: CAT):
+        """
+        changes a random column in the cat_copy solution to the corresponding column in the best cat
+        :param cat_copy: cat to be changed
+        :return: modified cat
+        """
         # auxilliary procedure, section 3.4.3
         rand_col = random.randint(0, len(self.TIMESLOTS) - 1)
         cat_solution = cat_copy.getSolution()
         global_best_solution = self.global_best_cat.getSolution()
+
+        # need to first compensate for the swap we are about to make
         for row in range(len(cat_solution)):
             for col in range(len(cat_solution[row])):
                 if cat_solution[row][col] == global_best_solution[row][col] and (not col == rand_col):
