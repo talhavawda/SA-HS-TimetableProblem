@@ -548,15 +548,6 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
             self.state = newState
 
-        '''
-        don't think we need location if we have solution
-        def setLocation(self, newlocation: int):
-            """
-					setter for location
-			"""
-            self.location = newlocation
-            '''
-
         def setVelocity(self, newVelocity: int):
             """
 					setter for location
@@ -586,6 +577,15 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					getter for velocity
 			"""
             return self.velocity
+
+            '''
+            don't think we need location if we have solution
+            def setLocation(self, newlocation: int):
+                """
+                        setter for location
+                """
+                self.location = newlocation
+                '''
 
         '''
         don't think we need location if we have solution
@@ -619,13 +619,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
 		"""
-        # I'm going to write out the steps here to help myself a bit
 
         # execute initialisation procedure to initialise cats
         initialCats = self.intialiseCats()
 
         # set global best fitness to worst possible
-        global_best_fitness = 1000000  # may need to change once we determine objective function, place holder value for now
+        global_best_fitness = 1000000  # paper treats cat swarm as a minimisation problem, so start with a very large best fitness
 
         # paper uses 5000 iterations
         iteration_counter = 5000
@@ -639,7 +638,6 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 current_cat_fitness = self.evaluateFitness(current_cat)
 
                 # is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a tyop)?
-                # copied it as is from the paper, but I think we want to maximise - need to change it here and in seek
                 if current_cat_fitness <= global_best_fitness:  # assuming out fitness function wants to minimise
                     global_best_fitness = current_cat_fitness
                     self.global_best_cat = current_cat
@@ -648,13 +646,11 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 random_value = random.random()
                 # is random number > MR
                 if random_value > MR:
-                    # current_cat[self.mode_index] = self.SEEKING
                     current_cat.setState(self.CAT.SEEKING)
-                # self.seek(current_cat)
                 else:
-                    # current_cat[self.mode_index] = self.TRACING
                     current_cat.setState(self.CAT.TRACING)
-                # self.trace(current_cat) put the "behaviour" here bc it's not clear where it should go, and in the
+
+                # put the "behaviour" of the cats here as it's not clear where it should go, and in the
                 # original CSO algorithm, we move all the cats at once
                 seeking_cats = []
                 for cat in initialCats:
@@ -666,8 +662,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                     if cat.getState() == self.CAT.TRACING:
                         tracing_cats.append(cat)
                 self.trace(tracing_cats)
-        # Execute local search refining procedure in order to improve the quality of resultant time timetable
-        # regarding teachers gaps
+        # Execute local search refining procedure in order to improve the quality of resultant time timetable ; don't
+        # think we do this outside of evaluation(and the paper doesn't say how)
         return self.global_best_cat
 
     def intialiseCats(self):
@@ -677,7 +673,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
         for i in range(self.populationSize):  # Create cat i
 
-            #teacherClassAlloc = list(range(1, 56))
+            # teacherClassAlloc = list(range(1, 56))
             teacherClassAlloc = list(range(1, self.numTeachers))
             # rows = classes, cols= timeslots
             new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
@@ -692,13 +688,15 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
             # Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers)
             # as we building the chromosome
-
+            '''
+            
             teacherTimeslotAllocations = []
 
             for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
                 teacherAllocation = []
                 teacherTimeslotAllocations.append(teacherAllocation)
 
+        '''
         return CATS
 
     def evaluateFitness(self, current_cat: CAT):
@@ -740,7 +738,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             n = 0
             for j in range(len(current_cat_solution[i])):
                 teacherVal = current_cat_solution[i][j]
-                for k in range(j+1, len(current_cat_solution[i])):
+                for k in range(j + 1, len(current_cat_solution[i])):
                     if teacherVal == current_cat_solution[i][j]:
                         n += 1
             if n > 10:
@@ -848,7 +846,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 break
 
         if (current_cat_solution[randClass][randCell1] != current_cat_solution[randClass][randCell2]) and (
-        not inCol1) and (not inCol2):
+                not inCol1) and (not inCol2):
             tempCat = current_cat_solution[randClass][randCell1]
             current_cat_solution[randClass][randCell1] = current_cat[randClass][randCell2]
             current_cat_solution[randClass][randCell2] = tempCat
