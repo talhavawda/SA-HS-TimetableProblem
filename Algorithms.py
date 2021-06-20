@@ -825,7 +825,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		solution = [[]]
 
 		def __init__(self):
-			self.state = 0
+			self._state = 0
 			"""
 			0 for when the cat is idle 1 in seek mode and 2 for trace mode 
 			"""
@@ -833,33 +833,33 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
 				current position in the solution space, changes when cat given permission to seek
 			"""
-			self.solution = [[]]
+			self._solution = [[]]
 
 
-		def setState(self, newState: int):
+		def state(self, newState: int):
 			"""
 					setter for state
 			"""
-			self.state = newState
+			self._state = newState
 
 
-		def setSolution(self, newSolution: [[]]):
+		def solution(self, newSolution: [[]]):
 			"""
 					setter for solution
 			"""
-			self.solution = newSolution
+			self._solution = newSolution
 
-		def getState(self):
+		def state(self):
 			"""
 					getter for state
 			"""
-			return self.state
+			return self._state
 
-		def getSolution(self):
+		def solution(self):
 			"""
 					getter for solution
 			"""
-			return self.solution
+			self._solution
 
 
 	def __init__(self, input: Input, populationSize: int):
@@ -1125,11 +1125,11 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		# reward double periods
 		# for each class in the chromosome
-		for i in range(len(current_cat.getSolution())):
+		for i in range(len(current_cat.solution)):
 			# for each slot in the class
-			for j in range(len(current_cat.getSolution([0])) - 1):
+			for j in range(len(current_cat.solution[0]) - 1):
 				# for each slot after j
-				for k in range(j + 1, current_cat.getSolution([0]) - 1):
+				for k in range(j + 1, current_cat.solution[0] - 1):
 					# get subject being held at j
 					subject1 = self.LESSON_SUBJECTS[j]
 					# get subject being held at k
@@ -1137,12 +1137,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					# check if they are the same subject
 					if subject1 == subject2:
 						# check if they are consecutive
-						if current_cat.getSolution([i][j]) + 1 == current_cat.getSolution([i][k]):
+						if current_cat.solution[i][j] + 1 == current_cat.solution[i][k]:
 							fitness += 3
 					else:
 						break
 		# penalize two seperate periods on the same day
-		for m in current_cat.getSolution():
+		for m in current_cat.solution:
 			subjectsAllocatedForClass = []
 			for g in range(len(m)):
 				pos = m.index(g)
@@ -1241,7 +1241,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			for i in range(5):
 
-				new_candidate = current_cat.getSolution
+				new_candidate = current_cat.solution
 				SMP.append(new_candidate)
 
 			"""
@@ -1297,7 +1297,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			# need to choose somehow, paper doesn't specify (probably using the probabilities)
 			random_pos = random.choices(SMP, weights=probabilities, k=1)[0]  # function returns a list
 			# of size k
-			current_cat.setSolution(random_pos.getSolution())
+			current_cat.setSolution(random_pos.solution)
 
 
 		"""
@@ -1377,8 +1377,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 	def Similarity(self, cat: CAT):
 		similarity = 0
-		cat_solution = cat.getSolution()
-		global_best_cat_solution = self.global_best_cat.getSolution()
+		cat_solution = cat.solution
+		global_best_cat_solution = self.global_best_cat.solution()
 		for i in range(len(cat_solution)):
 			for j in range(len(cat_solution[i])):
 				if cat_solution[i][j] == global_best_cat_solution[i][j]:
@@ -1389,7 +1389,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		randClass = random.randint(0, self.totalNumClasses)
 		randCell1 = random.randint(0, 56)
 		randCell2 = random.randint(0, 56)
-		current_cat_solution = current_cat.getSolution()
+		current_cat_solution = current_cat.solution()
 
 		inCol1 = False
 		inCol2 = False
@@ -1409,7 +1409,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			current_cat_solution[randClass][randCell1] = current_cat_solution[randClass][randCell2]
 			current_cat_solution[randClass][randCell2] = tempCat
 
-		current_cat.setSolution(current_cat_solution)
+		current_cat.solution(current_cat_solution)
 		return current_cat
 
 
@@ -1421,8 +1421,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		"""
 		# auxilliary procedure, section 3.4.3
 		rand_col = random.randint(0, len(self.TIMESLOTS) - 1)
-		cat_solution = cat_copy.getSolution()
-		global_best_solution = self.global_best_cat.getSolution()
+		cat_solution = cat_copy.solution()
+		global_best_solution = self.global_best_cat.solution()
 
 		# need to first compensate for the swap we are about to make
 		for row in range(len(cat_solution)):
@@ -1436,7 +1436,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			for col in range(len(cat_solution[row])):
 				cat_solution[row][col] = global_best_solution[row][col]
 
-		cat_copy.setSolution(cat_solution)
+		cat_copy.solution(cat_solution)
 		return cat_copy
 
 	def getEmptyTeacherAllocation(self) -> [[]]:
@@ -1453,7 +1453,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			for Lesson in range(self.NUM_LESSONS):
 				Subject = self.LESSON_SUBJECTS[Lesson]
 				Teacher = self.teachingTable[Class][Subject]
-				timeslot = current_cat.getSolution([Class][Lesson])
+				timeslot = current_cat.solution[Class][Lesson]
 				teacherAllocation[Teacher].append(timeslot)
 
 		return teacherAllocation
