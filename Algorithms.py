@@ -523,10 +523,8 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 
 class CatSwarmAlgorithm(TimetableAlgorithm):
-    # mode_index = 0
 
     class CAT:
-        IDLE = 0  # I think seeking is an idle mode, will possibly take this out
         SEEKING = 1
         TRACING = 2
 
@@ -535,7 +533,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             """
 			0 for when the cat is idle 1 in seek mode and 2 for trace mode 
 			"""
-            self.location = 0
+            # self.location = 0 # don't think we need location if we have solution
             """
 				current position in the solution space, changes when cat given permission to seek
 			"""
@@ -550,11 +548,14 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
             self.state = newState
 
+        '''
+        don't think we need location if we have solution
         def setLocation(self, newlocation: int):
             """
 					setter for location
 			"""
             self.location = newlocation
+            '''
 
         def setVelocity(self, newVelocity: int):
             """
@@ -586,11 +587,14 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
             return self.velocity
 
+        '''
+        don't think we need location if we have solution
         def getLocation(self):
             """
 					getter for solution
 			"""
             return self.location
+            '''
 
     def __init__(self, input: Input, populationSize: int):
         """
@@ -650,8 +654,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 else:
                     # current_cat[self.mode_index] = self.TRACING
                     current_cat.setState(self.CAT.TRACING)
-                # self.trace(current_cat)
-                # put the "behaviour" here bc it's not clear where it should go, and in the origianl CSO algorithm, we move all the cats at once
+                # self.trace(current_cat) put the "behaviour" here bc it's not clear where it should go, and in the
+                # original CSO algorithm, we move all the cats at once
                 seeking_cats = []
                 for cat in initialCats:
                     if cat.getState() == self.CAT.SEEKING:
@@ -662,8 +666,9 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                     if cat.getState() == self.CAT.TRACING:
                         tracing_cats.append(cat)
                 self.trace(tracing_cats)
-        # Execute local search refining procedure in order to improve the quality of resultant time timetable regarding teachers gaps
-        return global_best_cat
+        # Execute local search refining procedure in order to improve the quality of resultant time timetable
+        # regarding teachers gaps
+        return self.global_best_cat
 
     def intialiseCats(self):
         # initialise n cats (paper says 30, we may need to change)
@@ -813,8 +818,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         similarity = 0
         cat_solution = cat.getSolution()
         global_best_cat_solution = self.global_best_cat.getSolution()
-        for i in range(cat_solution):
-            for j in range(cat_solution[i]):
+        for i in range(len(cat_solution)):
+            for j in range(len(cat_solution[i])):
                 if cat_solution[i][j] == global_best_cat_solution[i][j]:
                     similarity += 1
         return similarity
