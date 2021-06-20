@@ -614,7 +614,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 	def recombination(self, chromosome1, chromosome2):
 		# TODO: Recombination (Crossover)
 		child = []
-		crossoverPoint = random.randint(1, self.totalNumClasses)
+		crossoverPoint = random.randint(0, self.totalNumClasses-1)
 		print(crossoverPoint)
 		class1Selection = chromosome1[0:crossoverPoint]
 		print(class1Selection)
