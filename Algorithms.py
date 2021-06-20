@@ -748,7 +748,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         probabilities = []
         for cat_copy in cats:
             best_fitness = self.evaluateFitness(cat_copy)
-            if SPC == True:
+            if SPC :
                 j = SMP - 1
                 candidate_positions.append(cat_copy)
                 probabilities.append(0)
@@ -756,7 +756,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                 j = SMP
             cat_copies = []
             for i in range(0, j):
-                cat_copies.append(cat_copy.getSolution)
+                cat_copies.append(cat_copy)
             tc = CDC * len(self.TIMESLOTS)  # nr of timeslots we will "replace"/change
             sm = SRD * self.totalNumClasses  # total nr of swaps
             for cat in cat_copies:
@@ -764,12 +764,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                     self.Change_Random(cat)  # insert tc random timeslots from global_best_cat to cat
                 for i in range(0, int(sm)):
                     cat = self.Single_Swap(cat)
-                    if (self.Valid(cat)):  # if statement is not necessary if single swap only returns valid swaps
-                        new_fitness_value = self.evaluateFitness(cat)
-                        if new_fitness_value <= best_fitness:
-                            best_fitness = new_fitness_value
-                            candidate_positions.append(cat)
-                            probabilities.append(0)
+                    # if (self.Valid(cat)):  # if statement is not necessary if single swap only returns valid swaps
+                    new_fitness_value = self.evaluateFitness(cat)
+                    if new_fitness_value <= best_fitness:
+                        best_fitness = new_fitness_value
+                        candidate_positions.append(cat)
+                        probabilities.append(0)
 
             old_fitness = self.evaluateFitness(candidate_positions[0])
             FSmax = best_fitness
@@ -862,7 +862,10 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         cat_copy.setSolution(cat_solution)
         return cat_copy
 
-    def Valid(self, current_cat: CAT):
+    '''def Valid(self, current_cat: CAT):
         # check whether current cat is valid
         # shouldn't need to implement this if change random is guaranteed to return a valid solution
         return False
+        
+        don't think we need this
+        '''
