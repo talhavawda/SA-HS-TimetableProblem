@@ -802,11 +802,11 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             if not equal:
                 for i in range(len(candidate_positions)):
                     FSi = self.evaluateFitness(candidate_positions[i])
-                    Pi = abs(FSi - FSb) / abs(FSmax - FSmin)
+                    Pi = abs(FSi - FSb) / abs(FSmax - FSmin)  # formula from equation 15
                     probabilities[i] = Pi
 
             # pick a random position from the candidate positions the one to move to
-            # need to choose somehow, paper does't specify (probably using the probabilities)
+            # need to choose somehow, paper doesn't specify (probably using the probabilities)
             random_pos = random.choices(candidate_positions, weights=probabilities, k=1)[0]  # function returns a list
             # of size k
             cat_copy.setSolution(random_pos.getSolution())
