@@ -613,7 +613,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 	def recombination(self, chromosome1, chromosome2):
 		# TODO: Recombination (Crossover)
-		
+
 		crossoverPoint = random.randint(0, self.totalNumClasses-1)
 		selectedClasses1 = chromosome1[0:crossoverPoint]
 		selectedClasses2 = chromosome2[crossoverPoint:]
