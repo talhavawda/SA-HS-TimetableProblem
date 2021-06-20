@@ -168,63 +168,63 @@ class TimetableAlgorithm:
 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
 		"""
 
-    def getObjectiveValue(self, solution):
-        """
+	def getObjectiveValue(self, solution):
+		"""
 			Abstract Function to be implemented by subclasses
 
 			:return: The objective function's value of this candidate solution
 		"""
 
-    def printSolution(self, solution):
-        """
+	def printSolution(self, solution):
+		"""
 			Display a possible/candidate solution (i.e. an individual/chromosome)
 
 			:param solution: A candidate solution in the solution space
 			:return: None
 		"""
-        print("\n\nSOLUTION:\nClass-Lesson Timeslot Allocation Table:\n")
+		print("\n\nSOLUTION:\nClass-Lesson Timeslot Allocation Table:\n")
 
-        # Print Column Headings (Subjects)
+		# Print Column Headings (Subjects)
 
-        print("Lessons ->", end="\t\t\t\t")
-        headerStr = "-----------------------"
+		print("Lessons ->", end="\t\t\t\t")
+		headerStr = "-----------------------"
 
-        # Lessons are represented as digits from 0 to 54 but will display as 1 to 55
-        for lesson in range(1, 56):
-            print(lesson, end="\t")
-            headerStr += "----"
+		# Lessons are represented as digits from 0 to 54 but will display as 1 to 55
+		for lesson in range(1, 56):
+			print(lesson, end="\t")
+			headerStr += "----"
 
-        print("\nClasses:")
-        print(headerStr)
+		print("\nClasses:")
+		print(headerStr)
 
-        classNames = []
+		classNames = []
 
-        for i in range(self.numGr7Classes):
-            className = "Grade 7 - Class " + str(i + 1)
-            classNames.append(className)
+		for i in range(self.numGr7Classes):
+			className = "Grade 7 - Class " + str(i + 1)
+			classNames.append(className)
 
-        for i in range(self.numGr8Classes):
-            className = "Grade 8 - Class " + str(i + 1)
-            classNames.append(className)
+		for i in range(self.numGr8Classes):
+			className = "Grade 8 - Class " + str(i + 1)
+			classNames.append(className)
 
-        for i in range(self.numGr9Classes):
-            className = "Grade 9 - Class " + str(i + 1)
-            classNames.append(className)
+		for i in range(self.numGr9Classes):
+			className = "Grade 9 - Class " + str(i + 1)
+			classNames.append(className)
 
-        for Class in range(self.totalNumClasses):
-            print(classNames[Class], end="\t|\t")  # Row Heading
-            classAllocation = solution[Class]
-            for Lesson in self.LESSONS:
-                Timeslot = classAllocation[Lesson]
-                print(Timeslot + 1,
-                      end="\t")  # Timeslot's are represented as digits from 0 to 54 but will display as 1 to 55
-            print()
+		for Class in range(self.totalNumClasses):
+			print(classNames[Class], end="\t|\t")  # Row Heading
+			classAllocation = solution[Class]
+			for Lesson in self.LESSONS:
+				Timeslot = classAllocation[Lesson]
+				print(Timeslot + 1,
+					  end="\t")  # Timeslot's are represented as digits from 0 to 54 but will display as 1 to 55
+			print()
 
-        print(headerStr + "\n")
+		print(headerStr + "\n")
 
-        solutionValue = self.getObjectiveValue(solution)
-        print("\nSolution Value (Fitness):", solutionValue)
-        print("----------------------------------------------------------\n")
+		solutionValue = self.getObjectiveValue(solution)
+		print("\nSolution Value (Fitness):", solutionValue)
+		print("----------------------------------------------------------\n")
 
 
 """
@@ -354,10 +354,10 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		return bestIndividual, generationOfBestSoln, fitnessBestIndiv
 
 
-    """Helper Functions for solveTimetable()"""
+	"""Helper Functions for solveTimetable()"""
 
-    def initialisePopulation(self):
-        """
+	def initialisePopulation(self):
+		"""
 			Initialises the population (generates the initial population) for the Genetic Algorithm
 
 			Size of population is self.populationSize
@@ -371,9 +371,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			:return:	The initial population for this Problem to be used by the Genetic Algorithm
 		"""
 
-        print("\n Initialising Population:\n")
+		print("\n Initialising Population:\n")
 
-        population = []  # list of individual chromosomes -> size will be self.populationSize after we add all the chromosomes
+		population = []  # list of individual chromosomes -> size will be self.populationSize after we add all the chromosomes
 
 		for i in range(self.populationSize):  # Create chromosome individual i
 
@@ -613,7 +613,14 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 	def recombination(self, chromosome1, chromosome2):
 		# TODO: Recombination (Crossover)
-		return chromosome1
+		
+		crossoverPoint = random.randint(0, self.totalNumClasses-1)
+		selectedClasses1 = chromosome1[0:crossoverPoint]
+		selectedClasses2 = chromosome2[crossoverPoint:]
+		newChromosome = selectedClasses1 + selectedClasses2
+
+		return newChromosome
+
 
 
 
@@ -706,7 +713,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			0 for when the cat is idle 1 in seek mode and 2 for trace mode 
 			"""
 
-            """
+			"""
 				current position in the solution space, changes when cat given permission to seek
 			"""
 			self.solution = [[]]
@@ -764,315 +771,315 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
 		"""
 
-        # execute initialisation procedure to initialise cats
-        initialCats = self.intialiseCats()
+		# execute initialisation procedure to initialise cats
+		initialCats = self.intialiseCats()
 
-        # set global best fitness to worst possible
-        global_best_fitness = 1000000  # paper treats cat swarm as a minimisation problem, so start with a very large best fitness
+		# set global best fitness to worst possible
+		global_best_fitness = 1000000  # paper treats cat swarm as a minimisation problem, so start with a very large best fitness
 
-        # paper uses 5000 iterations
-        iteration_counter = 5000
-        # mixing ratio, initialised to 4% in paper for hybrid CS
-        MR = 0.04
+		# paper uses 5000 iterations
+		iteration_counter = 5000
+		# mixing ratio, initialised to 4% in paper for hybrid CS
+		MR = 0.04
 
-        for i in range(0, iteration_counter):
-            for current_cat in initialCats:
-                # set current cat equal to the first cat
-                # calculate fitness of current_cat
-                current_cat_fitness = self.calculateFitness(current_cat)
+		for i in range(0, iteration_counter):
+			for current_cat in initialCats:
+				# set current cat equal to the first cat
+				# calculate fitness of current_cat
+				current_cat_fitness = self.calculateFitness(current_cat)
 
-                # is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a typo,
-                # meant to be global_best_fitness)?
-                if current_cat_fitness <= global_best_fitness:  # assuming out fitness function wants to minimise
-                    global_best_fitness = current_cat_fitness
-                    self.global_best_cat = current_cat
+				# is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a typo,
+				# meant to be global_best_fitness)?
+				if current_cat_fitness <= global_best_fitness:  # assuming out fitness function wants to minimise
+					global_best_fitness = current_cat_fitness
+					self.global_best_cat = current_cat
 
-                # choose a random value between 0 and 1
-                random_value = random.random()
-                # is random number > MR
-                if random_value > MR:
-                    current_cat.setState(self.CAT.SEEKING)
-                else:
-                    current_cat.setState(self.CAT.TRACING)
+				# choose a random value between 0 and 1
+				random_value = random.random()
+				# is random number > MR
+				if random_value > MR:
+					current_cat.setState(self.CAT.SEEKING)
+				else:
+					current_cat.setState(self.CAT.TRACING)
 
-                # put the "behaviour" of the cats here as it's not clear where it should go, and in the
-                # original CSO algorithm, we move all the cats at once
-                seeking_cats = []
-                for cat in initialCats:
-                    if cat.getState() == self.CAT.SEEKING:
-                        seeking_cats.append(cat)
-                self.seek(seeking_cats)
-                tracing_cats = []
-                for cat in initialCats:
-                    if cat.getState() == self.CAT.TRACING:
-                        tracing_cats.append(cat)
-                self.trace(tracing_cats)
-        # Execute local search refining procedure in order to improve the quality of resultant time timetable ; don't
-        # think we do this outside of evaluation(and the paper doesn't say how)
-        return self.global_best_cat
+				# put the "behaviour" of the cats here as it's not clear where it should go, and in the
+				# original CSO algorithm, we move all the cats at once
+				seeking_cats = []
+				for cat in initialCats:
+					if cat.getState() == self.CAT.SEEKING:
+						seeking_cats.append(cat)
+				self.seek(seeking_cats)
+				tracing_cats = []
+				for cat in initialCats:
+					if cat.getState() == self.CAT.TRACING:
+						tracing_cats.append(cat)
+				self.trace(tracing_cats)
+		# Execute local search refining procedure in order to improve the quality of resultant time timetable ; don't
+		# think we do this outside of evaluation(and the paper doesn't say how)
+		return self.global_best_cat
 
-    def intialiseCats(self):
-        # initialise n cats (paper says 30, we may need to change)
-        # revisiting the logic later
-        CATS = []  # list of individual cats -> size will be self.populationSize after we add all the cats
+	def intialiseCats(self):
+		# initialise n cats (paper says 30, we may need to change)
+		# revisiting the logic later
+		CATS = []  # list of individual cats -> size will be self.populationSize after we add all the cats
 
-        for i in range(self.populationSize):  # Create cat i
+		for i in range(self.populationSize):  # Create cat i
 
-            new_cat = []
-            teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
+			new_cat = []
+			teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
 
-            currentClass = 0
+			currentClass = 0
 
-            while currentClass < self.totalNumClasses:
-                classAllocation = random.sample(self.TIMESLOTS, len(self.TIMESLOTS))
+			while currentClass < self.totalNumClasses:
+				classAllocation = random.sample(self.TIMESLOTS, len(self.TIMESLOTS))
 
-            isValidAllocation = True
+			isValidAllocation = True
 
-            for lesson in range (len(self.LESSONS)):
-                timeslot = classAllocation[lesson]
-                subject = self.LESSON_SUBJECTS[lesson]
-                teacher = self.teachingTable[currentClass][subject]
-                teacherAllocation = teacherTimeslotAllocations[teacher]
+			for lesson in range (len(self.LESSONS)):
+				timeslot = classAllocation[lesson]
+				subject = self.LESSON_SUBJECTS[lesson]
+				teacher = self.teachingTable[currentClass][subject]
+				teacherAllocation = teacherTimeslotAllocations[teacher]
 
-                if timeslot in teacherAllocation:
-                    isValidAllocation = False
-            if isValidAllocation:
-                new_cat.setSolution(classAllocation)
-                for lesson in self.LESSONS:
-                    subject = self.LESSON_SUBJECTS[lesson]
-                    teacher = self.teachingTable[currentClass][subject]
-                    teacherTimeslotAllocations[teacher].append(classAllocation[lesson])
+				if timeslot in teacherAllocation:
+					isValidAllocation = False
+			if isValidAllocation:
+				new_cat.setSolution(classAllocation)
+				for lesson in self.LESSONS:
+					subject = self.LESSON_SUBJECTS[lesson]
+					teacher = self.teachingTable[currentClass][subject]
+					teacherTimeslotAllocations[teacher].append(classAllocation[lesson])
 
-                currentClass = currentClass + 1
-                print('cat', i + 1, 'class', currentClass, '\n', classAllocation)
-            CATS.append(new_cat)
+				currentClass = currentClass + 1
+				print('cat', i + 1, 'class', currentClass, '\n', classAllocation)
+			CATS.append(new_cat)
 
-            """
-            # rows = classes, cols= timeslots
-            new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
-            for j in range(len(new_allocation[0])):
-                random.shuffle(teacherClassAlloc)
-                for i in range(len(new_allocation)):
-                    new_allocation[j][i] = teacherClassAlloc[i]
+			"""
+			# rows = classes, cols= timeslots
+			new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
+			for j in range(len(new_allocation[0])):
+				random.shuffle(teacherClassAlloc)
+				for i in range(len(new_allocation)):
+					new_allocation[j][i] = teacherClassAlloc[i]
 
-            new_cat = self.CAT()
-            new_cat.setSolution(new_allocation)
-            CATS.append(new_cat)
+			new_cat = self.CAT()
+			new_cat.setSolution(new_allocation)
+			CATS.append(new_cat)
 
-            # Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers)
-            # as we building the chromosome
+			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers)
+			# as we building the chromosome
 
-            teacherTimeslotAllocations = []
+			teacherTimeslotAllocations = []
 
-            for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
-                teacherAllocation = []
-                teacherTimeslotAllocations.append(teacherAllocation)
-                """
+			for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
+				teacherAllocation = []
+				teacherTimeslotAllocations.append(teacherAllocation)
+				"""
 
-        return CATS
+		return CATS
 
-    def calculateFitness(self, current_cat: CAT):
-        # change later
-        BASE = 1.3
-        fitnessValue = 0
-        HCW = 10
-        ICDW = 0.95
-        ITDW = 0.6
-        TEPW = 0.06  # might not use this because we don't include gaps(-1) or empty classes in our population\
-        current_cat_solution = current_cat.getSolution()
+	def calculateFitness(self, current_cat: CAT):
+		# change later
+		BASE = 1.3
+		fitnessValue = 0
+		HCW = 10
+		ICDW = 0.95
+		ITDW = 0.6
+		TEPW = 0.06  # might not use this because we don't include gaps(-1) or empty classes in our population\
+		current_cat_solution = current_cat.getSolution()
 
-        # hard constraint of assigning a teacher to more than 1 class during the same timeslot
-        for j in range(len(current_cat_solution[0])):
-            n = 0
-            for i in range(self.totalNumClasses):
-                teacherVal = current_cat_solution[i][j]
-                for k in range(i + 1, self.totalNumClasses):
-                    if teacherVal == current_cat_solution[k][j]:
-                        n += 1
+		# hard constraint of assigning a teacher to more than 1 class during the same timeslot
+		for j in range(len(current_cat_solution[0])):
+			n = 0
+			for i in range(self.totalNumClasses):
+				teacherVal = current_cat_solution[i][j]
+				for k in range(i + 1, self.totalNumClasses):
+					if teacherVal == current_cat_solution[k][j]:
+						n += 1
 
-            fitnessValue += HCW * (BASE ** n)
+			fitnessValue += HCW * (BASE ** n)
 
-        # constraint of having the same teacher for more than 2 timeslots a day
-        for i in range(self.totalNumClasses):
-            n = 0
-            for j in range(len(current_cat_solution[i]), step=11):
-                teacherVal = current_cat_solution[i][j]
-                for k in range(j + 1, j + 12):
-                    if k < len(current_cat_solution[i]):
-                        if teacherVal == current_cat_solution[i][k]:
-                            n += 1
+		# constraint of having the same teacher for more than 2 timeslots a day
+		for i in range(self.totalNumClasses):
+			n = 0
+			for j in range(len(current_cat_solution[i]), step=11):
+				teacherVal = current_cat_solution[i][j]
+				for k in range(j + 1, j + 12):
+					if k < len(current_cat_solution[i]):
+						if teacherVal == current_cat_solution[i][k]:
+							n += 1
 
-            if n > 2:
-                fitnessValue += HCW * (BASE ** n)
+			if n > 2:
+				fitnessValue += HCW * (BASE ** n)
 
-        # soft constraint
-        for i in range(self.totalNumClasses):
-            n = 0
-            for j in range(len(current_cat_solution[i])):
-                teacherVal = current_cat_solution[i][j]
-                for k in range(j + 1, len(current_cat_solution[i])):
-                    if teacherVal == current_cat_solution[i][j]:
-                        n += 1
-            if n > 10:
-                fitnessValue += ITDW * BASE
+		# soft constraint
+		for i in range(self.totalNumClasses):
+			n = 0
+			for j in range(len(current_cat_solution[i])):
+				teacherVal = current_cat_solution[i][j]
+				for k in range(j + 1, len(current_cat_solution[i])):
+					if teacherVal == current_cat_solution[i][j]:
+						n += 1
+			if n > 10:
+				fitnessValue += ITDW * BASE
 
-        return fitnessValue
-        pass
+		return fitnessValue
+		pass
 
-    def getObjectiveValue(self, solution):
-        """
+	def getObjectiveValue(self, solution):
+		"""
 			Implementing function from superclass
 			:param solution:
 			:return:
 		"""
-        return self.calculateFitness(solution)
+		return self.calculateFitness(solution)
 
-    def seek(self, cats: typing.List[CAT]):
-        # add code for seeking
-        # values from the paper after experimentation
-        SPC = True
-        SMP = 2
-        CDC = 0.1
-        SRD = 0.1
-        j = 0  # default initialisation
-        candidate_positions = []
-        for cat_copy in cats:
-            best_fitness = self.calculateFitness(cat_copy)
-            if SPC:
-                j = SMP - 1
-                candidate_positions.append(cat_copy)
-            else:
-                j = SMP
-            cat_copies = []
-            for i in range(0, j):
-                cat_copies.append(copy.deepcopy(cat_copy))
-            tc = CDC * len(self.TIMESLOTS)  # nr of timeslots we will "replace"/change
-            sm = SRD * self.totalNumClasses  # total nr of swaps
-            for cat in cat_copies:
-                for _ in range(round(tc)):
-                    self.Change_Random(cat)  # insert tc random timeslots from global_best_cat to cat
-                for i in range(0, round(sm)):
-                    cat = self.Single_Swap(cat)
-                    # if (self.Valid(cat)):  # if statement is not necessary if single swap only returns valid swaps
-                    new_fitness_value = self.calculateFitness(cat)
-                    if new_fitness_value <= best_fitness:
-                        best_fitness = new_fitness_value
-                        candidate_positions.append(cat)
+	def seek(self, cats: typing.List[CAT]):
+		# add code for seeking
+		# values from the paper after experimentation
+		SPC = True
+		SMP = 2
+		CDC = 0.1
+		SRD = 0.1
+		j = 0  # default initialisation
+		candidate_positions = []
+		for cat_copy in cats:
+			best_fitness = self.calculateFitness(cat_copy)
+			if SPC:
+				j = SMP - 1
+				candidate_positions.append(cat_copy)
+			else:
+				j = SMP
+			cat_copies = []
+			for i in range(0, j):
+				cat_copies.append(copy.deepcopy(cat_copy))
+			tc = CDC * len(self.TIMESLOTS)  # nr of timeslots we will "replace"/change
+			sm = SRD * self.totalNumClasses  # total nr of swaps
+			for cat in cat_copies:
+				for _ in range(round(tc)):
+					self.Change_Random(cat)  # insert tc random timeslots from global_best_cat to cat
+				for i in range(0, round(sm)):
+					cat = self.Single_Swap(cat)
+					# if (self.Valid(cat)):  # if statement is not necessary if single swap only returns valid swaps
+					new_fitness_value = self.calculateFitness(cat)
+					if new_fitness_value <= best_fitness:
+						best_fitness = new_fitness_value
+						candidate_positions.append(cat)
 
-            old_fitness = self.calculateFitness(candidate_positions[0])
-            FSmax = best_fitness
-            FSmin = self.calculateFitness(self.global_best_cat)
-            equal = True
-            for i in range(len(candidate_positions) - 1):
-                fitness = self.calculateFitness(candidate_positions[i])
-                if fitness > FSmax:
-                    FSmax = fitness
-                if fitness < FSmin:
-                    FSmin = fitness
-                if fitness != old_fitness:  # a cat having a better than initial fitness had been found
-                    equal = False
+			old_fitness = self.calculateFitness(candidate_positions[0])
+			FSmax = best_fitness
+			FSmin = self.calculateFitness(self.global_best_cat)
+			equal = True
+			for i in range(len(candidate_positions) - 1):
+				fitness = self.calculateFitness(candidate_positions[i])
+				if fitness > FSmax:
+					FSmax = fitness
+				if fitness < FSmin:
+					FSmin = fitness
+				if fitness != old_fitness:  # a cat having a better than initial fitness had been found
+					equal = False
 
-            FSb = FSmin  # minimisation problem
-            probabilities = [1.0 for _ in candidate_positions]
-            if not equal:
-                for i in range(len(candidate_positions)):
-                    FSi = self.calculateFitness(candidate_positions[i])
-                    Pi = abs(FSi - FSb) / abs(FSmax - FSmin)  # formula from equation 15
-                    probabilities[i] = Pi
+			FSb = FSmin  # minimisation problem
+			probabilities = [1.0 for _ in candidate_positions]
+			if not equal:
+				for i in range(len(candidate_positions)):
+					FSi = self.calculateFitness(candidate_positions[i])
+					Pi = abs(FSi - FSb) / abs(FSmax - FSmin)  # formula from equation 15
+					probabilities[i] = Pi
 
-            # pick a random position from the candidate positions the one to move to
-            # need to choose somehow, paper doesn't specify (probably using the probabilities)
-            random_pos = random.choices(candidate_positions, weights=probabilities, k=1)[0]  # function returns a list
-            # of size k
-            cat_copy.setSolution(random_pos.getSolution())
+			# pick a random position from the candidate positions the one to move to
+			# need to choose somehow, paper doesn't specify (probably using the probabilities)
+			random_pos = random.choices(candidate_positions, weights=probabilities, k=1)[0]  # function returns a list
+			# of size k
+			cat_copy.setSolution(random_pos.getSolution())
 
-    def trace(self, cats: typing.List[CAT]):
-        # add code for tracing
-        for cat in cats:
-            c1 = 2.0  # From the not-hybrid algorithm
-            similarity = self.Similarity(cat)
-            distance = self.totalNumClasses * len(self.TIMESLOTS) - similarity
-            rand_number = random.random()
-            cs = rand_number * c1 * distance  # number of cells to be swapped
-            # meant to be equivalent to the velocity from the original paper
+	def trace(self, cats: typing.List[CAT]):
+		# add code for tracing
+		for cat in cats:
+			c1 = 2.0  # From the not-hybrid algorithm
+			similarity = self.Similarity(cat)
+			distance = self.totalNumClasses * len(self.TIMESLOTS) - similarity
+			rand_number = random.random()
+			cs = rand_number * c1 * distance  # number of cells to be swapped
+			# meant to be equivalent to the velocity from the original paper
 
-            for _ in range(round(cs)):
-                self.Single_Swap(cat)
+			for _ in range(round(cs)):
+				self.Single_Swap(cat)
 
-    def Similarity(self, cat: CAT):
-        similarity = 0
-        cat_solution = cat.getSolution()
-        global_best_cat_solution = self.global_best_cat.getSolution()
-        for i in range(len(cat_solution)):
-            for j in range(len(cat_solution[i])):
-                if cat_solution[i][j] == global_best_cat_solution[i][j]:
-                    similarity += 1
-        return similarity
+	def Similarity(self, cat: CAT):
+		similarity = 0
+		cat_solution = cat.getSolution()
+		global_best_cat_solution = self.global_best_cat.getSolution()
+		for i in range(len(cat_solution)):
+			for j in range(len(cat_solution[i])):
+				if cat_solution[i][j] == global_best_cat_solution[i][j]:
+					similarity += 1
+		return similarity
 
-    def Single_Swap(self, current_cat: CAT):
-        randClass = random.randint(0, self.totalNumClasses)
-        randCell1 = random.randint(0, 56)
-        randCell2 = random.randint(0, 56)
-        current_cat_solution = current_cat.getSolution()
+	def Single_Swap(self, current_cat: CAT):
+		randClass = random.randint(0, self.totalNumClasses)
+		randCell1 = random.randint(0, 56)
+		randCell2 = random.randint(0, 56)
+		current_cat_solution = current_cat.getSolution()
 
-        inCol1 = False
-        inCol2 = False
-        for i in range(self.totalNumClasses):
-            if current_cat_solution[i][randCell1] == current_cat_solution[randClass][randCell2]:
-                inCol1 = True
-                break
+		inCol1 = False
+		inCol2 = False
+		for i in range(self.totalNumClasses):
+			if current_cat_solution[i][randCell1] == current_cat_solution[randClass][randCell2]:
+				inCol1 = True
+				break
 
-        for i in range(self.totalNumClasses):
-            if current_cat_solution[i][randCell2] == current_cat_solution[randClass][randCell1]:
-                inCol2 = True
-                break
+		for i in range(self.totalNumClasses):
+			if current_cat_solution[i][randCell2] == current_cat_solution[randClass][randCell1]:
+				inCol2 = True
+				break
 
-        if (current_cat_solution[randClass][randCell1] != current_cat_solution[randClass][randCell2]) and (
-                not inCol1) and (not inCol2):
-            tempCat = current_cat_solution[randClass][randCell1]
-            current_cat_solution[randClass][randCell1] = current_cat_solution[randClass][randCell2]
-            current_cat_solution[randClass][randCell2] = tempCat
+		if (current_cat_solution[randClass][randCell1] != current_cat_solution[randClass][randCell2]) and (
+				not inCol1) and (not inCol2):
+			tempCat = current_cat_solution[randClass][randCell1]
+			current_cat_solution[randClass][randCell1] = current_cat_solution[randClass][randCell2]
+			current_cat_solution[randClass][randCell2] = tempCat
 
-        current_cat.setSolution(current_cat_solution)
-        return current_cat
+		current_cat.setSolution(current_cat_solution)
+		return current_cat
 
-    def Change_Random(self, cat_copy: CAT):
-        """
-        changes a random column in the cat_copy solution to the corresponding column in the best cat
-        :param cat_copy: cat to be changed
-        :return: modified cat
-        """
-        # auxilliary procedure, section 3.4.3
-        rand_col = random.randint(0, len(self.TIMESLOTS) - 1)
-        cat_solution = cat_copy.getSolution()
-        global_best_solution = self.global_best_cat.getSolution()
+	def Change_Random(self, cat_copy: CAT):
+		"""
+		changes a random column in the cat_copy solution to the corresponding column in the best cat
+		:param cat_copy: cat to be changed
+		:return: modified cat
+		"""
+		# auxilliary procedure, section 3.4.3
+		rand_col = random.randint(0, len(self.TIMESLOTS) - 1)
+		cat_solution = cat_copy.getSolution()
+		global_best_solution = self.global_best_cat.getSolution()
 
-        # need to first compensate for the swap we are about to make
-        for row in range(len(cat_solution)):
-            for col in range(len(cat_solution[row])):
-                if cat_solution[row][col] == global_best_solution[row][col] and (not col == rand_col):
-                    cat_solution[row][col] = cat_solution[row][rand_col]
-                    break  # only do this once per class
+		# need to first compensate for the swap we are about to make
+		for row in range(len(cat_solution)):
+			for col in range(len(cat_solution[row])):
+				if cat_solution[row][col] == global_best_solution[row][col] and (not col == rand_col):
+					cat_solution[row][col] = cat_solution[row][rand_col]
+					break  # only do this once per class
 
-        # swap
-        for row in range(len(cat_solution)):
-            for col in range(len(cat_solution[row])):
-                cat_solution[row][col] = global_best_solution[row][col]
+		# swap
+		for row in range(len(cat_solution)):
+			for col in range(len(cat_solution[row])):
+				cat_solution[row][col] = global_best_solution[row][col]
 
-        cat_copy.setSolution(cat_solution)
-        return cat_copy
+		cat_copy.setSolution(cat_solution)
+		return cat_copy
 
-    def getEmptyTeacherAllocation(self) -> [[]]:
-        teacherTimeslotAllocations = []
-        for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
-            teacherAllocation = []
-            teacherTimeslotAllocations.append(teacherAllocation)
-        return teacherTimeslotAllocations
+	def getEmptyTeacherAllocation(self) -> [[]]:
+		teacherTimeslotAllocations = []
+		for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
+			teacherAllocation = []
+			teacherTimeslotAllocations.append(teacherAllocation)
+		return teacherTimeslotAllocations
 
-    '''def Valid(self, current_cat: CAT):
-        # check whether current cat is valid
-        # shouldn't need to implement this if change random is guaranteed to return a valid solution
-        return False
-        
-        don't think we need this
-        '''
+	'''def Valid(self, current_cat: CAT):
+		# check whether current cat is valid
+		# shouldn't need to implement this if change random is guaranteed to return a valid solution
+		return False
+		
+		don't think we need this
+		'''
