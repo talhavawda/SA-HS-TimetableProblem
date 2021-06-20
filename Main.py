@@ -138,12 +138,12 @@ def main():
 			TODO - determine appropriate population sizes
 		"""
 		populationSizeGA = 3
-		populationSizeCSA = 1
+		populationSizeCSA = 5
 
 		geneticAlgorithm = GeneticAlgorithm(input, populationSizeGA)
 		catSwarmAlgorithm = CatSwarmAlgorithm(input, populationSizeCSA)
 
-		for algorithm in [geneticAlgorithm]:
+		for algorithm in [catSwarmAlgorithm]:
 			algorithmName = type(algorithm).__name__
 
 			print("\nSolving INPUT ", inputNumber, " using the ", algorithmName, ":", sep="")
