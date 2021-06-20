@@ -815,7 +815,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		global_best_fitness = 0 # We are maximising our fitness value so set to very low value
 
 		# paper uses 5000 iterations
-		iteration_counter = 50
+		iteration_counter = 5000
 		# mixing ratio, initialised to 4% in paper for hybrid CS, seeking/trace ratio
 		MR = 0.04
 
@@ -873,11 +873,13 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			isValidAllocation = True
 
+
 			for lesson in range (len(self.LESSONS)):
 				timeslot = classAllocation[lesson]
 				subject = self.LESSON_SUBJECTS[lesson]
 				teacher = self.teachingTable[currentClass][subject]
 				teacherAllocation = teacherTimeslotAllocations[teacher]
+
 
 				if timeslot in teacherAllocation:
 					swapfound = False
@@ -896,8 +898,10 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 									classAllocation[lesson] = otherTimeslot
 									classAllocation[otherLesson] = timeslot
 									break
+				
 				if swapfound == False:
 					isValidAllocation = False
+				
 
 
 				if isValidAllocation:
@@ -907,8 +911,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 						teacher = self.teachingTable[currentClass][subject]
 						teacherTimeslotAllocations[teacher].append(classAllocation[lesson])
 
-					currentClass = currentClass + 1
-					print('cat', i + 1, 'class', currentClass, '\n', classAllocation)
+			currentClass = currentClass + 1
+			print('cat', i + 1, 'class', currentClass, '\n', classAllocation)
 			CATS.append(new_cat)
 
 			"""
@@ -1002,6 +1006,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					if subject == subjectsAllocatedForClass[t]:
 						fitness -= 1
 		# print('Individual fitness = ', fitness)
+
 		"""
 		BASE = 1.3
 		fitnessValue = 0
@@ -1048,6 +1053,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		return fitnessValue
 		"""
+		return fitness
 		pass
 
 	def getObjectiveValue(self, solution):
