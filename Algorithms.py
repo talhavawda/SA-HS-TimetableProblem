@@ -109,6 +109,9 @@ class TimetableAlgorithm:
 	# In the code, we are representing the number of Lessons and Timeslots from 0-54 as indexes begin at 0 (Mathematically, its from 1-55)
 	# So Day numbers will be represented from 0-4 and to get the day number of a timeslot, use floor(timeslot // 5)
 
+	NUM_LESSONS = 55
+	NUM_TIMESLOTS = 55
+
 	LESSONS = [lesson for lesson in range(0, 55)]
 	TIMESLOTS = [timeslot for timeslot in range(0, 55)]  # The permutation of all the timeslots in increasing order
 	TIMESLOTS_SET = set(
@@ -409,7 +412,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 				"""
 				isValidAllocation = True
 
-				for lesson in range(len(self.LESSONS)):  # For each of the 55 lessons that we allocated a timeslot
+				for lesson in range(self.NUM_LESSONS):  # For each of the 55 lessons that we allocated a timeslot
 
 					timeslot = classAllocation[lesson]  # the timeslot allocated to this lesson
 
@@ -422,11 +425,11 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 					if timeslot in teacherAllocation:  # teacher is already allocated to this timeslot - i.e. there is a clash
 						# BELOW IS TO SWAP WHEN THERE'S A CLASH - SEEMS TO BE TAKING LONGER THAN JUST GENERATING A NEW ALLOCATION FOR THIS CLASS
-						"""
+
 						# Find another teacher that teaches this class to swap with
 						swapFound = False
 
-						for otherLesson in range(len(self.LESSONS)):  # For each of the 55 lessons
+						for otherLesson in range(self.NUM_LESSONS):  # For each of the 55 lessons
 							if otherLesson != lesson:
 								otherTimeslot = classAllocation[lesson]  # the timeslot allocated to this other lesson
 
@@ -445,9 +448,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 						if swapFound == False: # if we did not find another lesson to swap with (since there is a clash), then this cannot be a valid allocation
 							isValidAllocation = False
-						"""
 
-						isValidAllocation = False
+
+						# isValidAllocation = False # For Old
 
 				"""
 					If this lesson-timeslot allocation for this class is valid, then add it in its place to the chromosome
@@ -466,11 +469,10 @@ class GeneticAlgorithm(TimetableAlgorithm):
 						teacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson
 						teacherTimeslotAllocations[teacher].append(classAllocation[lesson])  # add this timeslot to this teacher's allocated timeslots
 
+					print('Individual', i + 1, ' Class', currentClass + 1, "allocated")
 					currentClass = currentClass + 1
-					#print('Individual', i + 1, ' Class', currentClass, '\n', #classAllocation)  # i+1 as we want to display starting from 1
-					print('Individual', i + 1, ' Class', currentClass, "allocated")
 				else:
-					print("\tInvalid allocation")
+					print("\tInvalid allocation", 'Individual', i + 1, ' Class', currentClass + 1)
 
 			population.append(newIndividual)
 			self.printSolution(newIndividual)
@@ -485,14 +487,17 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			teacherTimeslotAllocations.append(teacherAllocation)
 		return teacherTimeslotAllocations
 
+
 	def getTeacherAllocation(self, chromosome):
 		teacherAllocation = self.getEmptyTeacherAllocation()
-		# take the individuals distibution and assign to relevant teachers
-		for i in range(len(chromosome)):
-			for j in range(len(chromosome[i])):
-				sub = self.LESSON_SUBJECTS[j]
-				teacher = self.teachingTable[i][sub]
-				teacherAllocation[teacher].append(chromosome[i][j])
+		# take the individuals distribution and assign to relevant teachers
+		for Class in range(self.totalNumClasses):
+			for Lesson in range(self.NUM_LESSONS):
+				Subject = self.LESSON_SUBJECTS[Lesson]
+				Teacher = self.teachingTable[Class][Subject]
+				timeslot = chromosome[Class][Lesson]
+				teacherAllocation[Teacher].append(timeslot)
+
 		return teacherAllocation
 
 
@@ -847,6 +852,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		# Execute local search refining procedure in order to improve the quality of resultant time timetable ; don't
 		# think we do this outside of evaluation(and the paper doesn't say how)
 		return self.global_best_cat
+
 
 	def intialiseCats(self):
 		# initialise n cats (paper says 30, we may need to change)
