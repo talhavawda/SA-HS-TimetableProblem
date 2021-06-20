@@ -249,6 +249,17 @@ class TimetableAlgorithm:
 		print("----------------------------------------------------------\n")
 
 
+	def printTimetable(self, solution):
+		"""
+			Print the Class and teacher timetables of the given feasible solution solution
+			:param solution:
+			:return: None
+		"""
+
+
+
+
+
 """
 	GENETIC ALGORITHM
 """
