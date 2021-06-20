@@ -600,7 +600,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         global_best_fitness = 1000000  # may need to change once we determine objective function, place holder value for now
 
         # paper uses 5000 iterations
-        iteration_counter = 5000
+        iteration_counter = 500
         # mixing ratio, initialised to 4% in paper for hybrid CS
         MR = 0.04
 
@@ -649,8 +649,36 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
         for i in range(self.populationSize):  # Create cat i
 
-            teacherClassAlloc = list(range(1, 56))
+            new_cat = []
+            teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
 
+            currentClass = 0
+
+            while currentClass < self.totalNumClasses:
+                classAllocation = random.sample(self.TIMESLOTS, len(self.TIMESLOTS))
+
+            isValidAllocation = True
+
+            for lesson in range (len(self.LESSONS)):
+                timeslot = classAllocation[lesson]
+                subject = self.LESSON_SUBJECTS[lesson]
+                teacher = self.teachingTable[currentClass][subject]
+                teacherAllocation = teacherTimeslotAllocations[teacher]
+
+                if timeslot in teacherAllocation:
+                    isValidAllocation = False
+            if isValidAllocation:
+                new_cat.setSolution(classAllocation)
+                for lesson in self.LESSONS:
+                    subject = self.LESSON_SUBJECTS[lesson]
+                    teacher = self.teachingTable[currentClass][subject]
+                    teacherTimeslotAllocations[teacher].append(classAllocation[lesson])
+
+                currentClass = currentClass + 1
+                print('cat', i + 1, 'class', currentClass, '\n', classAllocation)
+            CATS.append(new_cat)
+
+            """
             # rows = classes, cols= timeslots
             new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
             for j in range(len(new_allocation[0])):
@@ -670,6 +698,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
                 teacherAllocation = []
                 teacherTimeslotAllocations.append(teacherAllocation)
+                """
 
         return CATS
 
@@ -846,6 +875,13 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
         cat_copy.setSolution(cat_solution)
         return cat_copy
+
+    def getEmptyTeacherAllocation(self) -> [[]]:
+        teacherTimeslotAllocations = []
+        for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
+            teacherAllocation = []
+            teacherTimeslotAllocations.append(teacherAllocation)
+        return teacherTimeslotAllocations
 
     '''def Valid(self, current_cat: CAT):
         # check whether current cat is valid
