@@ -953,12 +953,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			currentClass = 0
 
 			while currentClass < self.totalNumClasses:
-				classAllocation = random.sample(self.TIMESLOTS, len(self.TIMESLOTS))
+				classAllocation = random.sample(self.TIMESLOTS, self.NUM_TIMESLOTS)
 
 				isValidAllocation = True
 
 
-				for lesson in range (len(self.	NUM_LESSONS)):
+				for lesson in range (self.NUM_LESSONS):
 					timeslot = classAllocation[lesson]
 					subject = self.LESSON_SUBJECTS[lesson]
 					teacher = self.teachingTable[currentClass][subject]
