@@ -469,6 +469,8 @@ class GeneticAlgorithm(TimetableAlgorithm):
 					currentClass = currentClass + 1
 					#print('Individual', i + 1, ' Class', currentClass, '\n', #classAllocation)  # i+1 as we want to display starting from 1
 					print('Individual', i + 1, ' Class', currentClass, "allocated")
+				else:
+					print("\tInvalid allocation")
 
 			population.append(newIndividual)
 			self.printSolution(newIndividual)
@@ -804,7 +806,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		initialCats = self.intialiseCats()
 
 		# set global best fitness to worst possible
-		global_best_fitness = 1000000  # paper treats cat swarm as a minimisation problem, so start with a very large best fitness
+		global_best_fitness = -50000  # We are maximising our fitness value so set to very low value
 
 		# paper uses 5000 iterations
 		iteration_counter = 5000
@@ -817,9 +819,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				# calculate fitness of current_cat
 				current_cat_fitness = self.calculateFitness(current_cat)
 
-				# is current_cat's fitness smaller or equal to global_fitness_fitness (think this is a typo,
-				# meant to be global_best_fitness)?
-				if current_cat_fitness <= global_best_fitness:  # assuming out fitness function wants to minimise
+
+				if current_cat_fitness > global_best_fitness:
 					global_best_fitness = current_cat_fitness
 					self.global_best_cat = current_cat
 
