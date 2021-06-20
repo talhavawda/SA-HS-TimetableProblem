@@ -1108,6 +1108,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		fitness = 0
 		# for each subject evaluate the allocation (class and teacher wise)
 		# empty teacher allocation array
+		fitness += self.totalNumClasses * self.NUM_LESSONS
 		teacherAllocation = self.getTeacherAllocation(current_cat)
 		# check to see if any teacher works more than 4periods at once
 		for teacher in teacherAllocation:
@@ -1142,26 +1143,27 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 							fitness += 3
 					else:
 						break
-		# penalize two seperate periods on the same day
-		for m in current_cat.solution:
-			subjectsAllocatedForClass = []
-			for g in range(len(m)):
-				pos = m.index(g)
-				subject = self.LESSON_SUBJECTS[pos]
-				subjectsAllocatedForClass.append(subject)
-			for s in range(len(subjectsAllocatedForClass) - 2):
+		# penalize two separate periods on the same day
+		for i in range(self.totalNumClasses):
+			Class = current_cat.solution[i]
+			subjectsAllocation = []  # a list where the indexes are the timeslots and the values are the subjects at that timeslot
+			for timeslot in range(self.NUM_TIMESLOTS):
+				lesson = Class.index(timeslot)  # get the lesson that is being taught at this timeslot
+				subject = self.LESSON_SUBJECTS[lesson]  # get subject number of this lesson
+				subjectsAllocation.append(subject)
+
+			for s in range(self.NUM_TIMESLOTS - 2):
 				# 3 consec periods of the same subject
-				if subjectsAllocatedForClass[s] == subjectsAllocatedForClass[s + 1] and subjectsAllocatedForClass[s] == \
-						subjectsAllocatedForClass[s + 2]:
+				if subjectsAllocation[s] == subjectsAllocation[s + 1] and subjectsAllocation[s] == \
+						subjectsAllocation[s + 2]:
 					fitness -= 2
 				else:
 					continue
 			counter = 0
-			# check if there is 2 periods of the same subjects in the same day[not consecutive]
-			for s in range(len(subjectsAllocatedForClass)):
-				subject = subjectsAllocatedForClass[s]
-				for t in range(s + 2, 11):
-					if subject == subjectsAllocatedForClass[t]:
+			for timeslot in range(self.NUM_TIMESLOTS):
+				subject = subjectsAllocation[timeslot]
+				for t in range(timeslot + 2, 11):
+					if subject == subjectsAllocation[t]:
 						fitness -= 1
 		# print('Individual fitness = ', fitness)
 
