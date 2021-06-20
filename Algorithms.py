@@ -818,48 +818,6 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 
 class CatSwarmAlgorithm(TimetableAlgorithm):
-	class CAT:
-
-		SEEKING = 1
-		TRACING = 2
-
-
-		def __init__(self):
-			self._state = 0
-			"""
-			0 for when the cat is idle 1 in seek mode and 2 for trace mode 
-			"""
-
-			"""
-				current position in the solution space, changes when cat given permission to seek
-			"""
-			self._solution = []
-
-
-		def state(self, newState: int):
-			"""
-					setter for state
-			"""
-			self._state = newState
-
-
-		def solution(self, newSolution: []):
-			"""
-					setter for solution
-			"""
-			self._solution = newSolution
-
-		def state(self):
-			"""
-					getter for state
-			"""
-			return self._state
-
-		def solution(self):
-			"""
-					getter for solution
-			"""
-			return self._solution
 
 
 	def __init__(self, input: Input, populationSize: int):
@@ -878,6 +836,50 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		# set best cat
 		self.global_best_cat = self.CAT()
 
+	class CAT:
+
+		SEEKING = 1
+		TRACING = 2
+
+
+		def __init__(self):
+			self.state = 0
+			"""
+			0 for when the cat is idle 1 in seek mode and 2 for trace mode 
+			"""
+
+			"""
+				current position in the solution space, changes when cat given permission to seek
+			"""
+			self.solution = []
+
+
+		def setState(self, newState: int):
+			"""
+					setter for state
+			"""
+			self.state = newState
+
+
+		def setSolution(self, newSolution: []):
+			"""
+					setter for solution
+
+			"""
+			self.solution = newSolution
+
+		def getState(self):
+			"""
+					getter for state
+			"""
+			return self.state
+
+		def getSolution(self):
+			"""
+					getter for solution
+			"""
+			return self.solution
+
 	def solveTimetable(self):
 		"""
 			Implementing this abstract function defined in the superclass
@@ -887,18 +889,20 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			:return:	The optimal feasible solution after the termination criteria has been met, and its associated value (as a tuple, in that order)
 		"""
-
+		start = time.time()
 		# execute initialisation procedure to initialise cats
 		initialCats = self.initialiseCats
+		end = time.time()
+		timeTaken = end - start
 		print("initialization done")
 
 		# set global best fitness to worst possible
-		global_best_fitness = -100 # We are maximising our fitness value so set to very low value
+		global_best_fitness = 0 # We are maximising our fitness value so set to very low value
 
 		# paper uses 5000 iterations
-		iteration_counter = 5
+		iteration_counter = 50
 		# mixing ratio, initialised to 4% in paper for hybrid CS, seeking/trace ratio
-		MR = 0.00
+		MR = 0.04
 
 		for i in range(0, iteration_counter):
 			for current_cat in initialCats:
@@ -914,6 +918,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				# choose a random value between 0 and 1
 				random_value = random.random()
 				# is random number > MR
+
 				if random_value > MR:
 					current_cat.setState(self.CAT.SEEKING)
 				else:
@@ -921,12 +926,15 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 				# put the "behaviour" of the cats here as it's not clear where it should go, and in the
 				# original CSO algorithm, we move all the cats at once
+
 				seeking_cats = []
+
 				for cat in initialCats:
 					if cat.getState() == self.CAT.SEEKING:
 						seeking_cats.append(cat)
 				self.seek(seeking_cats)
 				tracing_cats = []
+
 				for cat in initialCats:
 					if cat.getState() == self.CAT.TRACING:
 						tracing_cats.append(cat)
@@ -951,7 +959,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			:return:	The initial population for this Problem to be used by the Genetic Algorithm
 		"""
-
+		print('\n Begin Initialization:\n')
 		CATS = []  # list of individual chromosomes -> size will be self.populationSize after we add all the chromosomes
 
 		for i in range(self.populationSize):  # Create chromosome individual i
@@ -960,7 +968,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				Chromosome i is a 2D-array / a list of sub-lists with the number of rows (sublists being seld.totalNumClasses)
 				and the number of columns (size of a sublist)  being 55 (representing the lessons)
 			"""
-			newcat = self.CAT () # Chromosome i
+			newcat = self.CAT()  # Chromosome i
+			catsolution = newcat.getSolution()
 
 			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
 			teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
@@ -1076,24 +1085,21 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					same class, generating a different initial allocation to work with
 				"""
 				if isValidAllocation:
-
-
-					newcat.solution.append(classAllocation)
+					catsolution.append(classAllocation)
 
 					for lesson in self.LESSONS:  # ALT: for lesson in range(len(self.LESSONS))
-						subject = self.LESSON_SUBJECTS[
-							lesson]  # get the index/number of the subject that this lesson is
+						subject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this lesson is
 						teacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson
-						teacherTimeslotAllocations[teacher].append(
-							classAllocation[lesson])  # add this timeslot to this teacher's allocated timeslots
+						teacherTimeslotAllocations[teacher].append(classAllocation[lesson])  # add this timeslot to this teacher's allocated timeslots
 
 					print('Cat', i + 1, ' Class', currentClass + 1, "allocated")
 					currentClass = currentClass + 1
 				else:
 					print("\tInvalid allocation", 'Cat', i + 1, ' Class', currentClass + 1)
 
-
+			newcat.setSolution(catsolution)
 			CATS.append(newcat)
+			self.printSolution(catsolution)
 
 
 		return CATS
@@ -1450,14 +1456,14 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			teacherTimeslotAllocations.append(teacherAllocation)
 		return teacherTimeslotAllocations
 
-	def getTeacherAllocation(self, current_cat: CAT):
+	def getTeacherAllocation(self, solution):
 		teacherAllocation = self.getEmptyTeacherAllocation()
 		# take the individuals distribution and assign to relevant teachers
 		for Class in range(self.totalNumClasses):
 			for Lesson in range(self.NUM_LESSONS):
 				Subject = self.LESSON_SUBJECTS[Lesson]
 				Teacher = self.teachingTable[Class][Subject]
-				timeslot = current_cat.solution[Class][Lesson]
+				timeslot = solution[Class][Lesson]
 				teacherAllocation[Teacher].append(timeslot)
 
 		return teacherAllocation
