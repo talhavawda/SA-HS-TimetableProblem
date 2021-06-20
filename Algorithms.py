@@ -864,7 +864,9 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		for i in range(self.populationSize):  # Create cat i
 
-			new_cat = ()
+			new_cat = self.CAT()
+
+
 			teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
 
 			currentClass = 0
