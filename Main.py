@@ -148,7 +148,11 @@ def main():
 
             print("\nSolving INPUT ", inputNumber, " using the ", algorithmName, ":", sep="")
 
-            solution = algorithm.solveTimetable()
+            bestSolution, generationBestSolution, fitnessBestSolution = algorithm.solveTimetable()
+
+            print('Optimal solution found in generation', generationBestSolution, ' with a fitness of ', fitnessBestSolution)
+            self.printSolution(bestSolution)
+
 
             print("\n=================================================================")
 

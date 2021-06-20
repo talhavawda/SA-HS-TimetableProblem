@@ -278,7 +278,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			is a list representing a permutation of the numbers 0-54
 			The number of super-genes (sublists) in a chromosome for a problem instance is input.totalNumClasses
 
-			:return:	The optimal feasible solution after the termination criteria has been met, and its associated fitness value (as a tuple, in that order)
+			:return:	The optimal feasible solution after the termination criteria has been met, the generation it was found in, and its associated score / fitness value (as a tuple, in that order)
 		"""
 
 		# initialise Population
@@ -295,10 +295,11 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 		# Set benchmark fitness to the individual at 0
 		bestIndividual = initialPopulation[0]
-		bestFitness = self.calculateFitness(bestIndividual)
-		indexOfBestSoln = 0
+		fitnessBestIndiv = self.calculateFitness(bestIndividual)
+		generationOfBestSoln = 0
 		generations = 0
-		# Continue updating for a 1000 iterations if the best representation has not been changed
+
+		# Continue generating up to 1000 new generations of populations if the best representation/solution has not been improved
 		iterationsSinceLastUpdate = 0
 
 		population = initialPopulation
@@ -306,40 +307,65 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		while iterationsSinceLastUpdate < 1000:
 			generations += 1
 			foundBetterSoln = False
+
 			# calculate the fitness of the population and update the best fitness if necessary
 			for individual in population:
 				individualFitness = self.calculateFitness(individual)
-				if individualFitness > bestFitness:
+				if individualFitness > fitnessBestIndiv:
 					bestIndividual = copy.deepcopy(individual) # store a copy of this individual as the best | cant just assign as a pointer will be assigned
-					bestFitness = individualFitness
+					fitnessBestIndiv = individualFitness
 					foundBetterSoln = True
-					indexOfBestSoln = generations
+					generationOfBestSoln = generations
 
 			if foundBetterSoln:
 				iterationsSinceLastUpdate = 0
 			else:
 				iterationsSinceLastUpdate += 1
 
+
+			# Generate new population
 			newPopulation = []
 
 			for i in range(self.populationSize):
-				# Select parents
-				parent1, parent2 = self.selection(population)
-				# produce a child from 2 parents
-				child = self.recombination(parent1, parent2)
-				# Probability for operators
-				probability = random.random()
-				# if probability is less than 0.1 then conduct mutation on child
-				if probability < 0.1:
-					# mutation on child
+
+				child = []  # Declare the child chromosome; either generated from Recombination or taken directly from current population
+
+				probRecombination = random.random()  # A random floating value in the range [0.0, 1.0)
+
+				recombinationRate = 0.8
+
+				if probRecombination < recombinationRate:
+					# Do Recombination (Crossover)
+
+					# Select 2 parents
+					parents = self.selection(2, population) # Select 2 parents for recombination
+
+					# produce a child from 2 parents
+					child = self.recombination(parents[0], parents[1])
+
+				else:
+					# Select a random individual from the current generation and place it directly in the new population
+					parent = self.selection(1, population) # Select a random individual from the current generation
+					child = parent[0]  # select() returns a list so get the first element from it
+				
+				
+				probMutation = random.random()  # A random floating value in the range [0.0, 1.0)
+				mutationRate = 0.1
+				
+				if probMutation < mutationRate:
+					# Do Mutation on child
 					child = self.mutation(child)
+					
 				# add child to new population
 				newPopulation.append(child)
 
 			population = newPopulation
 
-		print('Solution found in generation', indexOfBestSoln, ' with a fitness of ', bestFitness)
+
+		print('Solution found in generation', generationOfBestSoln, ' with a fitness of ', fitnessBestIndiv)
 		self.printSolution(bestIndividual)
+		
+		return bestIndividual, generationOfBestSoln, fitnessBestIndiv
 
 
 
@@ -501,9 +527,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 
 
-	def selection(self, population):
+	def selection(self, n, population):
 		"""
-			Select and return 2 parents from the population
+			Select and return n parents from the population
 
 			Selection Strategy - Roulette Selection (Fitness Proportionate Selection)
 				- 	The parents are selected at random with the chance/probability of a chromosome being selected is proportional to its fitness
@@ -516,7 +542,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 							-	Loss of Diversity is where the population consists of chromosomes of similar genes,
 							which can lead to having a local optimal solution, but not being able to reach the global optimal solution
 
-			:param population: the population to select 2 parents from
+			:param population: the population to select n parents from
 			:return:
 		"""
 
@@ -530,10 +556,8 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		"""
 		sampler = self.weightedSampler(population, fitnesses)
 
-		parent1 = sampler()
-		parent2 = sampler()
 
-		return parent1, parent2
+		return [sampler() for i in range(n)]
 
 
 	def mutation(self, chromosome):
