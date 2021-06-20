@@ -708,15 +708,16 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         HCW = 10
         ICDW = 0.95
         ITDW = 0.6
-        TEPW = 0.06  # might not use this because we don't include gaps(-1) or empty classes in our population
+        TEPW = 0.06  # might not use this because we don't include gaps(-1) or empty classes in our population\
+        current_cat_solution = current_cat.getSolution()
 
         # hard constraint of assigning a teacher to more than 1 class during the same timeslot
-        for j in range(len(current_cat[0])):
+        for j in range(len(current_cat_solution[0])):
             n = 0
             for i in range(self.totalNumClasses):
-                teacherVal = current_cat[i][j]
+                teacherVal = current_cat_solution[i][j]
                 for k in range(i + 1, self.totalNumClasses):
-                    if teacherVal == current_cat[k][j]:
+                    if teacherVal == current_cat_solution[k][j]:
                         n += 1
 
             fitnessValue += HCW * (BASE ** n)
@@ -724,10 +725,10 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         # constraint of having the same teacher for more than 2 timeslots a day
         for i in range(self.totalNumClasses):
             n = 0
-            for j in range(len(current_cat[i])):
-                teacherVal = current_cat[i][j]
+            for j in range(len(current_cat_solution[i])):
+                teacherVal = current_cat_solution[i][j]
                 for k in range(j + 1, j + 12):
-                    if teacherVal == current_cat[i][k]:
+                    if teacherVal == current_cat_solution[i][k]:
                         n += 1
 
             if n > 2:
@@ -823,24 +824,26 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         randClass = random.randint(0, self.totalNumClasses)
         randCell1 = random.randint(0, 56)
         randCell2 = random.randint(0, 56)
+        current_cat_solution = current_cat.getSolution()
 
         inCol1 = False
         inCol2 = False
         for i in range(self.totalNumClasses):
-            if current_cat[i][randCell1] == current_cat[randClass][randCell2]:
+            if current_cat_solution[i][randCell1] == current_cat_solution[randClass][randCell2]:
                 inCol1 = True
                 break
 
         for i in range(self.totalNumClasses):
-            if current_cat[i][randCell2] == current_cat[randClass][randCell1]:
+            if current_cat_solution[i][randCell2] == current_cat_solution[randClass][randCell1]:
                 inCol2 = True
                 break
 
-        if (current_cat[randClass][randCell1] != current_cat[randClass][randCell2]) and (not inCol1) and (not inCol2):
-            tempCat = current_cat[randClass][randCell1]
-            current_cat[randClass][randCell1] = current_cat[randClass][randCell2]
-            current_cat[randClass][randCell2] = tempCat
+        if (current_cat_solution[randClass][randCell1] != current_cat_solution[randClass][randCell2]) and (not inCol1) and (not inCol2):
+            tempCat = current_cat_solution[randClass][randCell1]
+            current_cat_solution[randClass][randCell1] = current_cat[randClass][randCell2]
+            current_cat_solution[randClass][randCell2] = tempCat
 
+        current_cat.setSolution(current_cat_solution)
         return current_cat
 
     def Change_Random(self, cat_copy: CAT):
