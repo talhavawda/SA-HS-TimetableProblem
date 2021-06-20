@@ -4,6 +4,7 @@ import datetime
 import time
 import math
 import typing
+import copy
 
 
 class Input:
@@ -283,21 +284,22 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		bestIndividual = initialPopulation[0]
 		bestFitness = self.calculateFitness(bestIndividual)
 		indexOfBestSoln = 0
-		iterations = 0
+		generations = 0
 		# Continue updating for a 1000 iterations if the best representation has not been changed
 		iterationsSinceLastUpdate = 0
 
 		while iterationsSinceLastUpdate < 1000:
-			iterations += 1
+			generations += 1
 			foundBetterSoln = False
 			# calculate the fitness of the population and update the best fitness if necessary
 			for individual in initialPopulation:
 				individualFitness = self.calculateFitness(individual)
 				if individualFitness > bestFitness:
-					bestIndividual = individual
+					bestIndividual = copy.deepcopy(individual) # store a copy of this individual as the best | cant just assign as a pointer will be assigned
 					bestFitness = individualFitness
 					foundBetterSoln = True
-					indexOfBestSoln = iterations
+					indexOfBestSoln = generations
+
 			if foundBetterSoln:
 				iterationsSinceLastUpdate = 0
 			else:
@@ -305,7 +307,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 			updatedPopulation = []
 
-			for i in range(len(initialPopulation)):
+			for i in range(self.populationSize):
 				# Select parents
 				parent1, parent2 = self.selection(population=initialPopulation)
 				# produce a child from 2 parents
@@ -321,8 +323,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 			initialPopulation = updatedPopulation
 
-		print('Solution found in ', indexOfBestSoln, ' evolutions with a fitness of ', bestFitness)
+		print('Solution found in generation', indexOfBestSoln, ' with a fitness of ', bestFitness)
 		self.printSolution(bestIndividual)
+
 
 
 	"""Helper Functions for solveTimetable()"""
@@ -424,16 +427,14 @@ class GeneticAlgorithm(TimetableAlgorithm):
 					If this allocation is invalid (the condition below is False) then the loop will run again for the 
 					same class, generating a different initial allocation to work with
 				"""
-				#if isValidAllocation:
-				if True:
+				if isValidAllocation:
+				#if True:
 					newIndividual.append(classAllocation)
 
 					for lesson in self.LESSONS:  # ALT: for lesson in range(len(self.LESSONS))
-						subject = self.LESSON_SUBJECTS[
-							lesson]  # get the index/number of the subject that this lesson is
+						subject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this lesson is
 						teacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson
-						teacherTimeslotAllocations[teacher].append(
-							classAllocation[lesson])  # add this timeslot to this teacher's allocated timeslots
+						teacherTimeslotAllocations[teacher].append(classAllocation[lesson])  # add this timeslot to this teacher's allocated timeslots
 
 					currentClass = currentClass + 1
 					#print('Individual', i + 1, ' Class', currentClass, '\n', #classAllocation)  # i+1 as we want to display starting from 1
@@ -461,6 +462,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 				teacherAllocation[teacher].append(chromosome[i][j])
 		return teacherAllocation
 
+
 	def mutation(self, chromosome):
 		mutatedChromosome = []
 		teacherAllocation = self.getTeacherAllocation(chromosome)
@@ -471,9 +473,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			MAX_ITER = len(classI)
 			for j in range(MAX_ITER):
 				# get a random period
-				x1 = random.randint(0, 54)
+				x1 = random.randint(0, 54) # random integer in range [0, 54]
 				# get a second random period
-				x2 = random.randint(0, 54)
+				x2 = random.randint(0, 54)  # random integer in range [0, 54]
 				period1 = classI[x1]
 				period2 = classI[x2]
 				# get the 2 relevant subjects
