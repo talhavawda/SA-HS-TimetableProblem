@@ -852,6 +852,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				self.trace(tracing_cats)
 		# Execute local search refining procedure in order to improve the quality of resultant time timetable ; don't
 		# think we do this outside of evaluation(and the paper doesn't say how)
+
 		return self.global_best_cat
 
 
@@ -940,7 +941,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		return CATS
 
 	def calculateFitness(self, current_cat: CAT):
-
+		# fitness for genetic algorithm
 		# return fitness of chromosome
 		# +5 for every correct allocation. Do we need this?
 		# +3 for a double period [done]
@@ -1008,6 +1009,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		# print('Individual fitness = ', fitness)
 
 		"""
+		# fitness for csa
 		BASE = 1.3
 		fitnessValue = 0
 		HCW = 10
@@ -1065,12 +1067,90 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		return self.calculateFitness(solution)
 
 	def seek(self, cats: typing.List[CAT]):
+
+		for current_cat in cats:
+			"""
+				establish candidate pool, mutate candidates, determine next position
+			"""
+			"""
+				SMP[] Seeking memory pool, a list containing candidate solutions
+			"""
+			SMP = []
+			"""
+				SPC [] boolean to determine if we should consider self positioning
+			"""
+			SPC = 1
+
+			# initialize candidates
+
+			for i in range(5):
+
+				new_candidate = current_cat.getSolution
+				SMP.append(new_candidate)
+
+			"""
+				CDC - dimension change ratio, percentage of dimensions that will undergo mutation
+				SRD - mutation ratio, determines the extent of mutation
+				Mutate the candidates
+			"""
+
+
+			CDC = 0.5
+			SRD = 0.2
+
+
+			# mutation algorithm
+
+			for k in range (len(SMP)-SPC):  # iterate candidates
+				mutatedSolution = SMP[k]
+				for i in range(len(mutatedSolution[0])):  # choose values to mutate
+					for j in range(mutatedSolution):
+						random_value1 = random.random()
+						if random_value1 > CDC:
+							random_value2 = random.random()
+							mutatedSolution[i][j] = ((1 + random_value2 * SRD) * mutatedSolution[i][j])
+						else:
+							continue
+				SMP[k] = mutatedSolution
+			"""
+				Determine the next position from the list of candidates
+			"""
+
+			old_fitness = self.calculateFitness(SMP[0])  #
+			FSmax = self.calculateFitness(current_cat)
+			FSmin = self.calculateFitness(self.global_best_cat)
+			equal = True
+			for i in range(len(SMP) - 1):
+				fitness = self.calculateFitness(SMP[i])
+				if fitness > FSmax:
+					FSmax = fitness
+				if fitness < FSmin:
+					FSmin = fitness
+				if fitness != old_fitness:  # a cat having a better than initial fitness had been found
+					equal = False
+			FSb = self.calculateFitness(self.global_best_cat)
+
+			probabilities = [1.0 for _ in SMP]
+			if not equal:
+				for i in range(len(SMP)):
+					FSi = self.calculateFitness(SMP[i])
+					Pi = abs(FSi - FSb) / abs(FSmax - FSb)  # formula from equation 15
+					probabilities[i] = Pi
+
+			# pick a random position from the candidate positions the one to move to
+			# need to choose somehow, paper doesn't specify (probably using the probabilities)
+			random_pos = random.choices(SMP, weights=probabilities, k=1)[0]  # function returns a list
+			# of size k
+			current_cat.setSolution(random_pos.getSolution())
+
+
+		"""
 		# add code for seeking
 		# values from the paper after experimentation
-		SPC = True
-		SMP = 2
-		CDC = 0.1
-		SRD = 0.1
+		SPC = True  # self positioning consideration
+		SMP = 2  # seeking memory pool for candidate solutions
+		CDC = 0.1  # percentage of dimensions to mutate
+		SRD = 0.1  # extent of mutation
 		j = 0  # default initialisation
 		candidate_positions = []
 		for cat_copy in cats:
@@ -1096,7 +1176,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 						best_fitness = new_fitness_value
 						candidate_positions.append(cat)
 
-			old_fitness = self.calculateFitness(candidate_positions[0])
+			old_fitness = self.calculateFitness(candidate_positions[0]) #
 			FSmax = best_fitness
 			FSmin = self.calculateFitness(self.global_best_cat)
 			equal = True
@@ -1122,6 +1202,9 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			random_pos = random.choices(candidate_positions, weights=probabilities, k=1)[0]  # function returns a list
 			# of size k
 			cat_copy.setSolution(random_pos.getSolution())
+			"""
+		return
+
 
 	def trace(self, cats: typing.List[CAT]):
 		# add code for tracing
@@ -1172,6 +1255,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		current_cat.setSolution(current_cat_solution)
 		return current_cat
+
 
 	def Change_Random(self, cat_copy: CAT):
 		"""
