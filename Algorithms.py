@@ -880,12 +880,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		initialCats = self.intialiseCats()
 
 		# set global best fitness to worst possible
-		global_best_fitness = 0 # We are maximising our fitness value so set to very low value
+		global_best_fitness = -100 # We are maximising our fitness value so set to very low value
 
 		# paper uses 5000 iterations
-		iteration_counter = 5000
+		iteration_counter = 5
 		# mixing ratio, initialised to 4% in paper for hybrid CS, seeking/trace ratio
-		MR = 0.04
+		MR = 0.00
 
 		for i in range(0, iteration_counter):
 			for current_cat in initialCats:
@@ -953,22 +953,38 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 
 				if timeslot in teacherAllocation:
+					print("Lesson\t", lesson)
+					print("Timeslot\t", timeslot)
+					print("Subject\t", self.LESSON_SUBJECTS[lesson])
+					print("This teachers allocation: \t", teacherAllocation)
+					print("Teacher\t", teacher)
 					swapfound = False
 
-					for otherLesson in range(self.NUM_LESSONS):
-						if otherLesson != lesson:
-							otherTimeslot = classAllocation[lesson]
+					for otherSubject in range(self.NUM_LESSONS):
+						if otherSubject != subject:
+							print("\tChecking subject", otherSubject)
+							otherTeacher = self.teachingTable[currentClass][otherSubject]
 
-							if otherTimeslot not in teacherAllocation:
-								otherSubject = self.LESSON_SUBJECTS[lesson]
-								otherTeacher = self.teachingTable[currentClass][subject]
-								otherTeachingAllocation = teacherTimeslotAllocations[teacher]
+							otherTeacherAllocation = teacherTimeslotAllocations[otherTeacher]
+							print("\t\tOther teacher: \t", otherTeacher)
+							print("\t\tOther teacher's allocation: \t", otherTeacherAllocation)
+							if timeslot not in otherTeacherAllocation:
+								otherSubjectLessonBounds = self.SUBJECT_LESSON_BOUNDS[otherSubject]
+								otherSubjectLowerLessonBound = otherSubjectLessonBounds[0]
+								otherSubjectUpperLessonBound = otherSubjectLessonBounds[1]
 
-								if timeslot not in otherTeachingAllocation:
-									swapfound = True
-									classAllocation[lesson] = otherTimeslot
-									classAllocation[otherLesson] = timeslot
-									break
+								for otherLesson in range(otherSubjectLowerLessonBound,
+														 otherSubjectUpperLessonBound + 1):
+									otherTimeslot = classAllocation[
+										otherLesson]  # the timeslot allocated to this other lesson
+
+									if otherTimeslot not in teacherAllocation:
+										swapFound = True
+										print("swap found")
+										# we can swap timeslots
+										classAllocation[lesson] = otherTimeslot
+										classAllocation[otherLesson] = timeslot
+										break
 				
 				if swapfound == False:
 					isValidAllocation = False
