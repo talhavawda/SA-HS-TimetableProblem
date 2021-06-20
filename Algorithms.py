@@ -540,6 +540,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             self.solution = [[]]
             """current solution the cat possesses
 			"""
+            # we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
             self.velocity = 0.0
 
         def setState(self, newState: int):
@@ -548,6 +549,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
             self.state = newState
 
+        # we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
         def setVelocity(self, newVelocity: int):
             """
 					setter for location
@@ -572,6 +574,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
             return self.solution
 
+        # we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
         def getVelociy(self):
             """
 					getter for velocity
@@ -673,8 +676,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
         for i in range(self.populationSize):  # Create cat i
 
-            # teacherClassAlloc = list(range(1, 56))
             teacherClassAlloc = list(range(1, self.numTeachers))
+
             # rows = classes, cols= timeslots
             new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
             for j in range(len(new_allocation[0])):
@@ -808,11 +811,12 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
     def trace(self, cats: typing.List[CAT]):
         # add code for tracing
         for cat in cats:
-            c1 = 1  # i can't find where they set this value??? or explain it???
+            c1 = 2.0  # From the not-hybrid algorithm
             similarity = self.Similarity(cat)
             distance = self.totalNumClasses * len(self.TIMESLOTS) - similarity
             rand_number = random.random()
             cs = rand_number * c1 * distance  # number of cells to be swapped
+            # meant to be equivalent to the velocity from the original paper
 
             for _ in range(round(cs)):
                 self.Single_Swap(cat)
