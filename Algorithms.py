@@ -705,15 +705,14 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
 			0 for when the cat is idle 1 in seek mode and 2 for trace mode 
 			"""
-            # self.location = 0 # don't think we need location if we have solution
+
             """
 				current position in the solution space, changes when cat given permission to seek
 			"""
 			self.solution = [[]]
 			"""current solution the cat possesses
 			"""
-            # we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
-            self.velocity = 0.0
+
 
 		def setState(self, newState: int):
 			"""
@@ -721,12 +720,6 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
 			self.state = newState
 
-        # we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
-        def setVelocity(self, newVelocity: int):
-            """
-					setter for location
-			"""
-            self.velocity = newVelocity
 
 		def setSolution(self, newSolution: [[]]):
 			"""
@@ -746,30 +739,6 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
 			return self.solution
 
-        # we may very likely remove velocity, as it is replaced by cs in the hybrid algorithm in the trace step
-        def getVelociy(self):
-            """
-					getter for velocity
-			"""
-            return self.velocity
-
-            '''
-            don't think we need location if we have solution
-            def setLocation(self, newlocation: int):
-                """
-                        setter for location
-                """
-                self.location = newlocation
-                '''
-
-        '''
-        don't think we need location if we have solution
-        def getLocation(self):
-            """
-					getter for solution
-			"""
-            return self.location
-            '''
 
 	def __init__(self, input: Input, populationSize: int):
 		"""
@@ -849,16 +818,42 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
         for i in range(self.populationSize):  # Create cat i
 
-            teacherClassAlloc = list(range(1, self.numTeachers))
+            new_cat = []
+            teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
 
+            currentClass = 0
+
+            while currentClass < self.totalNumClasses:
+                classAllocation = random.sample(self.TIMESLOTS, len(self.TIMESLOTS))
+
+            isValidAllocation = True
+
+            for lesson in range (len(self.LESSONS)):
+                timeslot = classAllocation[lesson]
+                subject = self.LESSON_SUBJECTS[lesson]
+                teacher = self.teachingTable[currentClass][subject]
+                teacherAllocation = teacherTimeslotAllocations[teacher]
+
+                if timeslot in teacherAllocation:
+                    isValidAllocation = False
+            if isValidAllocation:
+                new_cat.setSolution(classAllocation)
+                for lesson in self.LESSONS:
+                    subject = self.LESSON_SUBJECTS[lesson]
+                    teacher = self.teachingTable[currentClass][subject]
+                    teacherTimeslotAllocations[teacher].append(classAllocation[lesson])
+
+                currentClass = currentClass + 1
+                print('cat', i + 1, 'class', currentClass, '\n', classAllocation)
+            CATS.append(new_cat)
+
+            """
             # rows = classes, cols= timeslots
-            new_allocation = [[0 for _ in range(len(self.TIMESLOTS))] for _ in range(self.totalNumClasses)]  # cat i
-
-            # col by row instead of row by col to ensure no duplicate teachers
+            new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
             for j in range(len(new_allocation[0])):
                 random.shuffle(teacherClassAlloc)
-                for k in range(len(new_allocation)):
-                    new_allocation[j][k] = teacherClassAlloc[k]
+                for i in range(len(new_allocation)):
+                    new_allocation[j][i] = teacherClassAlloc[i]
 
             new_cat = self.CAT()
             new_cat.setSolution(new_allocation)
@@ -866,15 +861,14 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
             # Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers)
             # as we building the chromosome
-            '''
-            
+
             teacherTimeslotAllocations = []
 
             for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
                 teacherAllocation = []
                 teacherTimeslotAllocations.append(teacherAllocation)
+                """
 
-        '''
         return CATS
 
     def calculateFitness(self, current_cat: CAT):
@@ -921,6 +915,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                         n += 1
             if n > 10:
                 fitnessValue += ITDW * BASE
+
         return fitnessValue
         pass
 
@@ -1066,6 +1061,13 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
         cat_copy.setSolution(cat_solution)
         return cat_copy
+
+    def getEmptyTeacherAllocation(self) -> [[]]:
+        teacherTimeslotAllocations = []
+        for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
+            teacherAllocation = []
+            teacherTimeslotAllocations.append(teacherAllocation)
+        return teacherTimeslotAllocations
 
     '''def Valid(self, current_cat: CAT):
         # check whether current cat is valid
