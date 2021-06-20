@@ -109,6 +109,7 @@ class TimetableAlgorithm:
 	# In the code, we are representing the number of Lessons and Timeslots from 0-54 as indexes begin at 0 (Mathematically, its from 1-55)
 	# So Day numbers will be represented from 0-4 and to get the day number of a timeslot, use floor(timeslot // 5)
 
+	NUM_SUBJECTS = 9
 	NUM_LESSONS = 55
 	NUM_TIMESLOTS = 55
 
@@ -130,6 +131,20 @@ class TimetableAlgorithm:
 		7, 7, 7, 7,
 		8, 8, 8, 8
 	]
+
+	#Indicates the (lower and upper) bounds of the lesson numbers of a subject. Indexes are the subject indexes/numbers
+	SUBJECT_LESSON_BOUNDS = [
+		[0, 9],
+		[10, 17],
+		[18, 26],
+		[27, 32],
+		[33, 38],
+		[39, 42],
+		[43, 46],
+		[47, 50],
+		[51, 43]
+	]
+
 
 	def __init__(self, input: Input, populationSize: int):
 		"""
@@ -402,8 +417,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 				# classAllocation = list(range(55))
 				# random.shuffle(classAllocation)
 
-				classAllocation = random.sample(self.TIMESLOTS, len(
-					self.TIMESLOTS))  # random.sample(list, size) returns a new shuffled list. The original list remains unchanged.
+				classAllocation = random.sample(self.TIMESLOTS, self.NUM_TIMESLOTS)  # random.sample(list, size) returns a new shuffled list. The original list remains unchanged.
 
 				"""
 					Determine if this class allocation a valid one with respect to teacher times
@@ -424,27 +438,68 @@ class GeneticAlgorithm(TimetableAlgorithm):
 					teacherAllocation = teacherTimeslotAllocations[teacher]
 
 					if timeslot in teacherAllocation:  # teacher is already allocated to this timeslot - i.e. there is a clash
+						print("Lesson\t", lesson)
+						print("Timeslot\t", timeslot)
+						print("Subject\t", self.LESSON_SUBJECTS[lesson])
+						print("This teachers allocation: \t", teacherAllocation)
+						print("Teacher\t", teacher)
+						#print("All teachers", teacherTimeslotAllocations)
 						# BELOW IS TO SWAP WHEN THERE'S A CLASH - SEEMS TO BE TAKING LONGER THAN JUST GENERATING A NEW ALLOCATION FOR THIS CLASS
 
-						# Find another teacher that teaches this class to swap with
+						# Find another teacher that teaches this class (a subject) to swap with
 						swapFound = False
 
+						for otherSubject in range(self.NUM_SUBJECTS):
+							if otherSubject != subject:
+								print("\tChecking subject", otherSubject)
+								# Get teacher that teaches this other subject to this class
+								otherTeacher = self.teachingTable[currentClass][otherSubject]
+								otherTeacherAllocation = teacherTimeslotAllocations[otherTeacher]
+								print("\t\tOther teacher: \t", otherTeacher)
+								print("\t\tOther teacher's allocation: \t", otherTeacherAllocation)
+
+								if timeslot not in otherTeacherAllocation:  # the other teacher is free in this current timeslot
+									# See if this current teacher is free in any of the timeslots that this other teacher teaches this class
+
+									otherSubjectLessonBounds = self.SUBJECT_LESSON_BOUNDS[otherSubject]
+									otherSubjectLowerLessonBound = otherSubjectLessonBounds[0]
+									otherSubjectUpperLessonBound = otherSubjectLessonBounds[1]
+
+									for otherLesson in range(otherSubjectLowerLessonBound, otherSubjectUpperLessonBound+1):
+										otherTimeslot = classAllocation[otherLesson]  # the timeslot allocated to this other lesson
+
+										if otherTimeslot not in teacherAllocation:  # the current teacher is free in this other timeslot
+											swapFound = True
+											print("swap found")
+											# we can swap timeslots
+											classAllocation[lesson] = otherTimeslot
+											classAllocation[otherLesson] = timeslot
+											break  # stop the search as we've found another lesson to swap with
+
+
+						"""
+						# ALTERNATIVE way to to the above, going lesson by lesson (takes a bit longer)
+						subjectLessonBounds = self.SUBJECT_LESSON_BOUNDS[subject]
+						subjectLowerLessonBound = subjectLessonBounds[0]
+						subjectUpperLessonBound = subjectLessonBounds[1]
+
 						for otherLesson in range(self.NUM_LESSONS):  # For each of the 55 lessons
-							if otherLesson != lesson:
-								otherTimeslot = classAllocation[lesson]  # the timeslot allocated to this other lesson
+							if otherLesson < subjectLowerLessonBound or otherLesson > subjectUpperLessonBound: # For lessons of different subjects (as lessons of same subject taught by same teacher)
+								otherTimeslot = classAllocation[otherLesson]  # the timeslot allocated to this other lesson
 
 								if otherTimeslot not in teacherAllocation: # the current teacher is free in this other timeslot
-									otherSubject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this other lesson is
-									otherTeacher = self.teachingTable[currentClass][subject]  # teacher that teaches this other lesson
-									otherTeacherAllocation = teacherTimeslotAllocations[teacher]
+									otherSubject = self.LESSON_SUBJECTS[otherLesson]  # get the index/number of the subject that this other lesson is
+									otherTeacher = self.teachingTable[currentClass][otherSubject]  # teacher that teaches this other lesson
+									otherTeacherAllocation = teacherTimeslotAllocations[otherTeacher]
 
 									if timeslot not in otherTeacherAllocation: # the other teacher is free in this current timeslot
 										swapFound = True
+										print("swap found")
 										# we can swap timeslots
 										classAllocation[lesson] = otherTimeslot
 										classAllocation[otherLesson] = timeslot
 										break # stop the search as we've found another lesson to swap with
-
+						"""
 
 						if swapFound == False: # if we did not find another lesson to swap with (since there is a clash), then this cannot be a valid allocation
 							isValidAllocation = False
@@ -665,7 +720,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		# return fitness of chromosome
 		# +5 for every correct allocation. Do we need this?
 		# +3 for a double period [done]
-		# -2 for more than 2 periods on a subject in a day [done]
+		# -2 for more than 2 lesson periods of a subject in a day [done]
 		# -1 for two single periods on the same day for a subject [done]
 		# -2 for each time a teacher teaches for more than 4 periods consecutively [done]
 		fitness = 0
@@ -705,28 +760,35 @@ class GeneticAlgorithm(TimetableAlgorithm):
 							fitness += 3
 					else:
 						break
-		# penalize two seperate periods on the same day
-		for gene in chromosome:
-			subjectsAllocatedForClass = []
-			for g in range(len(gene)):
-				pos = gene.index(g)
-				subject = self.LESSON_SUBJECTS[pos]
-				subjectsAllocatedForClass.append(subject)
-			for s in range(len(subjectsAllocatedForClass) - 2):
+
+		# penalize two separate periods on the same day
+		for i in range(self.totalNumClasses):
+			Class = chromosome[i]
+			subjectsAllocation = [] # a list where the indexes are the timeslots and the values are the subjects at that timeslot
+			for timeslot in range(self.NUM_TIMESLOTS):
+				print(Class)
+				lesson = Class.index(timeslot) # get the lesson that is being taught at this timeslot
+				subject = self.LESSON_SUBJECTS[lesson] # get subject number of this lesson
+				subjectsAllocation.append(subject)
+
+			for s in range(self.NUM_TIMESLOTS - 2):
 				# 3 consec periods of the same subject
-				if subjectsAllocatedForClass[s] == subjectsAllocatedForClass[s + 1] and subjectsAllocatedForClass[s] == \
-						subjectsAllocatedForClass[s + 2]:
+				if subjectsAllocation[s] == subjectsAllocation[s + 1] and subjectsAllocation[s] == \
+						subjectsAllocation[s + 2]:
 					fitness -= 2
 				else:
 					continue
 			counter = 0
+
+			#TODO
 			# check if there is 2 periods of the same subjects in the same day[not consecutive]
-			for s in range(len(subjectsAllocatedForClass)):
-				subject = subjectsAllocatedForClass[s]
-				for t in range(s + 2, 11):
-					if subject == subjectsAllocatedForClass[t]:
+			for timeslot in range(self.NUM_TIMESLOTS):
+				subject = subjectsAllocation[timeslot]
+				for t in range(timeslot + 2, 11):
+					if subject == subjectsAllocation[t]:
 						fitness -= 1
 		#print('Individual fitness = ', fitness)
+
 		return fitness
 
 	def getObjectiveValue(self, solution):
