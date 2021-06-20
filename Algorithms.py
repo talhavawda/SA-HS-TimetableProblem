@@ -615,20 +615,38 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 		return mutatedChromosome
 
-	def recombination(self, chromosome1, chromosome2):
-		# TODO: Recombination (Crossover)
+	def recombination(self, parent1, parent2):
+		"""
+			Doing Recombination (Crossover) on 2 parent chromsomes to produce a child chromosome
+			:param chromosome1:
+			:param chromosome2:
+			:return: Child chromosome
+		"""
+
 		child = []
-		crossoverPoint = random.randint(0, 1)
-		if crossoverPoint == 0:
-			crossoverPoint = self.numGr7Classes+1
-		else:
-			crossoverPoint = self.numGr7Classes + self.numGr8Classes + 1
-		class1Selection = chromosome1[0:crossoverPoint]
-		class2Selection = chromosome2[crossoverPoint:]
-		for i in class1Selection:
-			child.append(i)
-		for i in class2Selection:
-			child.append(i)
+
+		# Crossover point possibilities
+		crossoverPointChoices = (self.numGr7Classes, self.numGr7Classes + self.numGr8Classes)
+
+		# Select a crossover point
+		crossoverPoint = random.choice(crossoverPointChoices)
+
+		# copy from beginning of parent1 to crossover point, and from parent 2 from the crossover point to the end of parent 2
+
+		"""
+		for i in range(0, crossoverPoint):
+			# Copy from parent 1
+			classI = parent1[i]
+			child.append(classI)
+
+		for i in range(crossoverPoint, self.totalNumClasses):
+			# Copy from parent 2
+			classI = parent2[i]
+			child.append(classI)
+		"""
+
+		# Simpler way of combining using the slice operator
+		child = parent1[:crossoverPoint] + parent2[crossoverPoint:]
 
 		return child
 
