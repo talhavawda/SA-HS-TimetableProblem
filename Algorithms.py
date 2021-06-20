@@ -2,6 +2,7 @@ import random
 import datetime
 import time
 import math
+import typing
 
 
 class Input:
@@ -651,8 +652,16 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
                     current_cat.setState(self.CAT.TRACING)
                 # self.trace(current_cat)
                 # put the "behaviour" here bc it's not clear where it should go, and in the origianl CSO algorithm, we move all the cats at once
-                self.seek(cat for cat in initialCats if cat.getState() == self.CAT.SEEKING)
-                self.trace(cat for cat in initialCats if cat.getState() == self.CAT.TRACING)
+                seeking_cats = []
+                for cat in initialCats:
+                    if cat.getState() == self.CAT.SEEKING:
+                        seeking_cats.append(cat)
+                self.seek(seeking_cats)
+                tracing_cats= []
+                for cat in initialCats:
+                    if cat.getState() == self.CAT.TRACING:
+                        tracing_cats.append(cat)
+                self.trace(tracing_cats)
         # Execute local search refining procedure in order to improve the quality of resultant time timetable regarding teachers gaps
         return global_best_cat
 
@@ -674,7 +683,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
             new_cat = self.CAT()
             new_cat.setSolution(new_allocation)
-            CATS.append(new_allocation)
+            CATS.append(new_cat)
 
             # Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
 
@@ -686,7 +695,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
         return CATS
 
-    def evaluateFitness(self, current_cat):
+    def evaluateFitness(self, current_cat:CAT):
         # change later
         BASE = 1.3
         fitnessValue = 0
@@ -727,7 +736,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         return fitnessValue
         pass
 
-    def seek(self, cats):
+    def seek(self, cats: typing.List[CAT]):
         # add code for seeking
         # values from the paper after experimentation
         SPC = True
@@ -749,17 +758,17 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             for i in range(0, j):
                 cat_copies.append(cat_copy.getSolution)
             tc = CDC * len(self.TIMESLOTS)  # nr of timeslots we will "replace"/change
-            sm = SRD * len(self.totalNumClasses)  # total nr of swaps
-            for cat_copy in cat_copies:
-                for _ in range(tc):
-                    self.Change_Random(cat_copy)  # insert tc random timeslots from global_best_cat to cat_copy
-                for i in range(0, sm):
-                    cat_copy = self.Single_Swap(cat_copy)
-                    if (self.Valid(cat_copy)):  # if statement is not necessary if single swap only returns valid swaps
-                        new_fitness_value = self.evaluateFitness(cat_copy)
-                        if (new_fitness_value <= best_fitness):
+            sm = SRD * self.totalNumClasses  # total nr of swaps
+            for cat in cat_copies:
+                for _ in range(int(tc)):
+                    self.Change_Random(cat)  # insert tc random timeslots from global_best_cat to cat
+                for i in range(0, int(sm)):
+                    cat = self.Single_Swap(cat)
+                    if (self.Valid(cat)):  # if statement is not necessary if single swap only returns valid swaps
+                        new_fitness_value = self.evaluateFitness(cat)
+                        if new_fitness_value <= best_fitness:
                             best_fitness = new_fitness_value
-                            candidate_positions.append(cat_copy)
+                            candidate_positions.append(cat)
                             probabilities.append(0)
 
             old_fitness = self.evaluateFitness(candidate_positions[0])
@@ -778,18 +787,18 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             FSb = FSmin # minimisation problem
 
             if not equal:
-                for cat in candidate_positions:
-                    FSi = self.evaluateFitness(cat)
+                for i in range(len(candidate_positions)):
+                    FSi = self.evaluateFitness(candidate_positions[i])
                     Pi = abs(FSi - FSb) / abs(FSmax - FSmin)
                     probabilities[i] = Pi
             else:
                 probabilities = [1 for _ in candidate_positions]
             # pick a random position from the candidate positions the one to move to
             # need to choose somehow, paper does't specify (probably using the probabilities)
-            random_pos = random.choices(candidate_positions, weights=probabilities, k=1)
+            random_pos = random.choices(candidate_positions, weights=probabilities, k=1)[0] # function returns a list of size k
             cat_copy.setSolution(random_pos.getSolution())
 
-    def trace(self, cats):
+    def trace(self, cats: typing.List[CAT]):
         # add code for tracing
         for cat in cats:
             c1 = 1  # i can't find where they set this value??? or explain it???
@@ -800,15 +809,17 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             for _ in range(cs):
                 self.Single_Swap(cat)
 
-    def Similarity(self, cat):
+    def Similarity(self, cat: CAT):
         similarity = 0
-        for i in range(cat):
-            for j in range(cat[i]):
-                if cat[i][j] == self.global_best_cat[i][j]:
+        cat_solution = cat.getSolution()
+        global_best_cat_solution = self.global_best_cat.getSolution()
+        for i in range(cat_solution):
+            for j in range(cat_solution[i]):
+                if cat_solution[i][j] == global_best_cat_solution[i][j]:
                     similarity += 1
         return similarity
 
-    def Single_Swap(self, current_cat):
+    def Single_Swap(self, current_cat: CAT):
         randClass = random.randint(0, self.totalNumClasses)
         randCell1 = random.randint(0, 56)
         randCell2 = random.randint(0, 56)
@@ -832,24 +843,26 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
         return current_cat
 
-    def Change_Random(self, cat_copy):
+    def Change_Random(self, cat_copy: CAT):
         # auxilliary procedure, section 3.4.3
         rand_col = random.randint(0, len(self.TIMESLOTS) - 1)
-
-        for row in range(len(cat_copy)):
-            for col in range(len(cat_copy[row])):
-                if cat_copy[row][col] == self.global_best_cat[row][col] and (not col == rand_col):
-                    cat_copy[row][col] = cat_copy[row][rand_col]
+        cat_solution = cat_copy.getSolution()
+        best_cat_solution = self.global_best_cat.getSolution()
+        for row in range(len(cat_solution)):
+            for col in range(len(cat_solution[row])):
+                if cat_solution[row][col] == best_cat_solution[row][col] and (not col == rand_col):
+                    cat_solution[row][col] = cat_solution[row][rand_col]
                     break  # only do this once per class
 
         # swap
-        for row in range(len(cat_copy)):
-            for col in range(len(cat_copy[row])):
-                cat_copy[row][col] = self.global_best_cat[row][col]
+        for row in range(len(cat_solution)):
+            for col in range(len(cat_solution[row])):
+                cat_solution[row][col] = self.global_best_cat[row][col]
 
+        cat_copy.setSolution(cat_solution)
         return cat_copy
 
-    def Valid(self, current_cat):
+    def Valid(self, current_cat: CAT):
         # check whether current cat is valid
         # shouldn't need to implement this if change random is guaranteed to return a valid solution
         return False
