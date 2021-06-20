@@ -822,7 +822,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		SEEKING = 1
 		TRACING = 2
-		solution = [[]]
+
 
 		def __init__(self):
 			self._state = 0
@@ -833,7 +833,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
 				current position in the solution space, changes when cat given permission to seek
 			"""
-			self._solution = [[]]
+			self._solution = []
 
 
 		def state(self, newState: int):
@@ -843,7 +843,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			self._state = newState
 
 
-		def solution(self, newSolution: [[]]):
+		def solution(self, newSolution: []):
 			"""
 					setter for solution
 			"""
@@ -960,7 +960,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				Chromosome i is a 2D-array / a list of sub-lists with the number of rows (sublists being seld.totalNumClasses)
 				and the number of columns (size of a sublist)  being 55 (representing the lessons)
 			"""
-			newcat = self.CAT  # Chromosome i
+			newcat = self.CAT () # Chromosome i
 
 			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
 			teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
@@ -1077,7 +1077,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				"""
 				if isValidAllocation:
 
-					newcat.solution.append([classAllocation])
+
+					newcat.solution.append(classAllocation)
 
 					for lesson in self.LESSONS:  # ALT: for lesson in range(len(self.LESSONS))
 						subject = self.LESSON_SUBJECTS[
