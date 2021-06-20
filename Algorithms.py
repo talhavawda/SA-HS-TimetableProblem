@@ -677,8 +677,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
         for i in range(self.populationSize):  # Create cat i
 
-            teacherClassAlloc = list(range(1, 56))
-
+            #teacherClassAlloc = list(range(1, 56))
+            teacherClassAlloc = list(range(1, self.numTeachers))
             # rows = classes, cols= timeslots
             new_allocation = [[0 for i in range(len(self.TIMESLOTS))] for j in range(self.totalNumClasses)]  # cat i
             for j in range(len(new_allocation[0])):
