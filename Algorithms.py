@@ -105,10 +105,12 @@ class TimetableAlgorithm:
 	# In the code, we are representing the number of Lessons and Timeslots from 0-54 as indexes begin at 0 (Mathematically, its from 1-55)
 	# So Day numbers will be represented from 0-4 and to get the day number of a timeslot, use floor(timeslot // 5)
 
+	NUM_SUBJECTS = 55
+	NUM_LESSONS = 55
+
 	LESSONS = [lesson for lesson in range(0, 55)]
 	TIMESLOTS = [timeslot for timeslot in range(0, 55)]  # The permutation of all the timeslots in increasing order
-	TIMESLOTS_SET = set(
-		TIMESLOTS)  # Representing the Timeslots as a set | Will be used to compare to a generated timeslot to determine if it is a valid permutation
+	TIMESLOTS_SET = set(TIMESLOTS)  # Representing the Timeslots as a set | Will be used to compare to a generated timeslot to determine if it is a valid permutation
 
 	# Indicates the Subject index of a lesson - index is the lesson number, and value is the Subject index at that lesson
 	# Use the SUBJECTS constant to get the Subject name at that Subject index
@@ -226,6 +228,15 @@ class TimetableAlgorithm:
 		solutionValue = self.getObjectiveValue(solution)
 		print("\nSolution Value (Fitness):", solutionValue)
 		print("----------------------------------------------------------\n")
+
+
+	#TODO
+	def printTimetables(self, solution):
+		"""
+			Print the class and teacher timetables of the solution
+			:return:
+		"""
+
 
 """
 	GENETIC ALGORITHM
@@ -364,7 +375,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 			while currentClass < self.totalNumClasses:  # Create timeslot allocation for each class j in chromosome i
 
-				# generate an lesson-timeslot allocation  for class j
+				# generate a lesson-timeslot allocation  for class j
 
 				# classAllocation = list(range(55))
 				# random.shuffle(classAllocation)
@@ -464,43 +475,67 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 
 	def mutation(self, chromosome):
+		"""
+			Do Mutation on a chromosome
+			:param chromosome:
+			:return: Mutated chromosome
+		"""
 		mutatedChromosome = []
+
 		teacherAllocation = self.getTeacherAllocation(chromosome)
-		for i in range(len(chromosome)):
-			# get the class i
-			classI = chromosome[i]
+		for Class in range(self.totalNumClasses):
+
+			# get the period timeslots allocation of class i
+			classAllocation = copy.deepcopy(chromosome[Class])
+
 			isMutated = False
-			MAX_ITER = len(classI)
-			for j in range(MAX_ITER):
-				# get a random period
-				x1 = random.randint(0, 54) # random integer in range [0, 54]
+
+			while not isMutated:
+
+				# get a random lesson period
+				lesson1 = random.randint(0, 54) # random integer in range [0, 54]
 				# get a second random period
-				x2 = random.randint(0, 54)  # random integer in range [0, 54]
-				period1 = classI[x1]
-				period2 = classI[x2]
+				lesson2 = random.randint(0, 54)  # random integer in range [0, 54]
+
+				#get the timeslots of these lessons
+				timeslot1 = classAllocation[lesson1]
+				timeslot2 = classAllocation[lesson2]
+
 				# get the 2 relevant subjects
-				subject1 = self.LESSON_SUBJECTS[x1]
-				subject2 = self.LESSON_SUBJECTS[x2]
-				teacher1 = self.teachingTable[i][subject1]
-				teacher2 = self.teachingTable[i][subject2]
+				subject1 = self.LESSON_SUBJECTS[lesson1]
+				subject2 = self.LESSON_SUBJECTS[lesson2]
+
+				# get the teachers teaching these lessons
+				teacher1 = self.teachingTable[Class][subject1]
+				teacher2 = self.teachingTable[Class][subject2]
+
 				# get the teacher allocations of those subjects
 				teacherAlloc1 = teacherAllocation[teacher1]
 				teacherAlloc2 = teacherAllocation[teacher2]
-				if period1 not in teacherAlloc2 and period2 not in teacherAlloc1:
+
+				# If there's no clash
+				if timeslot1 not in teacherAlloc2 and timeslot2 not in teacherAlloc1:
+
+					# updating the timeslot allocations
+					classAllocation[lesson1] = timeslot2
+					classAllocation[lesson2] = timeslot1
+
+					# update teacher allocations
+					teacherAlloc1.remove(timeslot1)
+					teacherAlloc1.append(timeslot2)
+					teacherAlloc2.remove(timeslot2)
+					teacherAlloc1.append(timeslot1)
+
 					isMutated = True
-					# update teacher allocations for future
-					teacherAlloc1.remove(period1)
-					teacherAlloc1.append(period2)
-					teacherAlloc2.remove(period2)
-					teacherAlloc1.append(period1)
-					# updating the class
-					classI[x1] = period2
-					classI[x2] = period1
+
 				if isMutated:
 					break
+
 			# The loop will run and the mutated class will be added to the new chromosome
-			mutatedChromosome.append(classI)
+
+			mutatedChromosome.append(classAllocation)
 			#print(mutatedChromosome)
+
 		return mutatedChromosome
 
 	def crossover(self, chromosome1, chromosome2):
