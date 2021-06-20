@@ -627,7 +627,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		class2Selection = chromosome2[crossoverPoint:]
 		for i in class1Selection:
 			child.append(i)
-		for i in range(class2Selection):
+		for i in class2Selection:
 			child.append(i)
 
 		return child
