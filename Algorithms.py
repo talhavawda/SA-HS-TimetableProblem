@@ -859,7 +859,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
 					getter for solution
 			"""
-			self._solution
+			return self._solution
 
 
 	def __init__(self, input: Input, populationSize: int):
@@ -889,7 +889,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		"""
 
 		# execute initialisation procedure to initialise cats
-		initialCats = self.initialiseCats()
+		initialCats = self.initialiseCats
 		print("initialization done")
 
 		# set global best fitness to worst possible
@@ -936,6 +936,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		return self.global_best_cat
 
+	@property
 	def initialiseCats(self):
 		"""
 			Initialises the population (generates the initial population) for the Genetic Algorithm
@@ -1076,7 +1077,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				"""
 				if isValidAllocation:
 
-					newcat.solution = classAllocation
+					newcat.solution.append([classAllocation])
 
 					for lesson in self.LESSONS:  # ALT: for lesson in range(len(self.LESSONS))
 						subject = self.LESSON_SUBJECTS[
