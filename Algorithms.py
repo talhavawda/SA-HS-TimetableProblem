@@ -533,14 +533,14 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
             """
 			0 for when the cat is idle 1 in seek mode and 2 for trace mode 
 			"""
-            # self.location = 0 # don't think we need location if we have solution
+
             """
 				current position in the solution space, changes when cat given permission to seek
 			"""
             self.solution = [[]]
             """current solution the cat possesses
 			"""
-            self.velocity = 0.0
+
 
         def setState(self, newState: int):
             """
@@ -548,20 +548,6 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
             self.state = newState
 
-        '''
-        don't think we need location if we have solution
-        def setLocation(self, newlocation: int):
-            """
-					setter for location
-			"""
-            self.location = newlocation
-            '''
-
-        def setVelocity(self, newVelocity: int):
-            """
-					setter for location
-			"""
-            self.velocity = newVelocity
 
         def setSolution(self, newSolution: [[]]):
             """
@@ -581,20 +567,6 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			"""
             return self.solution
 
-        def getVelociy(self):
-            """
-					getter for velocity
-			"""
-            return self.velocity
-
-        '''
-        don't think we need location if we have solution
-        def getLocation(self):
-            """
-					getter for solution
-			"""
-            return self.location
-            '''
 
     def __init__(self, input: Input, populationSize: int):
         """
