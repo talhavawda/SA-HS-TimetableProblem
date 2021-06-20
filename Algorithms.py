@@ -5,6 +5,7 @@ import time
 import math
 import typing
 import copy
+import bisect
 
 
 class Input:
@@ -86,6 +87,7 @@ class Input:
 
 		print(headerStr + "\n")
 
+seedVal = 0
 
 class TimetableAlgorithm:
 	"""

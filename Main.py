@@ -143,7 +143,7 @@ def main():
         geneticAlgorithm = GeneticAlgorithm(input, populationSizeGA)
         catSwarmAlgorithm = CatSwarmAlgorithm(input, populationSizeCSA)
 
-        for algorithm in [catSwarmAlgorithm]:
+        for algorithm in [geneticAlgorithm, catSwarmAlgorithm]:
             algorithmName = type(algorithm).__name__
 
             print("\nSolving INPUT ", inputNumber, " using the ", algorithmName, ":", sep="")
