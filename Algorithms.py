@@ -850,17 +850,17 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
         # auxilliary procedure, section 3.4.3
         rand_col = random.randint(0, len(self.TIMESLOTS) - 1)
         cat_solution = cat_copy.getSolution()
-        best_cat_solution = self.global_best_cat.getSolution()
+        global_best_solution = self.global_best_cat.getSolution()
         for row in range(len(cat_solution)):
             for col in range(len(cat_solution[row])):
-                if cat_solution[row][col] == best_cat_solution[row][col] and (not col == rand_col):
+                if cat_solution[row][col] == global_best_solution[row][col] and (not col == rand_col):
                     cat_solution[row][col] = cat_solution[row][rand_col]
                     break  # only do this once per class
 
         # swap
         for row in range(len(cat_solution)):
             for col in range(len(cat_solution[row])):
-                cat_solution[row][col] = self.global_best_cat[row][col]
+                cat_solution[row][col] = global_best_solution[row][col]
 
         cat_copy.setSolution(cat_solution)
         return cat_copy
