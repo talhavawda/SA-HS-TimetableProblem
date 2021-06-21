@@ -1451,16 +1451,16 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				timeslot = candidate[i][j]
 				dayOfTimeslot = timeslot // 11  # integer division by 11 -> 11 lessons in a day; first day (Monday) is day 0; thus Friday is 4
 
-				subjectsAllocation[subject][dayOfTimeslot].append(timeslot)
+				subjectsAllocation[int(subject)][int(dayOfTimeslot)].append(int(timeslot))
 
-				if len(subjectsAllocation[subject][
-						   dayOfTimeslot]) > 2:  # If the number of timeslots (thus number of lessons periods) is greater than 2 than penalise
+				if len(subjectsAllocation[int(subject)][
+						   int(dayOfTimeslot)]) > 2:  # If the number of timeslots (thus number of lessons periods) is greater than 2 than penalise
 					fitness += SC2
 				# print("SC2", i+1, j+1, "\t", subject, "\t", subjectsAllocation[subject][dayOfTimeslot])
 
-				if len(subjectsAllocation[subject][
-						   dayOfTimeslot]) == 2:  # If this is the second lesson period for ths subject on this day
-					earlierLessonTimeslot = subjectsAllocation[subject][dayOfTimeslot][0]
+				if len(subjectsAllocation[int(subject)][
+						   int(dayOfTimeslot)]) == 2:  # If this is the second lesson period for ths subject on this day
+					earlierLessonTimeslot = subjectsAllocation[int(subject)][int(dayOfTimeslot)][0]
 
 					if timeslot != earlierLessonTimeslot + 1 and timeslot != earlierLessonTimeslot - 1:  # If they were not double lesson periods
 						fitness += SC3
@@ -1606,7 +1606,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			# initialize candidates
 
-			for i in range(5):
+			for i in range(3):
 
 				new_candidate = current_cat.getSolution()
 				SMP.append(new_candidate)
@@ -1624,24 +1624,34 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			# mutation algorithm
 
-			for k in range(len(SMP)-SPC):  # iterate candidates
-				mutatedSolution = SMP[k]
-				for i in range(len(mutatedSolution[0])):  # choose values to mutate
-					for j in range(len(mutatedSolution)):
+			for k in range((len(SMP))-SPC):  # iterate candidates
+				mutatedSolution = SMP[0]
+				iterSolution = SMP[k]
+				SMP2 = []
+
+
+				for i, row in enumerate(mutatedSolution):  # choose values to mutate
+					for j, item in  enumerate(mutatedSolution):
 						if i<6 and j<55:
 							random_value1 = random.random()
 							if random_value1 > CDC:
 								random_value2 = random.random()
-								mutatedSolution[i][j] = int((((1 + random_value2 * SRD) * mutatedSolution[i][j])//11))
+								l = mutatedSolution[i][j]
+								mutatedSolution[i][j] = ((1 + random_value2 * SRD) * l //11)
 
-				SMP[k] = mutatedSolution
+				SMP2.append(mutatedSolution)
+			SMP = SMP2
 			"""
 				Determine the next position from the list of candidates
 			"""
+			SMP.append(new_candidate)
 
-			old_fitness = self.calculateFitness(SMP[0])  #
+
+			#  old_fitness = self.calculateFitness(current_cat.getSolution()) #
+			"""
 			FSsol1 = current_cat.getSolution()
 			FSmax = self.calculateFitness(FSsol1)
+			old_fitness = FSmax
 			FSsol2 = self.global_best_cat.getSolution()
 			FSmin = self.calculateFitness(FSsol2)
 			equal = True
@@ -1655,6 +1665,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					equal = False
 			FSsol3 = self.global_best_cat.getSolution()
 			FSb = self.calculateFitness(FSsol3)
+			
 
 			probabilities = [1.0 for _ in SMP]
 			if not equal:
@@ -1662,20 +1673,22 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					FSi = self.calculateFitness(SMP[i])
 					Pi = abs(FSi - FSb) / abs(FSmax - FSb)  # formula from equation 15
 					probabilities[i] = Pi
-
+			"""
 			# pick a random position from the candidate positions the one to move to
 			# need to choose somehow, paper doesn't specify (probably using the probabilities)
 			bestCandidate = 0
-			candidateFitness = 0
-			for i in SMP:
-				candidateFitness = self.calculateFitness(i)
+			idealCandidate = []
+			for i in range(len(SMP)):
+				candidateSolution = SMP[i]
+				candidateFitness = int( self.calculateFitness(SMP[i]))
 				if bestCandidate < candidateFitness:
 					bestCandidate = candidateFitness
+					idealCandidate = SMP[i]
 
 
 			# random_pos = int(random.choices(SMP, weights=probabilities, k=1)[0]) # function returns a list
 			# of size k
-			current_cat.setSolution(bestCandidate)
+			current_cat.setSolution(idealCandidate)
 
 
 		"""
@@ -1750,8 +1763,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			cs = rand_number * c1 * distance  # number of cells to be swapped
 			# meant to be equivalent to the velocity from the original paper
 
-			for _ in range(round(cs)):
-				self.Single_Swap(cat)
+			# for _ in range(round(cs)):
+				# self.Single_Swap(cat)
 
 	def Similarity(self, cat: CAT):
 		similarity = 0
@@ -1759,14 +1772,16 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		global_best_cat_solution = self.global_best_cat.getSolution()
 		for i in range(len(cat_solution)):
 			for j in range(len(cat_solution[i])):
-				if cat_solution[i][j] == global_best_cat_solution[i][j]:
+				k = int (cat_solution[i][j])
+				l = int(global_best_cat_solution[i][j])
+				if k==l:
 					similarity += 1
 		return similarity
 
 	def Single_Swap(self, current_cat: CAT):
 		randClass = random.randint(0, self.totalNumClasses)
-		randCell1 = random.randint(0, 56)
-		randCell2 = random.randint(0, 56)
+		randCell1 = random.randint(0, 13)
+		randCell2 = random.randint(0, 13)
 		current_cat_solution = current_cat.getSolution()
 
 		inCol1 = False
