@@ -1230,8 +1230,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 				self.trace(tracing_cats)
 		# Execute local search refining procedure in order to improve the quality of resultant time timetable ; don't
 		# think we do this outside of evaluation(and the paper doesn't say how)
-
-		return self.global_best_cat
+		self.getObjectiveValue(self.global_best_cat.getSolution())
+		return self.global_best_cat.getSolution()
 
 	@property
 	def initialiseCats(self):
