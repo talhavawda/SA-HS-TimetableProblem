@@ -224,6 +224,7 @@ class TimetableAlgorithm:
 
 		for teacher in range(self.numTeachers):
 			teacherAllocation = teacherTimeslotAllocations[teacher]
+			teacherAllocation.sort()
 
 			print("Teacher", teacher+1,  end="\t|\t") # Row Heading | teacher+1 cos we start displaying from 1
 
@@ -231,7 +232,7 @@ class TimetableAlgorithm:
 				print(timeslot, end="\t")
 
 			print()
-			
+
 		print("----------------------------------------------------------\n")
 
 	def printSolution(self, solution):
@@ -360,9 +361,6 @@ class TimetableAlgorithm:
 			print()
 
 		print(headerStr + "\n")
-
-		print("----------------------------------------------------------\n")
-
 
 
 
