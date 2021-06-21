@@ -229,7 +229,7 @@ class TimetableAlgorithm:
 			print("Teacher", teacher+1,  end="\t|\t") # Row Heading | teacher+1 cos we start displaying from 1
 
 			for timeslot in teacherAllocation:
-				print(timeslot, end="\t")
+				print(timeslot+1, end="\t") # Timeslot's are represented as digits from 0 to 54 but will display as 1 to 55
 
 			print()
 
@@ -276,8 +276,7 @@ class TimetableAlgorithm:
 			classAllocation = solution[Class]
 			for Lesson in self.LESSONS:
 				Timeslot = classAllocation[Lesson]
-				print(Timeslot + 1,
-					  end="\t")  # Timeslot's are represented as digits from 0 to 54 but will display as 1 to 55
+				print(Timeslot + 1,end="\t")  # Timeslot's are represented as digits from 0 to 54 but will display as 1 to 55
 			print()
 
 		print(headerStr + "\n")

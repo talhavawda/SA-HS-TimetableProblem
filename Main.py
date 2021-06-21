@@ -134,16 +134,15 @@ def main():
 		print("=================================================================")
 
 		"""
-			I set the pop sizes to 100 for now  so that the program runs
-			TODO - determine appropriate population sizes
+			Vary the sizes
 		"""
-		populationSizeGA = 20
+		populationSizeGA = 5
 		populationSizeCSA = 5
 
 		geneticAlgorithm = GeneticAlgorithm(input, populationSizeGA)
 		catSwarmAlgorithm = CatSwarmAlgorithm(input, populationSizeCSA)
 
-		for algorithm in [catSwarmAlgorithm]:
+		for algorithm in [geneticAlgorithm]:
 			algorithmName = type(algorithm).__name__
 
 			print("\nSolving INPUT ", inputNumber, " using the ", algorithmName, ":", sep="")
