@@ -288,7 +288,7 @@ class TimetableAlgorithm:
 
 		# Print Column Headings (Timeslots)
 
-		print("Timeslots ->", end="\t\t\t\t")
+		print("Timeslots ->", end="\t\t\t")
 		headerStr = "-----------------------"
 
 		# Timeslots are represented as digits from 0 to 54 but will display as 1 to 55
@@ -1668,7 +1668,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			bestCandidate = 0
 			candidateFitness = 0
 			for i in SMP:
-				candidateFitness = self.calculateFitness(SMP[i])
+				candidateFitness = self.calculateFitness(i)
 				if bestCandidate < candidateFitness:
 					bestCandidate = candidateFitness
 
