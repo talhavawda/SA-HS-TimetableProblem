@@ -197,6 +197,44 @@ class TimetableAlgorithm:
 			:return: The objective function's value of this candidate solution
 		"""
 
+
+	def getEmptyTeacherTimeslotAllocations(self) -> [[]]:
+		teacherTimeslotAllocations = []
+		for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
+			teacherAllocation = []
+			teacherTimeslotAllocations.append(teacherAllocation)
+		return teacherTimeslotAllocations
+
+
+	def getTeacherTimeslotAllocations(self, chromosome):
+		teacherTimeslotAllocations = self.getEmptyTeacherTimeslotAllocations()
+		# take the individuals distribution and assign to relevant teachers
+		for Class in range(self.totalNumClasses):
+			for Lesson in range(self.NUM_LESSONS):
+				Subject = self.LESSON_SUBJECTS[Lesson]
+				Teacher = self.teachingTable[Class][Subject]
+				timeslot = chromosome[Class][Lesson]
+				teacherTimeslotAllocations[Teacher].append(timeslot)
+
+		return teacherTimeslotAllocations
+
+
+	def printTeacherAllocation(self, teacherTimeslotAllocations):
+		print("\nTeacher-Timeslot Allocations:\n")
+
+		for teacher in range(self.numTeachers):
+			teacherAllocation = teacherTimeslotAllocations[teacher]
+			teacherAllocation.sort()
+
+			print("Teacher", teacher+1,  end="\t|\t") # Row Heading | teacher+1 cos we start displaying from 1
+
+			for timeslot in teacherAllocation:
+				print(timeslot, end="\t")
+
+			print()
+
+		print("----------------------------------------------------------\n")
+
 	def printSolution(self, solution):
 		"""
 			Display a possible/candidate solution (i.e. an individual/chromosome)
@@ -324,14 +362,11 @@ class TimetableAlgorithm:
 
 		print(headerStr + "\n")
 
-		print("----------------------------------------------------------\n")
 
 
-
-
-	def printTimetables(self, solution):
+	def printClassTimetables(self, masterTimetable):
 		"""
-			Print the Class and teacher timetables of the given feasible solution solution
+			Print the Class  timetables of the given master timetable of the feasible solution solution
 			:param solution:
 			:return: None
 		"""
@@ -406,9 +441,11 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 		print("\tFinding optimal solution...")
 
+		print("\t\tGeneration:\t", end="")
+
 		while iterationsSinceLastUpdate < 100:
 			generations += 1
-			print("\t\tGeneration", generations)
+			print(generations, end=", ")
 
 			foundBetterSoln = False
 
@@ -465,8 +502,11 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 			population = newPopulation
 
-		print('Solution found in generation', generationOfBestSoln, ' with a fitness of ', fitnessBestIndiv)
-		self.printSolution(bestIndividual)
+		#print('Solution found in generation', generationOfBestSoln, ' with a fitness of ', fitnessBestIndiv)
+		#self.printSolution(bestIndividual)
+
+
+		print()
 		
 		return bestIndividual, generationOfBestSoln, fitnessBestIndiv
 
@@ -501,7 +541,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			newIndividual = []  # Chromosome i
 
 			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
-			teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
+			teacherTimeslotAllocations = self.getEmptyTeacherTimeslotAllocations()
 
 			currentClass = 0
 
@@ -631,25 +671,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		return population
 
 
-	def getEmptyTeacherAllocation(self) -> [[]]:
-		teacherTimeslotAllocations = []
-		for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
-			teacherAllocation = []
-			teacherTimeslotAllocations.append(teacherAllocation)
-		return teacherTimeslotAllocations
 
-
-	def getTeacherAllocation(self, chromosome):
-		teacherAllocation = self.getEmptyTeacherAllocation()
-		# take the individuals distribution and assign to relevant teachers
-		for Class in range(self.totalNumClasses):
-			for Lesson in range(self.NUM_LESSONS):
-				Subject = self.LESSON_SUBJECTS[Lesson]
-				Teacher = self.teachingTable[Class][Subject]
-				timeslot = chromosome[Class][Lesson]
-				teacherAllocation[Teacher].append(timeslot)
-
-		return teacherAllocation
 
 
 
@@ -717,7 +739,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		"""
 		mutatedChromosome = []
 
-		teacherAllocation = self.getTeacherAllocation(chromosome)
+		teacherAllocation = self.getTeacherTimeslotAllocations(chromosome)
 		for Class in range(self.totalNumClasses):
 
 			# get the period timeslots allocation of class i
@@ -808,7 +830,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 
 		# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
-		teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
+		teacherTimeslotAllocations = self.getEmptyTeacherTimeslotAllocations()
 
 		currentClass = 0
 
@@ -1028,7 +1050,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		# SC4.2 - Reward a teacher for each different day that they teach on
 
 		# teacher allocation array
-		teacherAllocation = self.getTeacherAllocation(chromosome)
+		teacherAllocation = self.getTeacherTimeslotAllocations(chromosome)
 
 		for teacherTimeslots in teacherAllocation: # For each teacher (their timeslot allocations)
 
@@ -1239,7 +1261,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			catsolution = newcat.getSolution()
 
 			# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
-			teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
+			teacherTimeslotAllocations = self.getEmptyTeacherTimeslotAllocations()
 
 			currentClass = 0
 
@@ -1496,7 +1518,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		# SC4.2 - Reward a teacher for each different day that they teach on
 
 		# teacher allocation array
-		teacherAllocation = self.getTeacherAllocation(candidate)
+		teacherAllocation = self.getTeacherTimeslotAllocations(candidate)
 
 		for teacherTimeslots in teacherAllocation:  # For each teacher (their timeslot allocations)
 
@@ -1588,6 +1610,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			:return:
 		"""
 		return self.calculateFitness(solution)
+
 
 	def seek(self, cats: typing.List[CAT]):
 
@@ -1832,25 +1855,9 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		cat_copy.setSolution(cat_solution)
 		return cat_copy
 
-	def getEmptyTeacherAllocation(self) -> [[]]:
-		teacherTimeslotAllocations = []
-		for teacher in range(self.numTeachers):  # Add an empty array for each Teacher
-			teacherAllocation = []
-			teacherTimeslotAllocations.append(teacherAllocation)
-		return teacherTimeslotAllocations
 
-	def getTeacherAllocation(self, solution):
 
-		teacherAllocation = self.getEmptyTeacherAllocation()
-		# take the individuals distribution and assign to relevant teachers
-		for Class in range(self.totalNumClasses):
-			for Lesson in range(self.NUM_LESSONS):
-				Subject = self.LESSON_SUBJECTS[Lesson]
-				Teacher = self.teachingTable[Class][Subject]
-				timeslot = solution[Class][Lesson]
-				teacherAllocation[Teacher].append(timeslot)
 
-		return teacherAllocation
 
 	'''def Valid(self, current_cat: CAT):
 		# check whether current cat is valid

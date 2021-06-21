@@ -137,13 +137,13 @@ def main():
 			I set the pop sizes to 100 for now  so that the program runs
 			TODO - determine appropriate population sizes
 		"""
-		populationSizeGA = 10
+		populationSizeGA = 20
 		populationSizeCSA = 5
 
 		geneticAlgorithm = GeneticAlgorithm(input, populationSizeGA)
 		catSwarmAlgorithm = CatSwarmAlgorithm(input, populationSizeCSA)
 
-		for algorithm in [catSwarmAlgorithm]:
+		for algorithm in [geneticAlgorithm]:
 			algorithmName = type(algorithm).__name__
 
 			print("\nSolving INPUT ", inputNumber, " using the ", algorithmName, ":", sep="")
@@ -156,15 +156,16 @@ def main():
 
 			timeTaken = endTime - startTime
 
-			print("\tTime taken to solve:", timeTaken, "seconds")
+			print("\n\tTime taken to solve:", timeTaken, "seconds")
 
-
-			print('Optimal solution found in generation', generationBestSolution, ' with a fitness of ',
-				  fitnessBestSolution)
+			print('\nOptimal solution found in Generation', generationBestSolution, ' with a fitness of ',fitnessBestSolution)
 			algorithm.printSolution(bestSolution)
 
 			masterTimetable = algorithm.convertToTimetable(bestSolution)
 			algorithm.printMasterTimetable(masterTimetable)
+
+			teacherTimeslotAllocations = algorithm.getTeacherTimeslotAllocations(bestSolution)
+			algorithm.printTeacherAllocation(teacherTimeslotAllocations)
 
 			print("\n=================================================================")
 
