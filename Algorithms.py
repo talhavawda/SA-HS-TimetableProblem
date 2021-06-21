@@ -249,7 +249,87 @@ class TimetableAlgorithm:
 		print("----------------------------------------------------------\n")
 
 
-	def printTimetable(self, solution):
+	def convertToTimetable(self, solution):
+		"""
+			Convert a solution to a master timetable (2D Array)
+			-> Make the columns the timeslots and values the lessons (i.e. swap them around)
+			The rows are still the classes
+
+			:param solution: Candidate feasible solution in the solution space
+			:return:
+
+		"""
+
+		masterTimetable = []
+
+		for Class in range(self.totalNumClasses):
+
+			classTimeslotsAllocation = solution[Class]
+
+			classLessonsAllocation = []
+
+			for timeslot in range(self.NUM_TIMESLOTS):
+				lesson = classTimeslotsAllocation.index(timeslot) # get the lesson that occurs at this timeslot
+				classLessonsAllocation.append(lesson)
+
+			masterTimetable.append(classLessonsAllocation)
+
+
+		return masterTimetable
+
+
+	def printMasterTimetable(self, masterTimetable):
+		"""
+			Display master timetable of solution
+			:param masterTimetable:
+			:return: None
+		"""
+		print("\nMaster Timetable (Class-Timeslot Lesson Allocations):\n")
+
+		# Print Column Headings (Timeslots)
+
+		print("Timeslots ->", end="\t\t\t")
+		headerStr = "-----------------------"
+
+		# Timeslots are represented as digits from 0 to 54 but will display as 1 to 55
+		for timeslot in range(1, 56):
+			print(timeslot, end="\t")
+			headerStr += "----"
+
+		print("\nClasses:")
+		print(headerStr)
+
+		classNames = []
+
+		for i in range(self.numGr7Classes):
+			className = "Grade 7 - Class " + str(i + 1)
+			classNames.append(className)
+
+		for i in range(self.numGr8Classes):
+			className = "Grade 8 - Class " + str(i + 1)
+			classNames.append(className)
+
+		for i in range(self.numGr9Classes):
+			className = "Grade 9 - Class " + str(i + 1)
+			classNames.append(className)
+
+		for Class in range(self.totalNumClasses):
+			print(classNames[Class], end="\t|\t")  # Row Heading
+			classAllocation = masterTimetable[Class]
+			for Timeslot in self.TIMESLOTS:
+				Lesson = classAllocation[Timeslot]
+				print(Lesson + 1,
+					  end="\t")  # Timeslot's are represented as digits from 0 to 54 but will display as 1 to 55
+			print()
+
+		print(headerStr + "\n")
+
+		print("----------------------------------------------------------\n")
+
+
+
+
+	def printTimetables(self, solution):
 		"""
 			Print the Class and teacher timetables of the given feasible solution solution
 			:param solution:
@@ -311,7 +391,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		end = time.time()
 
 		timeTaken = end - start
-		print("Time taken to init:", timeTaken, "seconds")
+		print("\tTime taken to initialise population:", timeTaken, "seconds")
 
 		# Set benchmark fitness to the individual at 0
 		bestIndividual = initialPopulation[0]
@@ -324,8 +404,12 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 		population = initialPopulation
 
-		while iterationsSinceLastUpdate < 1000:
+		print("\tFinding optimal solution...")
+
+		while iterationsSinceLastUpdate < 100:
 			generations += 1
+			print("\t\tGeneration", generations)
+
 			foundBetterSoln = False
 
 			# calculate the fitness of the population and update the best fitness if necessary
@@ -352,7 +436,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 				probRecombination = random.random()  # A random floating value in the range [0.0, 1.0)
 
-				recombinationRate = 0.8
+				recombinationRate = 0.9
 
 				if probRecombination < recombinationRate:
 					# Do Recombination (Crossover)
@@ -404,7 +488,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 			:return:	The initial population for this Problem to be used by the Genetic Algorithm
 		"""
 
-		print("\n Initialising Population:\n")
+		print("\n\tInitialising Population ","(",self.populationSize, " individuals):\n", sep="")
 
 		population = []  # list of individual chromosomes -> size will be self.populationSize after we add all the chromosomes
 
@@ -519,8 +603,6 @@ class GeneticAlgorithm(TimetableAlgorithm):
 							isValidAllocation = False
 
 
-						# isValidAllocation = False # For Old
-
 				"""
 					If this lesson-timeslot allocation for this class is valid, then add it in its place to the chromosome
 					and add to the teacher allocations
@@ -538,13 +620,13 @@ class GeneticAlgorithm(TimetableAlgorithm):
 						teacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson
 						teacherTimeslotAllocations[teacher].append(classAllocation[lesson])  # add this timeslot to this teacher's allocated timeslots
 
-					print('Individual', i + 1, ' Class', currentClass + 1, "allocated")
+					#print('Individual', i + 1, ' Class', currentClass + 1, "allocated")
 					currentClass = currentClass + 1
-				else:
-					print("\tInvalid allocation", 'Individual', i + 1, ' Class', currentClass + 1)
+				#else:
+					#print("\tInvalid allocation", 'Individual', i + 1, ' Class', currentClass + 1)
 
 			population.append(newIndividual)
-			self.printSolution(newIndividual)
+			#self.printSolution(newIndividual)
 
 		return population
 
@@ -693,13 +775,25 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 	def recombination(self, parent1, parent2):
 		"""
-			Doing Recombination (Crossover) on 2 parent chromsomes to produce a child chromosome
+			Doing Recombination (Crossover) on 2 parent chromosomes to produce a child chromosome
 			:param chromosome1:
 			:param chromosome2:
 			:return: Child chromosome
 		"""
 
 		child = []
+
+		"""
+			Each parent chromosome is a 2D list and Crossover splits the parents in terms of the outer list (i.e. the classes)
+				-> The Crossover point is a class boundary to stop copying at from the beginning of the first parent and where to s
+					start copying from in the second parent to its end
+					
+			We are selecting the Grade boundaries as the crossover point possibilities to minimise teacher timeslot clashes
+			Thus the boundaries are either: between Grade 7 and Grade 8, or between Grade 8 and Grade 9
+			
+			However there still may be some clashes once we start copying from parent2
+			so we keep track of teacher allocations, and do mutation where necessary to resolve the clashes
+		"""
 
 		# Crossover point possibilities
 		crossoverPointChoices = (self.numGr7Classes, self.numGr7Classes + self.numGr8Classes)
@@ -709,20 +803,93 @@ class GeneticAlgorithm(TimetableAlgorithm):
 
 		# copy from beginning of parent1 to crossover point, and from parent 2 from the crossover point to the end of parent 2
 
-		"""
-		for i in range(0, crossoverPoint):
+		# Simpler way of combining using the slice operator but cant use it to easily check for clashes
+		#child = parent1[:crossoverPoint] + parent2[crossoverPoint:]
+
+
+		# Build a Teacher-Timeslot allocation table (to keep track of timeslots already assigned to the Teachers) as we building the chromosome
+		teacherTimeslotAllocations = self.getEmptyTeacherAllocation()
+
+		currentClass = 0
+
+
+		for i in range(0, crossoverPoint): # copy from beginning of parent1 to crossover point
 			# Copy from parent 1
+
+			# All these classes wont have clashes as they're being taken from the same parent
+			# So we just adding to the teacher allocations
+
 			classI = parent1[i]
 			child.append(classI)
 
-		for i in range(crossoverPoint, self.totalNumClasses):
-			# Copy from parent 2
-			classI = parent2[i]
-			child.append(classI)
-		"""
+			for lesson in self.LESSONS:
+				subject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this lesson is
+				teacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson
+				teacherTimeslotAllocations[teacher].append(classI[lesson])  # add this timeslot to this teacher's allocated timeslots
 
-		# Simpler way of combining using the slice operator
-		child = parent1[:crossoverPoint] + parent2[crossoverPoint:]
+			currentClass += 1
+
+
+		for i in range(crossoverPoint, self.totalNumClasses): # Copy from parent 2 from the crossover point to the end of parent 2
+			# Copy from parent 2
+
+			classI = parent2[i]
+
+			"""
+				Find and fix any conflicts/clashes that arise due to Hard Constraint 3 -
+				Hard Constraint 3: A teacher can only teach one lesson in a specific timeslot)
+			"""
+
+			for lesson in range(self.NUM_LESSONS):  # For each of the 55 lessons that we allocated a timeslot
+
+				timeslot = classI[lesson]  # the timeslot allocated to this lesson
+
+				subject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this lesson is
+				teacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson
+
+				# check if this teacher is not already teaching in this timeslot
+
+				teacherAllocation = teacherTimeslotAllocations[teacher]
+
+				if timeslot in teacherAllocation:  # teacher is already allocated to this timeslot - i.e. there is a clash
+					# Find another teacher that teaches this class (a subject) to swap with
+					swapFound = False
+
+					for otherSubject in range(self.NUM_SUBJECTS):
+						if otherSubject != subject:
+							# Get teacher that teaches this other subject to this class
+							otherTeacher = self.teachingTable[currentClass][otherSubject]
+							otherTeacherAllocation = teacherTimeslotAllocations[otherTeacher]
+
+							if timeslot not in otherTeacherAllocation:  # the other teacher is free in this current timeslot
+								# See if this current teacher is free in any of the timeslots that this other teacher teaches this class
+
+								otherSubjectLessonBounds = self.SUBJECT_LESSON_BOUNDS[otherSubject]
+								otherSubjectLowerLessonBound = otherSubjectLessonBounds[0]
+								otherSubjectUpperLessonBound = otherSubjectLessonBounds[1]
+
+								for otherLesson in range(otherSubjectLowerLessonBound, otherSubjectUpperLessonBound + 1):
+									otherTimeslot = classI[otherLesson]  # the timeslot allocated to this other lesson
+
+									if otherTimeslot not in teacherAllocation:  # the current teacher is free in this other timeslot
+										swapFound = True
+										# print("swap found")
+										# we can swap timeslots
+										temp = copy.deepcopy(classI[lesson])
+										classI[lesson] = copy.deepcopy(classI[otherLesson])
+										classI[otherLesson] = temp
+
+										break  # stop the search as we've found another lesson to swap with
+
+			child.append(classI)
+
+			for lesson in self.LESSONS:  # ALT: for lesson in range(len(self.LESSONS))
+				subject = self.LESSON_SUBJECTS[lesson]  # get the index/number of the subject that this lesson is
+				teacher = self.teachingTable[currentClass][subject]  # teacher that teaches this lesson
+				teacherTimeslotAllocations[teacher].append(classI[lesson])  # add this timeslot to this teacher's allocated timeslots
+
+			currentClass += 1
+
 
 		return child
 
@@ -1501,8 +1668,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			bestCandidate = 0
 			candidateFitness = 0
 			for i in SMP:
-				current_solution = SMP[i]
-				candidateFitness = self.calculateFitness(current_solution)
+				candidateFitness = self.calculateFitness(i)
 				if bestCandidate < candidateFitness:
 					bestCandidate = candidateFitness
 

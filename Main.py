@@ -137,7 +137,7 @@ def main():
 			I set the pop sizes to 100 for now  so that the program runs
 			TODO - determine appropriate population sizes
 		"""
-		populationSizeGA = 3
+		populationSizeGA = 10
 		populationSizeCSA = 5
 
 		geneticAlgorithm = GeneticAlgorithm(input, populationSizeGA)
@@ -148,11 +148,23 @@ def main():
 
 			print("\nSolving INPUT ", inputNumber, " using the ", algorithmName, ":", sep="")
 
+			startTime = time.time()
+
 			bestSolution, generationBestSolution, fitnessBestSolution = algorithm.solveTimetable()
+
+			endTime = time.time()
+
+			timeTaken = endTime - startTime
+
+			print("\tTime taken to solve:", timeTaken, "seconds")
+
 
 			print('Optimal solution found in generation', generationBestSolution, ' with a fitness of ',
 				  fitnessBestSolution)
 			algorithm.printSolution(bestSolution)
+
+			masterTimetable = algorithm.convertToTimetable(bestSolution)
+			algorithm.printMasterTimetable(masterTimetable)
 
 			print("\n=================================================================")
 
