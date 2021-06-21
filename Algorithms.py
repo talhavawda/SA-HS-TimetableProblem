@@ -1007,7 +1007,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			for current_cat in initialCats:
 				# set current cat equal to the first cat
 				# calculate fitness of current_cat
-				current_cat_fitness = self.calculateFitness(current_cat)
+				current_cat_fitness = current_cat.getSolution()
+				current_cat_fitness = self.calculateFitness(current_cat_fitness)
 
 
 				if current_cat_fitness > global_best_fitness:
@@ -1203,74 +1204,164 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 		return CATS
 
-	def calculateFitness(self, current_cat: CAT):
-		# fitness for genetic algorithm
-		# return fitness of chromosome
-		# +5 for every correct allocation. Do we need this?
-		# +3 for a double period [done]
-		# -2 for more than 2 periods on a subject in a day [done]
-		# -1 for two single periods on the same day for a subject [done]
-		# -2 for each time a teacher teaches for more than 4 periods consecutively [done]
+	def calculateFitness(self, candidate):
+		"""
+					Calculates and returns the fitness of the chromosome
+					:param chromosome: A chromosome in the population
+					:return: Fitness of the chromosome
+				"""
+
+		"""
+            HARD CONSTRAINTS
+                Since we have enforced all the Hard Constraints when creating the chromosomes (feasible solutions),
+                add +1 point for every Timeslot allocation in the chromosome 
+                Also multiply this by the number of a teachers (so that larger and harder inputs dont get negatively affected)
+                -> thus add total number of classes * 55 (number of lessons/timeslots) * num teachers
+
+            SOFT CONSTRAINTS
+                SC1:    (Reward)    +20 points for each time a class has a double-lesson period of the same subject on the same day   
+                SC2:    (Penalty)   -10 for points for each time a class has more than 2 lesson periods of a subject being taught to it on the same a day
+                SC3:    (Penalty)   -5 point for for each time a class has two single-lesson periods of the same subject on the same day
+                SC4.1:  (Penalty)   -10 points for each time a teacher teaches for more than 4 periods consecutively
+                SC4.2:	(Reward)    +10 points for each different day that a teacher teaches
+
+
+        """
+
+		# Score constant values for the Soft Constraints
+		SC1 = +20
+		SC2 = -10
+		SC3 = -5
+		SC4_1 = -10
+		SC4_2 = +10
+
 		fitness = 0
+
+		# Hard Constraints met -> +1 point for each allocation
+		fitness += self.totalNumClasses * self.NUM_LESSONS * self.numTeachers
+
 		# for each subject evaluate the allocation (class and teacher wise)
-		# empty teacher allocation array
-		fitness += self.totalNumClasses * self.NUM_LESSONS
-		teacherAllocation = self.getTeacherAllocation(current_cat)
-		# check to see if any teacher works more than 4periods at once
-		for teacher in teacherAllocation:
-			workingPeriods = teacher
-			# sort in order [0, 54]
-			workingPeriods.sort()
-			consecutive = 0
-			for i in range(len(workingPeriods) - 1):
-				if workingPeriods[i] + 1 == workingPeriods[i + 1]:
-					consecutive += 1
-				else:
-					consecutive = 0
-				if consecutive == 4:
-					fitness -= 2
-					consecutive = 0
 
-		# reward double periods
-		# for each class in the chromosome
-		for i in range(len(current_cat.solution)):
-			# for each slot in the class
-			for j in range(len(current_cat.solution[0]) - 1):
-				# for each slot after j
-				for k in range(j + 1, current_cat.solution[0] - 1):
-					# get subject being held at j
-					subject1 = self.LESSON_SUBJECTS[j]
-					# get subject being held at k
-					subject2 = self.LESSON_SUBJECTS[k]
-					# check if they are the same subject
-					if subject1 == subject2:
-						# check if they are consecutive
-						if current_cat.solution[i][j] + 1 == current_cat.solution[i][k]:
-							fitness += 3
-					else:
-						break
-		# penalize two separate periods on the same day
+		# SC1 - Reward double periods (of the same subject)
+
+		# for each class i in the chromosome
 		for i in range(self.totalNumClasses):
-			Class = current_cat.solution[i]
-			subjectsAllocation = []  # a list where the indexes are the timeslots and the values are the subjects at that timeslot
-			for timeslot in range(self.NUM_TIMESLOTS):
-				lesson = Class.index(timeslot)  # get the lesson that is being taught at this timeslot
-				subject = self.LESSON_SUBJECTS[lesson]  # get subject number of this lesson
-				subjectsAllocation.append(subject)
 
-			for s in range(self.NUM_TIMESLOTS - 2):
-				# 3 consec periods of the same subject
-				if subjectsAllocation[s] == subjectsAllocation[s + 1] and subjectsAllocation[s] == \
-						subjectsAllocation[s + 2]:
-					fitness -= 2
-				else:
-					continue
-			counter = 0
-			for timeslot in range(self.NUM_TIMESLOTS):
-				subject = subjectsAllocation[timeslot]
-				for t in range(timeslot + 2, 11):
-					if subject == subjectsAllocation[t]:
-						fitness -= 1
+			# for each lesson j
+			for j in range(
+					self.NUM_LESSONS - 1):  # -1 as we comparing current lesson to the one after it so we have to stop one before the end
+
+				# Check if lesson j and the following lesson (j+1) are both lessons of the same subject
+				if self.LESSON_SUBJECTS[j] == self.LESSON_SUBJECTS[j + 1]:
+
+					# Get the timeslots of both lessons
+					timeslot1 = candidate[i][j]  # Timeslot of class i having lesson j
+					timeslot2 = candidate[i][j + 1]  # Timeslot of class i having lesson j+1
+
+					# If timeslot2 is the next (or previous) timeslot after timeslot1, then these 2 lessons form a double period
+					if timeslot2 == timeslot1 + 1 or timeslot2 == timeslot1 - 1:
+						fitness += SC1
+				# print("SC1", i+1, j+1, "\t", timeslot1+1, timeslot2+1)
+
+		# SC2 - Penalise more than 2 periods of a subject on the same day
+		# SC3 - Penalize two separate single-lesson periods on the same day
+
+		for i in range(self.totalNumClasses):
+			Class = candidate[i]
+
+			"""
+                A 2D list representing the timeslots (and also number of times) a subject is being taught (number of lesson periods) 
+                on a specific day. Rows are subjects. Columns are days. Value at [row][col] is a list indicating the timeslots that that subject's lessons
+                occur on that day
+                Thus values in the 2D array are initialised as an empty list
+            """
+			subjectsAllocation = [[[] for day in range(5)] for subject in range(self.NUM_SUBJECTS)]
+
+			for j in range(self.NUM_LESSONS):
+
+				subject = self.LESSON_SUBJECTS[j]  # get subject number of this lesson
+
+				timeslot = candidate[i][j]
+				dayOfTimeslot = timeslot // 11  # integer division by 11 -> 11 lessons in a day; first day (Monday) is day 0; thus Friday is 4
+
+				subjectsAllocation[subject][dayOfTimeslot].append(timeslot)
+
+				if len(subjectsAllocation[subject][
+						   dayOfTimeslot]) > 2:  # If the number of timeslots (thus number of lessons periods) is greater than 2 than penalise
+					fitness += SC2
+				# print("SC2", i+1, j+1, "\t", subject, "\t", subjectsAllocation[subject][dayOfTimeslot])
+
+				if len(subjectsAllocation[subject][
+						   dayOfTimeslot]) == 2:  # If this is the second lesson period for ths subject on this day
+					earlierLessonTimeslot = subjectsAllocation[subject][dayOfTimeslot][0]
+
+					if timeslot != earlierLessonTimeslot + 1 and timeslot != earlierLessonTimeslot - 1:  # If they were not double lesson periods
+						fitness += SC3
+				# print("SC3", i+1, j+1, "\t", earlierLessonTimeslot+1, "\t", timeslot+1)
+
+			"""
+            # Shah's old code for SC2 & SC3
+            subjectsAllocation = []  # a list where the indexes are the timeslots and the values are the subjects at that timeslot, for this class
+
+            for timeslot in range(self.NUM_TIMESLOTS):
+                lesson = Class.index(timeslot)  # get the lesson that is being taught at this timeslot from the chromosome
+                subject = self.LESSON_SUBJECTS[lesson]  # get subject number of this lesson
+                subjectsAllocation.append(subject)
+
+            for s in range(self.NUM_TIMESLOTS - 2):
+                # 3 consec periods of the same subject
+                if subjectsAllocation[s] == subjectsAllocation[s + 1] and subjectsAllocation[s] == \
+                        subjectsAllocation[s + 2]:
+                    fitness += SC3 # Since SC3 is a negative value, a decrement will actually happen
+                else:
+                    continue
+            counter = 0
+
+
+                        for timeslot in range(self.NUM_TIMESLOTS):
+                subject = subjectsAllocation[timeslot]
+                for t in range(timeslot + 2, 11):
+                    if subject == subjectsAllocation[t]:
+                        fitness += SC3
+            """
+
+		# SC4.1 - Penalise for a teacher teaching for more than 4 periods consecutively
+		# SC4.2 - Reward a teacher for each different day that they teach on
+
+		# teacher allocation array
+		teacherAllocation = self.getTeacherAllocation(candidate)
+
+		for teacherTimeslots in teacherAllocation:  # For each teacher (their timeslot allocations)
+
+			# sort timeslots in order
+			teacherTimeslots.sort()
+
+			consecutiveTeaching = 0
+
+			teachingDays = []  # The days this teacher teaches on
+
+			for i in range(len(teacherTimeslots)):
+
+				timeslot = teacherTimeslots[i]
+
+				dayOfTimeslot = timeslot // 11  # integer division by 11 -> 11 lessons in a day; first day (Monday) is day 0; thus Friday is 4
+
+				if dayOfTimeslot not in teachingDays:
+					teachingDays.append(dayOfTimeslot)
+					fitness += SC4_2
+
+				if i < len(
+						teacherTimeslots) - 1:  # we want to stop at the second last timeslot as we comparing each timeslot to the next
+					nextTimeslot = teacherTimeslots[i + 1]
+
+					if nextTimeslot == timeslot + 1:
+						consecutiveTeaching += 1
+						if consecutiveTeaching > 4:
+							fitness += SC4_1
+							consecutive = 0
+					else:
+						consecutiveTeaching = 0
+
 		# print('Individual fitness = ', fitness)
 
 		"""
@@ -1350,7 +1441,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			for i in range(5):
 
-				new_candidate = current_cat.solution
+				new_candidate = current_cat.getSolution()
 				SMP.append(new_candidate)
 
 			"""
@@ -1366,24 +1457,26 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			# mutation algorithm
 
-			for k in range (len(SMP)-SPC):  # iterate candidates
+			for k in range(len(SMP)-SPC):  # iterate candidates
 				mutatedSolution = SMP[k]
 				for i in range(len(mutatedSolution[0])):  # choose values to mutate
-					for j in range(mutatedSolution):
-						random_value1 = random.random()
-						if random_value1 > CDC:
-							random_value2 = random.random()
-							mutatedSolution[i][j] = ((1 + random_value2 * SRD) * mutatedSolution[i][j])
-						else:
-							continue
+					for j in range(len(mutatedSolution)):
+						if i<6 and j<55:
+							random_value1 = random.random()
+							if random_value1 > CDC:
+								random_value2 = random.random()
+								mutatedSolution[i][j] = int((((1 + random_value2 * SRD) * mutatedSolution[i][j])//11))
+
 				SMP[k] = mutatedSolution
 			"""
 				Determine the next position from the list of candidates
 			"""
 
 			old_fitness = self.calculateFitness(SMP[0])  #
-			FSmax = self.calculateFitness(current_cat)
-			FSmin = self.calculateFitness(self.global_best_cat)
+			FSsol1 = current_cat.getSolution()
+			FSmax = self.calculateFitness(FSsol1)
+			FSsol2 = self.global_best_cat.getSolution()
+			FSmin = self.calculateFitness(FSsol2)
 			equal = True
 			for i in range(len(SMP) - 1):
 				fitness = self.calculateFitness(SMP[i])
@@ -1393,7 +1486,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					FSmin = fitness
 				if fitness != old_fitness:  # a cat having a better than initial fitness had been found
 					equal = False
-			FSb = self.calculateFitness(self.global_best_cat)
+			FSsol3 = self.global_best_cat.getSolution()
+			FSb = self.calculateFitness(FSsol3)
 
 			probabilities = [1.0 for _ in SMP]
 			if not equal:
@@ -1404,9 +1498,17 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 
 			# pick a random position from the candidate positions the one to move to
 			# need to choose somehow, paper doesn't specify (probably using the probabilities)
-			random_pos = random.choices(SMP, weights=probabilities, k=1)[0]  # function returns a list
+			bestCandidate = 0
+			candidateFitness = 0
+			for i in SMP:
+				candidateFitness = self.calculateFitness(SMP[i])
+				if bestCandidate < candidateFitness:
+					bestCandidate = candidateFitness
+
+
+			# random_pos = int(random.choices(SMP, weights=probabilities, k=1)[0]) # function returns a list
 			# of size k
-			current_cat.setSolution(random_pos.solution)
+			current_cat.setSolution(bestCandidate)
 
 
 		"""
@@ -1556,6 +1658,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		return teacherTimeslotAllocations
 
 	def getTeacherAllocation(self, solution):
+
 		teacherAllocation = self.getEmptyTeacherAllocation()
 		# take the individuals distribution and assign to relevant teachers
 		for Class in range(self.totalNumClasses):
