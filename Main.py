@@ -149,15 +149,15 @@ def main():
 
 			startTime = time.time()
 
-			#  bestSolution, generationBestSolution, fitnessBestSolution = algorithm.solveTimetable()
-			bestSolution = algorithm.solveTimetable()
+			bestSolution, generationBestSolution, fitnessBestSolution = algorithm.solveTimetable()
+
 			endTime = time.time()
 
 			timeTaken = endTime - startTime
 
 			print("\n\tTime taken to solve:", timeTaken, "seconds")
 
-			# print('\nOptimal solution found in Generation', generationBestSolution, ' with a fitness of ',fitnessBestSolution)
+			print('\nOptimal solution found in Generation', generationBestSolution, ' with a fitness of ',fitnessBestSolution)
 			algorithm.printSolution(bestSolution)
 
 			masterTimetable = algorithm.convertToTimetable(bestSolution)
