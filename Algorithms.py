@@ -1612,7 +1612,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		return self.calculateFitness(solution)
 
 
-	def seek(self, cats: typing.List[CAT]):
+	def seek(self, cats):
 
 		for current_cat in cats:
 			"""
@@ -1776,7 +1776,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		return
 
 
-	def trace(self, cats: typing.List[CAT]):
+	def trace(self, cats):
 		# add code for tracing
 		for cat in cats:
 			c1 = 2.0  # From the not-hybrid algorithm
@@ -1789,7 +1789,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			# for _ in range(round(cs)):
 				# self.Single_Swap(cat)
 
-	def Similarity(self, cat: CAT):
+	def Similarity(self, cat):
 		similarity = 0
 		cat_solution = cat.solution
 		global_best_cat_solution = self.global_best_cat.getSolution()
@@ -1801,10 +1801,10 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 					similarity += 1
 		return similarity
 
-	def Single_Swap(self, current_cat: CAT):
+	def Single_Swap(self, current_cat):
 		randClass = random.randint(0, self.totalNumClasses)
-		randCell1 = random.randint(0, 13)
-		randCell2 = random.randint(0, 13)
+		randCell1 = random.randint(0, 54)
+		randCell2 = random.randint(0, 54)
 		current_cat_solution = current_cat.getSolution()
 
 		inCol1 = False
@@ -1829,7 +1829,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		return current_cat
 
 
-	def Change_Random(self, cat_copy: CAT):
+	def Change_Random(self, cat_copy):
 		"""
 		changes a random column in the cat_copy solution to the corresponding column in the best cat
 		:param cat_copy: cat to be changed
