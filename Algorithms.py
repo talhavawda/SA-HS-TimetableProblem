@@ -739,7 +739,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		"""
 			HARD CONSTRAINTS
 				Since we have enforced all the Hard Constraints when creating the chromosomes (feasible solutions),
-				add +1 point for every Timeslot allocation in the chromosome -> thus add total number of classes * 55 (number of lessons/timeslots)
+				add +1 point for every Timeslot allocation in the chromosome 
+				Also multiply this by the number of a teachers (so that larger and harder inputs dont get negatively affected)
+				-> thus add total number of classes * 55 (number of lessons/timeslots) * num teachers
 			
 			SOFT CONSTRAINTS
 				SC1:    (Reward)    +20 points for each time a class has a double-lesson period of the same subject on the same day   
@@ -748,7 +750,9 @@ class GeneticAlgorithm(TimetableAlgorithm):
 				SC4.1:  (Penalty)   -10 points for each time a teacher teaches for more than 4 periods consecutively
 				SC4.2:	(Reward)    +10 points for each different day that a teacher teaches
 
+
 		"""
+
 
 		# Score constant values for the Soft Constraints
 		SC1 = +20
@@ -762,7 +766,7 @@ class GeneticAlgorithm(TimetableAlgorithm):
 		fitness = 0
 
 		# Hard Constraints met -> +1 point for each allocation
-		fitness += self.totalNumClasses * self.NUM_LESSONS
+		fitness += self.totalNumClasses * self.NUM_LESSONS * self.numTeachers
 
 		# for each subject evaluate the allocation (class and teacher wise)
 
