@@ -1501,7 +1501,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			bestCandidate = 0
 			candidateFitness = 0
 			for i in SMP:
-				candidateFitness = self.calculateFitness(SMP[i])
+				current_solution = SMP[i]
+				candidateFitness = self.calculateFitness(current_solution)
 				if bestCandidate < candidateFitness:
 					bestCandidate = candidateFitness
 
@@ -1589,7 +1590,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 	def Similarity(self, cat: CAT):
 		similarity = 0
 		cat_solution = cat.solution
-		global_best_cat_solution = self.global_best_cat.solution()
+		global_best_cat_solution = self.global_best_cat.getSolution()
 		for i in range(len(cat_solution)):
 			for j in range(len(cat_solution[i])):
 				if cat_solution[i][j] == global_best_cat_solution[i][j]:
@@ -1600,7 +1601,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		randClass = random.randint(0, self.totalNumClasses)
 		randCell1 = random.randint(0, 56)
 		randCell2 = random.randint(0, 56)
-		current_cat_solution = current_cat.solution()
+		current_cat_solution = current_cat.getSolution()
 
 		inCol1 = False
 		inCol2 = False
@@ -1620,7 +1621,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			current_cat_solution[randClass][randCell1] = current_cat_solution[randClass][randCell2]
 			current_cat_solution[randClass][randCell2] = tempCat
 
-		current_cat.solution(current_cat_solution)
+		current_cat.setSolution(current_cat_solution)
 		return current_cat
 
 
@@ -1632,8 +1633,8 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 		"""
 		# auxilliary procedure, section 3.4.3
 		rand_col = random.randint(0, len(self.TIMESLOTS) - 1)
-		cat_solution = cat_copy.solution()
-		global_best_solution = self.global_best_cat.solution()
+		cat_solution = cat_copy.getSolution()
+		global_best_solution = self.global_best_cat.getSolution()
 
 		# need to first compensate for the swap we are about to make
 		for row in range(len(cat_solution)):
@@ -1647,7 +1648,7 @@ class CatSwarmAlgorithm(TimetableAlgorithm):
 			for col in range(len(cat_solution[row])):
 				cat_solution[row][col] = global_best_solution[row][col]
 
-		cat_copy.solution(cat_solution)
+		cat_copy.setSolution(cat_solution)
 		return cat_copy
 
 	def getEmptyTeacherAllocation(self) -> [[]]:
